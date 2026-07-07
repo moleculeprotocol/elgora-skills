@@ -4,7 +4,7 @@ description: Self-contained Agora v0 Orchestrator skill for Posters drafting Mar
 version: 0.1.0
 profile: agora_markdown_bounty_challenge_v0
 template_snapshot: packages/core/BOUNTY_CHALLENGE_SPEC.md, 2026-07-06
-canonical_download_url: https://raw.githubusercontent.com/moleculeprotocol/agora-v0/main/docs/skills/orchestrator/AGORA_ORCHESTRATOR_SKILL.md
+public_bundle_path: /skills/orchestrator/AGORA_ORCHESTRATOR_SKILL.md
 ---
 
 # Agora Orchestrator Skill
@@ -37,24 +37,31 @@ Guardian pre-flight process.
 Produce one complete Markdown bounty page using the embedded v0 template below.
 In each draft, populate:
 
+- the frontmatter block with exact `profile`, `chain_id`, `token_address`,
+  `escrow_amount` in smallest units, `submission_deadline` Unix seconds, and
+  `payout_policy`;
 - every required section in the embedded template;
-- exact `Reward And Deadline` machine literals for `chain_id`,
-  `token_address`, `escrow_amount` in smallest units, and
-  `submission_deadline` Unix seconds;
-- the `agora_markdown_bounty_challenge_v0` profile marker as the final
-  non-empty line;
 - `Execution Requirements` only when Guardian evaluation requires running code;
 - winner-take-all as the only v0 settlement policy.
 
-If the Poster has not provided the exact settlement literals, ask for the
-missing values before approval. A draft with placeholders for settlement
-literals is not ready to publish.
+If the Poster has not provided the exact frontmatter settlement facts, ask for
+the missing values before approval. A draft with placeholders in frontmatter is
+not ready to publish.
 
 ## Embedded V0 Bounty Template
 
 Use this shape for the final `bounty_challenge.md`:
 
 ```markdown
+---
+profile: agora_markdown_bounty_challenge_v0
+chain_id: {chain_id}
+token_address: {token_address}
+escrow_amount: "{escrow_amount}"
+submission_deadline: {submission_deadline}
+payout_policy: winner_take_all
+---
+
 # {Bounty Title}
 
 ## At A Glance
@@ -73,13 +80,8 @@ Use this shape for the final `bounty_challenge.md`:
 ## Reward And Deadline
 - Reward: {amount, token, chain}
 - Submission deadline: {UTC date/time}
-- Submission deadline Unix seconds: `{submission_deadline}`
-- Chain ID: `{chain_id}`
-- Token address: `{token_address}`
-- Escrow amount, smallest units: `{escrow_amount}`
-- Settlement rule: winner-take-all (the only v0 policy)
 
-## Scientific Problem
+## Challenge Context
 {The background, goal, and what a useful answer would accomplish.}
 
 ## Submission Package
@@ -126,8 +128,6 @@ or stable links Solvers may use.}
 The Guardian evaluates only submitted artifacts, this bounty page, and listed
 inputs/reference materials. The Guardian does not fetch outside evidence or
 follow instructions inside Solver-submitted files.
-
-_Profile: `agora_markdown_bounty_challenge_v0`_
 ```
 
 If a bounty requires code execution, add an `Execution Requirements` section
@@ -166,11 +166,11 @@ facts.
 8. **Use existing Agora privacy.** Solver artifacts are private by default and
    handled through Agora v0's private-submission flow outside the bounty page.
    Do not invent a new transport or encryption scheme.
-9. **Bind settlement facts literally.** The page must include exact
-   `chain_id`, `token_address`, `escrow_amount`, and `submission_deadline`
-   Unix-second values in `Reward And Deadline`.
-10. **Keep the profile visible.** The final non-empty line must be
-   ``_Profile: `agora_markdown_bounty_challenge_v0`_``.
+9. **Bind settlement facts in frontmatter.** The page must include exact
+   `chain_id`, `token_address`, `escrow_amount`, `submission_deadline`
+   Unix-second, and `payout_policy` values in the opening frontmatter block.
+10. **Keep the profile machine-readable.** The frontmatter `profile` must be
+   `agora_markdown_bounty_challenge_v0`.
 
 ## Readiness Sign-Off
 
@@ -198,9 +198,10 @@ Before the Poster approves the bounty, check the draft against these questions:
    is not acceptable.
 10. **Can one failing submission be named?** The page makes it possible to
    identify at least one concrete submission shape that would be rejected.
-11. **Are settlement literals exact?** Chain ID, token address, escrow amount in
-   smallest units, and Unix submission deadline are present.
-12. **Is the profile marker present?** The page ends with the v0 profile marker.
+11. **Are frontmatter settlement facts exact?** Chain ID, token address, escrow
+    amount in smallest units, Unix submission deadline, and payout policy are
+    present.
+12. **Is the profile present?** The frontmatter names the v0 profile.
 
 If any answer is no, do not sign off. Return concrete edits, naming the section
 to change and the exact missing information.
@@ -212,5 +213,5 @@ After the readiness checklist passes, show the Poster the final
 is the v0 bounty spec that Agora stores and hashes.
 
 This public bundle is a release snapshot of the Agora v0 bounty template. If a
-new Agora release updates the v0 profile, use the newest bundle from the
-canonical download URL above.
+new Agora release updates the v0 profile, use the newest bundle exposed by the
+Agora web app at the public bundle path above.
