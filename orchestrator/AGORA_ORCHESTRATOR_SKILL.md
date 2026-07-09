@@ -3,7 +3,7 @@ name: agora-orchestrator-public
 description: Self-contained Agora v0 Orchestrator skill for Posters drafting Markdown bounty challenge pages.
 version: 0.1.0
 profile: agora_markdown_bounty_challenge_v0
-template_snapshot: packages/core/BOUNTY_CHALLENGE_SPEC.md, 2026-07-06
+template_snapshot: packages/core/BOUNTY_CHALLENGE_SPEC.md, 2026-07-08
 public_bundle_path: /skills/orchestrator/AGORA_ORCHESTRATOR_SKILL.md
 ---
 
@@ -37,16 +37,19 @@ Guardian pre-flight process.
 Produce one complete Markdown bounty page using the embedded v0 template below.
 In each draft, populate:
 
-- the frontmatter block with exact `profile`, `chain_id`, `token_address`,
-  `escrow_amount` in smallest units, `submission_deadline` Unix seconds, and
+- the frontmatter block with exact `profile`, `escrow_amount` in configured
+  escrow-token smallest units, `submission_deadline` Unix seconds, and
   `payout_policy`;
 - every required section in the embedded template;
 - `Execution Requirements` only when Guardian evaluation requires running code;
 - winner-take-all as the only v0 settlement policy.
 
-If the Poster has not provided the exact frontmatter settlement facts, ask for
-the missing values before approval. A draft with placeholders in frontmatter is
-not ready to publish.
+If the Poster has not provided the escrow amount or submission deadline, ask
+for the missing values before approval. A draft with placeholders in
+frontmatter is not ready to publish. Do not ask the Poster for deployment-owned
+facts such as chain ID, token address, hub address, Guardian configuration, fee
+configuration, or timelock settings; Agora derives those internally during
+publication.
 
 ## Embedded V0 Bounty Template
 
@@ -55,8 +58,6 @@ Use this shape for the final `bounty_challenge.md`:
 ```markdown
 ---
 profile: agora_markdown_bounty_challenge_v0
-chain_id: {chain_id}
-token_address: {token_address}
 escrow_amount: "{escrow_amount}"
 submission_deadline: {submission_deadline}
 payout_policy: winner_take_all
@@ -67,7 +68,7 @@ payout_policy: winner_take_all
 ## At A Glance
 | Field | Value |
 |---|---|
-| Reward | {amount, token, chain} |
+| Reward | {amount in configured escrow token} |
 | Deadline | {UTC date/time} |
 | Expected package | {short file list} |
 | Required execution | {yes/no} |
@@ -78,7 +79,7 @@ payout_policy: winner_take_all
 {One short paragraph explaining the scientific task and desired result.}
 
 ## Reward And Deadline
-- Reward: {amount, token, chain}
+- Reward: {amount in configured escrow token}
 - Submission deadline: {UTC date/time}
 
 ## Challenge Context
@@ -166,9 +167,10 @@ facts.
 8. **Use existing Agora privacy.** Solver artifacts are private by default and
    handled through Agora v0's private-submission flow outside the bounty page.
    Do not invent a new transport or encryption scheme.
-9. **Bind settlement facts in frontmatter.** The page must include exact
-   `chain_id`, `token_address`, `escrow_amount`, `submission_deadline`
-   Unix-second, and `payout_policy` values in the opening frontmatter block.
+9. **Bind Poster publication terms in frontmatter.** The page must include
+   exact `escrow_amount`, `submission_deadline` Unix-second, and
+   `payout_policy` values in the opening frontmatter block. It must not include
+   deployment-owned fields such as `chain_id` or `token_address`.
 10. **Keep the profile machine-readable.** The frontmatter `profile` must be
    `agora_markdown_bounty_challenge_v0`.
 
@@ -198,9 +200,9 @@ Before the Poster approves the bounty, check the draft against these questions:
    is not acceptable.
 10. **Can one failing submission be named?** The page makes it possible to
    identify at least one concrete submission shape that would be rejected.
-11. **Are frontmatter settlement facts exact?** Chain ID, token address, escrow
-    amount in smallest units, Unix submission deadline, and payout policy are
-    present.
+11. **Are frontmatter publication terms exact?** Escrow amount in configured
+    token smallest units, Unix submission deadline, and payout policy are
+    present, while deployment-owned chain and token fields are absent.
 12. **Is the profile present?** The frontmatter names the v0 profile.
 
 If any answer is no, do not sign off. Return concrete edits, naming the section
