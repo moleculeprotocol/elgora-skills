@@ -36,10 +36,12 @@ Guardian pre-flight process.
 
 Before drafting, collect enough Poster decisions to avoid placeholders:
 
-- reward amount in the configured escrow token. Convert it to `escrow_amount`
-  in the token's smallest units using that token's decimals. Current v0 uses
-  USDC with 6 decimals, so multiply by 1,000,000 and write an integer string
-  (`1 USDC` -> `"1000000"`, `500 USDC` -> `"500000000"`);
+- reward amount in the configured escrow token. The final frontmatter must
+  already contain `escrow_amount` as an integer in the token's smallest units,
+  using that token's decimals. Current v0 uses USDC with 6 decimals, so
+  `1 USDC` is `"1000000"` and `500 USDC` is `"500000000"`. Do not write
+  token-unit or decimal amounts such as `"500"` or `"530.28"`;
+  Agora will not convert them;
 - submission deadline as an absolute date/time with timezone. Convert it to
   Unix seconds in UTC for `submission_deadline`, and show the UTC date/time in
   `At A Glance` and `Reward And Deadline`;
@@ -55,8 +57,8 @@ Do not leave placeholders in the final page.
 Produce one complete Markdown bounty page using the embedded v0 template below.
 In each draft, populate:
 
-- the frontmatter block with exact `profile`, `escrow_amount` as an integer
-  smallest-unit amount for the configured escrow token, `submission_deadline`
+- the frontmatter block with exact `profile`, `escrow_amount` already in the
+  configured escrow token's integer smallest units, `submission_deadline`
   Unix seconds, and
   `payout_policy`;
 - every required section in the embedded template;
