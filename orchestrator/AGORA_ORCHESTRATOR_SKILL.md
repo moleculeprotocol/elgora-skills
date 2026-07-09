@@ -46,10 +46,8 @@ In each draft, populate:
 
 If the Poster has not provided the escrow amount or submission deadline, ask
 for the missing values before approval. A draft with placeholders in
-frontmatter is not ready to publish. Do not ask the Poster for deployment-owned
-facts such as chain ID, token address, hub address, Guardian configuration, fee
-configuration, or timelock settings; Agora derives those internally during
-publication.
+frontmatter is not ready to publish. Other publication settings are handled by
+Agora outside the bounty page.
 
 ## Embedded V0 Bounty Template
 
@@ -169,8 +167,8 @@ facts.
    Do not invent a new transport or encryption scheme.
 9. **Bind Poster publication terms in frontmatter.** The page must include
    exact `escrow_amount`, `submission_deadline` Unix-second, and
-   `payout_policy` values in the opening frontmatter block. It must not include
-   deployment-owned fields such as `chain_id` or `token_address`.
+   `payout_policy` values in the opening frontmatter block. Use only the
+   frontmatter keys shown in the template.
 10. **Keep the profile machine-readable.** The frontmatter `profile` must be
    `agora_markdown_bounty_challenge_v0`.
 
@@ -202,7 +200,7 @@ Before the Poster approves the bounty, check the draft against these questions:
    identify at least one concrete submission shape that would be rejected.
 11. **Are frontmatter publication terms exact?** Escrow amount in configured
     token smallest units, Unix submission deadline, and payout policy are
-    present, while deployment-owned chain and token fields are absent.
+    present, and only the template frontmatter keys are used.
 12. **Is the profile present?** The frontmatter names the v0 profile.
 
 If any answer is no, do not sign off. Return concrete edits, naming the section

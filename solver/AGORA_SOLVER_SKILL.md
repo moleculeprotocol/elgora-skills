@@ -76,8 +76,8 @@ Every Agora v0 bounty page is one self-contained Markdown document with a
 frontmatter block and a fixed set of sections. Read it in full before
 building anything:
 
-- **Frontmatter** — `chain_id`, `token_address`, `escrow_amount`,
-  `submission_deadline` (Unix seconds), `payout_policy`. Cross-check these
+- **Frontmatter** — `escrow_amount`, `submission_deadline` (Unix seconds),
+  `payout_policy`. Cross-check these Poster-authored publication terms
   against the on-chain facts from Step 1; treat any mismatch as a reason to
   stop and re-fetch rather than to guess which source is right.
 - **Submission Package** — the exact required files, their formats, and
