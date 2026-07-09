@@ -36,9 +36,10 @@ Guardian pre-flight process.
 
 Before drafting, collect enough Poster decisions to avoid placeholders:
 
-- reward amount in USDC. Convert it to `escrow_amount` in USDC smallest units:
-  multiply by 1,000,000 and write an integer string (`1 USDC` -> `"1000000"`,
-  `500 USDC` -> `"500000000"`);
+- reward amount in the configured escrow token. Convert it to `escrow_amount`
+  in the token's smallest units using that token's decimals. Current v0 uses
+  USDC with 6 decimals, so multiply by 1,000,000 and write an integer string
+  (`1 USDC` -> `"1000000"`, `500 USDC` -> `"500000000"`);
 - submission deadline as an absolute date/time with timezone. Convert it to
   Unix seconds in UTC for `submission_deadline`, and show the UTC date/time in
   `At A Glance` and `Reward And Deadline`;
@@ -54,8 +55,9 @@ Do not leave placeholders in the final page.
 Produce one complete Markdown bounty page using the embedded v0 template below.
 In each draft, populate:
 
-- the frontmatter block with exact `profile`, `escrow_amount` in USDC smallest
-  units, `submission_deadline` Unix seconds, and
+- the frontmatter block with exact `profile`, `escrow_amount` as an integer
+  smallest-unit amount for the configured escrow token, `submission_deadline`
+  Unix seconds, and
   `payout_policy`;
 - every required section in the embedded template;
 - `Execution Requirements` only when Guardian evaluation requires running code;
@@ -215,9 +217,9 @@ Before the Poster approves the bounty, check the draft against these questions:
    is not acceptable.
 10. **Can one failing submission be named?** The page makes it possible to
    identify at least one concrete submission shape that would be rejected.
-11. **Are frontmatter publication terms exact?** Escrow amount in USDC smallest
-    units, Unix submission deadline, and payout policy are present, and only the
-    template frontmatter keys are used.
+11. **Are frontmatter publication terms exact?** Escrow amount in configured
+    token smallest units, Unix submission deadline, and payout policy are
+    present, and only the template frontmatter keys are used.
 12. **Is the profile present?** The frontmatter names the v0 profile.
 
 If any answer is no, do not sign off. Return concrete edits, naming the section
