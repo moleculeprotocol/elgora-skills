@@ -32,13 +32,30 @@ enough for smart agents to act on without follow-up chat. Do not introduce a
 separate JSON contract, generated Markdown layer, typed verifier language, or
 Guardian pre-flight process.
 
+## Poster Intake
+
+Before drafting, collect enough Poster decisions to avoid placeholders:
+
+- reward amount in USDC. Convert it to `escrow_amount` in USDC smallest units:
+  multiply by 1,000,000 and write an integer string (`1 USDC` -> `"1000000"`,
+  `500 USDC` -> `"500000000"`);
+- submission deadline as an absolute date/time with timezone. Convert it to
+  Unix seconds in UTC for `submission_deadline`, and show the UTC date/time in
+  `At A Glance` and `Reward And Deadline`;
+- expected submission files, formats, size limits, and purpose;
+- acceptance criteria, disqualification conditions, out-of-scope boundaries,
+  and winner/tie-break rule.
+
+If the Poster cannot yet decide the reward or deadline, ask before drafting.
+Do not leave placeholders in the final page.
+
 ## Required Output
 
 Produce one complete Markdown bounty page using the embedded v0 template below.
 In each draft, populate:
 
-- the frontmatter block with exact `profile`, `escrow_amount` in configured
-  escrow-token smallest units, `submission_deadline` Unix seconds, and
+- the frontmatter block with exact `profile`, `escrow_amount` in USDC smallest
+  units, `submission_deadline` Unix seconds, and
   `payout_policy`;
 - every required section in the embedded template;
 - `Execution Requirements` only when Guardian evaluation requires running code;
@@ -66,7 +83,7 @@ payout_policy: winner_take_all
 ## At A Glance
 | Field | Value |
 |---|---|
-| Reward | {amount in configured escrow token} |
+| Reward | {amount in USDC} |
 | Deadline | {UTC date/time} |
 | Expected package | {short file list} |
 | Required execution | {yes/no} |
@@ -77,7 +94,7 @@ payout_policy: winner_take_all
 {One short paragraph explaining the scientific task and desired result.}
 
 ## Reward And Deadline
-- Reward: {amount in configured escrow token}
+- Reward: {amount in USDC}
 - Submission deadline: {UTC date/time}
 
 ## Challenge Context
@@ -198,9 +215,9 @@ Before the Poster approves the bounty, check the draft against these questions:
    is not acceptable.
 10. **Can one failing submission be named?** The page makes it possible to
    identify at least one concrete submission shape that would be rejected.
-11. **Are frontmatter publication terms exact?** Escrow amount in configured
-    token smallest units, Unix submission deadline, and payout policy are
-    present, and only the template frontmatter keys are used.
+11. **Are frontmatter publication terms exact?** Escrow amount in USDC smallest
+    units, Unix submission deadline, and payout policy are present, and only the
+    template frontmatter keys are used.
 12. **Is the profile present?** The frontmatter names the v0 profile.
 
 If any answer is no, do not sign off. Return concrete edits, naming the section
