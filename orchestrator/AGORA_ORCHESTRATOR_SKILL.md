@@ -32,13 +32,34 @@ enough for smart agents to act on without follow-up chat. Do not introduce a
 separate JSON contract, generated Markdown layer, typed verifier language, or
 Guardian pre-flight process.
 
+## Poster Intake
+
+Before drafting, collect enough Poster decisions to avoid placeholders:
+
+- reward amount in the configured escrow token. The final frontmatter must
+  already contain `escrow_amount` as an integer in the token's smallest units,
+  using that token's decimals. Current v0 uses USDC with 6 decimals, so
+  `1 USDC` is `"1000000"` and `500 USDC` is `"500000000"`. Do not write
+  token-unit or decimal amounts such as `"500"` or `"530.28"`;
+  Agora will not convert them;
+- submission deadline as an absolute date/time with timezone. Convert it to
+  Unix seconds in UTC for `submission_deadline`, and show the UTC date/time in
+  `At A Glance` and `Reward And Deadline`;
+- expected submission files, formats, size limits, and purpose;
+- acceptance criteria, disqualification conditions, out-of-scope boundaries,
+  and winner/tie-break rule.
+
+If the Poster cannot yet decide the reward or deadline, ask before drafting.
+Do not leave placeholders in the final page.
+
 ## Required Output
 
 Produce one complete Markdown bounty page using the embedded v0 template below.
 In each draft, populate:
 
-- the frontmatter block with exact `profile`, `escrow_amount` in configured
-  escrow-token smallest units, `submission_deadline` Unix seconds, and
+- the frontmatter block with exact `profile`, `escrow_amount` already in the
+  configured escrow token's integer smallest units, `submission_deadline`
+  Unix seconds, and
   `payout_policy`;
 - every required section in the embedded template;
 - `Execution Requirements` only when Guardian evaluation requires running code;
@@ -46,10 +67,8 @@ In each draft, populate:
 
 If the Poster has not provided the escrow amount or submission deadline, ask
 for the missing values before approval. A draft with placeholders in
-frontmatter is not ready to publish. Do not ask the Poster for deployment-owned
-facts such as chain ID, token address, hub address, Guardian configuration, fee
-configuration, or timelock settings; Agora derives those internally during
-publication.
+frontmatter is not ready to publish. Other publication settings are handled by
+Agora outside the bounty page.
 
 ## Embedded V0 Bounty Template
 
@@ -68,7 +87,7 @@ payout_policy: winner_take_all
 ## At A Glance
 | Field | Value |
 |---|---|
-| Reward | {amount in configured escrow token} |
+| Reward | {amount in USDC} |
 | Deadline | {UTC date/time} |
 | Expected package | {short file list} |
 | Required execution | {yes/no} |
@@ -79,7 +98,7 @@ payout_policy: winner_take_all
 {One short paragraph explaining the scientific task and desired result.}
 
 ## Reward And Deadline
-- Reward: {amount in configured escrow token}
+- Reward: {amount in USDC}
 - Submission deadline: {UTC date/time}
 
 ## Challenge Context
@@ -169,8 +188,8 @@ facts.
    Do not invent a new transport or encryption scheme.
 9. **Bind Poster publication terms in frontmatter.** The page must include
    exact `escrow_amount`, `submission_deadline` Unix-second, and
-   `payout_policy` values in the opening frontmatter block. It must not include
-   deployment-owned fields such as `chain_id` or `token_address`.
+   `payout_policy` values in the opening frontmatter block. Use only the
+   frontmatter keys shown in the template.
 10. **Keep the profile machine-readable.** The frontmatter `profile` must be
    `agora_markdown_bounty_challenge_v0`.
 
@@ -202,7 +221,7 @@ Before the Poster approves the bounty, check the draft against these questions:
    identify at least one concrete submission shape that would be rejected.
 11. **Are frontmatter publication terms exact?** Escrow amount in configured
     token smallest units, Unix submission deadline, and payout policy are
-    present, while deployment-owned chain and token fields are absent.
+    present, and only the template frontmatter keys are used.
 12. **Is the profile present?** The frontmatter names the v0 profile.
 
 If any answer is no, do not sign off. Return concrete edits, naming the section
