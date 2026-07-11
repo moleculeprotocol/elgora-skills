@@ -175,10 +175,12 @@ signs and sends the on-chain claim transaction. It claims an already-queued
 payout — Guardian settlement, not this step, is what decided you won — so it
 needs only:
 
-- `AGORA_CLAIMANT_PRIVATE_KEY` — the private key for the address that should
-  receive the reward. This can be the same key as `AGORA_SOLVER_PRIVATE_KEY`
-  or a different address you control, depending on the bounty's rules. As
-  with submit, treat it as a secret and never include it in any artifact or
+- `AGORA_CLAIMANT_PRIVATE_KEY` — the private key for the address that already
+  holds the queued claimable balance for this bounty. AgoraHub indexes claims
+  by the winning Solver's own address and pays that same address, so this
+  normally must be `AGORA_SOLVER_PRIVATE_KEY` itself; use a different key only
+  if that other address is the one that actually holds the claimable balance.
+  As with submit, treat it as a secret and never include it in any artifact or
   log output.
 
 As with Step 3, `AGORA_CHAIN_ID`, `AGORA_HUB_ADDRESS`, and
