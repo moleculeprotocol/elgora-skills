@@ -155,11 +155,12 @@ Environment `agora-cli submit` needs from you:
 
 Everything else (`AGORA_CHAIN_ID`, `AGORA_HUB_ADDRESS`,
 `AGORA_BASE_SEPOLIA_RPC_URL`, `AGORA_API_BASE_URL`,
-`AGORA_GUARDIAN_RECIPIENTS_COMMITMENT`,
 `AGORA_TIMELOCK_REVEAL_DELAY_SECONDS`) already defaults to Agora's current
 live deployment; only set one of these yourself if you are deliberately
 targeting a different deployment (run `agora-cli submit --help` to see the
-full list and current defaults).
+full list and current defaults). There is no `AGORA_GUARDIAN_RECIPIENTS_COMMITMENT`
+to set for `submit` — it reads each bounty's own commitment straight off that
+bounty's `BountyCreated` event on chain.
 
 Resubmitting before the deadline replaces your active submission; only the
 active submission at the exact `submission_deadline` is eligible for
