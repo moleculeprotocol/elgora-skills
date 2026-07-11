@@ -115,13 +115,18 @@ agora-cli submit <bounty_id> <artifact_dir>
 What this does, so you can reason about failure modes:
 
 1. Reads every file directly inside `<artifact_dir>` and packages them into
-   an artifact bundle, computing content hashes for it. Every filename is
-   turned into a lowercase `snake_case` identifier with its extension
-   stripped (e.g. `results.csv` → `results`, `Write-Up.pdf` → `write_up`);
-   the original extension survives only in a derived `media_type`, not in
-   the visible name. Match the Submission Package section's required
-   filenames for content and count, but expect this renaming — it is not
-   something to work around.
+   an artifact bundle, computing content hashes for it. Each filename's
+   basename (its name with the extension stripped, e.g. `results.csv` →
+   `results`) becomes the artifact's visible name and must already be a
+   lowercase `snake_case` identifier — start with a lowercase letter, then
+   only lowercase letters, digits, and underscores; the original extension
+   survives only in a derived `media_type`, not in the visible name. `submit`
+   rejects the whole directory instead of renaming anything: fix any file
+   whose basename does not already qualify, and rename files so no two
+   basenames collide once their extension is dropped (e.g. `results.csv` and
+   `results.json` cannot coexist — pick distinct basenames instead). Match
+   the Submission Package section's required filenames for content and
+   count.
 2. Encrypts the bundle with an authenticated symmetric cipher.
 3. Wraps the encryption key to each of the bounty's configured Guardian
    recipients using public-key hybrid encryption.
