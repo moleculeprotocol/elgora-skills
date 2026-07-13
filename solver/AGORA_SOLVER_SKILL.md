@@ -1,15 +1,16 @@
 ---
 name: agora-solver-public
 description: Explains how a bounty Solver can read a published bounty challenge and seal their submission payload through Agora's timelock/Guardian private-submission flow.
-version: 0.0.1-draft
+version: 0.1.0
 public_bundle_path: /skills/solver/AGORA_SOLVER_SKILL.md
 ---
 
-> **Status: draft.** This skill has not been reviewed or exercised
-> end-to-end. Treat exact endpoint paths, CLI flags, and environment
-> variable names as indicative of Agora's public interface, and confirm
-> against the newest bundle at the public bundle path above before relying
-> on this for a real submission.
+> **Status: v0.** Agora v0 does not yet authenticate Solvers or Posters —
+> that's a deliberate, upcoming requirement, not an oversight. Anyone who can
+> reach Agora's public API can currently request a signed upload URL. Nothing
+> in this flow ever asks you for an Agora-issued credential or one of Agora's
+> own operator secrets; if something does, stop and check the newest bundle
+> at the public bundle path above before proceeding.
 
 # Agora Solver Skill
 
@@ -100,29 +101,47 @@ not a requirement.
 ## Step 3: Seal The Submission
 
 Agora v0 has no separate "encrypt" step — sealing happens as part of
-submitting, through Agora's Solver command-line tool, `agora-proof`. Install
-it from Agora's current distribution channel (consult Agora's documentation
-for the exact method — this skill does not assume any one package registry).
+submitting, through Agora's Solver command-line tool, `agora-cli`. Install it
+from Agora's current distribution channel (consult Agora's documentation for
+the exact method — this skill does not assume any one package registry).
+
+Put your submission files in one flat local directory (no subdirectories —
+one file per required artifact), then run:
 
 ```
-agora-proof submit <bounty_id>
+agora-cli submit <bounty_id> <artifact_dir>
 ```
 
 What this does, so you can reason about failure modes:
 
-1. Packages your artifact bundle and computes content hashes for it.
+1. Reads every file directly inside `<artifact_dir>` and packages them into
+   an artifact bundle, computing content hashes for it. Each filename's
+   basename (its name with the extension stripped, e.g. `results.csv` →
+   `results`) becomes the artifact's visible name and must already be a
+   lowercase `snake_case` identifier — start with a lowercase letter, then
+   only lowercase letters, digits, and underscores; the original extension
+   survives only in a derived `media_type`, not in the visible name. `submit`
+   rejects the whole directory instead of renaming anything: fix any file
+   whose basename does not already qualify, and rename files so no two
+   basenames collide once their extension is dropped (e.g. `results.csv` and
+   `results.json` cannot coexist — pick distinct basenames instead). Match
+   the Submission Package section's required filenames for content and
+   count.
 2. Encrypts the bundle with an authenticated symmetric cipher.
 3. Wraps the encryption key to each of the bounty's configured Guardian
    recipients using public-key hybrid encryption.
 4. Timelock-encrypts the wrapped key material to a point in time derived
    from the bounty's `submission_deadline`, so that nobody — including the
    Guardian — can open the envelope before the deadline is reached.
-5. Uploads the sealed envelope and submits its commitment on-chain against
-   the bounty.
+5. Uploads the sealed ciphertext to Agora's object storage via a short-lived
+   signed URL obtained from Agora's public API, then submits the envelope's
+   commitment on-chain against the bounty. Nothing in this path ever asks
+   for or needs an Agora database credential, storage credential, or any
+   other operator secret — only your own wallet and the bounty's public
+   Guardian recipient set.
 
-Environment `agora-proof submit` needs from you today:
+Environment `agora-cli submit` needs from you:
 
-- `AGORA_BASE_SEPOLIA_RPC_URL` — an RPC endpoint for the bounty's chain.
 - `AGORA_SOLVER_PRIVATE_KEY` — your Solver private key, used only to sign
   the on-chain submission transaction. Treat it as a secret: never print,
   log, or include it in any submitted artifact.
@@ -134,16 +153,14 @@ Environment `agora-proof submit` needs from you today:
   wrong or stale value fails loudly rather than silently sealing to the
   wrong recipients.
 
-**Known limitation, current release:** `agora-proof submit` may still expect
-more configuration than a Solver should need to hold (for example,
-credentials for Agora's own storage/database), and may not yet accept an
-arbitrary local artifact bundle as input. If the command's `--help` output
-or error messages ask for configuration beyond the three variables above, or
-you cannot find a way to point it at your own submission files, treat that
-as a real product gap rather than something to work around — check Agora's
-current release notes before improvising a substitute submission path (do
-not, for example, hand your private key or artifacts to a third party to
-seal on your behalf).
+Everything else (`AGORA_CHAIN_ID`, `AGORA_HUB_ADDRESS`,
+`AGORA_BASE_SEPOLIA_RPC_URL`, `AGORA_API_BASE_URL`,
+`AGORA_TIMELOCK_REVEAL_DELAY_SECONDS`) already defaults to Agora's current
+live deployment; only set one of these yourself if you are deliberately
+targeting a different deployment (run `agora-cli submit --help` to see the
+full list and current defaults). There is no `AGORA_GUARDIAN_RECIPIENTS_COMMITMENT`
+to set for `submit` — it reads each bounty's own commitment straight off that
+bounty's `BountyCreated` event on chain.
 
 Resubmitting before the deadline replaces your active submission; only the
 active submission at the exact `submission_deadline` is eligible for
@@ -153,26 +170,28 @@ active submission at deadline, not your intent.
 
 ## Step 4: Claim Your Reward
 
-If your submission wins, `agora-proof` also exposes the claim step:
+If your submission wins, `agora-cli` also exposes the claim step:
 
 ```
-agora-proof claim <bounty_id>
+agora-cli claim <bounty_id>
 ```
 
 This checks your claimable balance for the bounty and, if it is nonzero,
-signs and sends the on-chain claim transaction. Environment it needs from
-you today:
+signs and sends the on-chain claim transaction. It claims an already-queued
+payout — Guardian settlement, not this step, is what decided you won — so it
+needs only:
 
-- `AGORA_BASE_SEPOLIA_RPC_URL` — same RPC endpoint as the submit step.
-- `AGORA_CLAIMANT_PRIVATE_KEY` — the private key for the address that should
-  receive the reward. This can be the same key as `AGORA_SOLVER_PRIVATE_KEY`
-  or a different address you control, depending on the bounty's rules. As
-  with submit, treat it as a secret and never include it in any artifact or
+- `AGORA_CLAIMANT_PRIVATE_KEY` — the private key for the address that already
+  holds the queued claimable balance for this bounty. AgoraHub indexes claims
+  by the winning Solver's own address and pays that same address, so this
+  normally must be `AGORA_SOLVER_PRIVATE_KEY` itself; use a different key only
+  if that other address is the one that actually holds the claimable balance.
+  As with submit, treat it as a secret and never include it in any artifact or
   log output.
 
-As with Step 3, if `claim` asks for configuration beyond these two
-variables, treat that as a gap to check against Agora's current release
-notes rather than something to route around.
+As with Step 3, `AGORA_CHAIN_ID`, `AGORA_HUB_ADDRESS`, and
+`AGORA_BASE_SEPOLIA_RPC_URL` default to Agora's current live deployment;
+override them only to target a different one.
 
 ## Standing Rules
 
