@@ -155,7 +155,7 @@ Environment `agora-cli solver:submit` needs from you:
   wrong recipients.
 
 Everything else (`AGORA_CHAIN_ID`, `AGORA_HUB_ADDRESS`,
-`AGORA_BASE_SEPOLIA_RPC_URL`, `AGORA_API_BASE_URL`,
+`AGORA_RPC_URL`, `AGORA_API_BASE_URL`,
 `AGORA_TIMELOCK_REVEAL_DELAY_SECONDS`) already defaults to Agora's current
 live deployment; only set one of these yourself if you are deliberately
 targeting a different deployment (run `agora-cli solver:submit --help` to see the
@@ -191,7 +191,7 @@ needs only:
   log output.
 
 As with Step 3, `AGORA_CHAIN_ID`, `AGORA_HUB_ADDRESS`, and
-`AGORA_BASE_SEPOLIA_RPC_URL` default to Agora's current live deployment;
+`AGORA_RPC_URL` default to Agora's current live deployment;
 override them only to target a different one.
 
 ## Standing Rules
