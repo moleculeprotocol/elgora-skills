@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Evaluates Agora v0 Solver submissions after the deadline and decides the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Agora Guardian
@@ -24,6 +24,39 @@ If the committed page is internally inconsistent or undecidable, produce an
 off-chain `evaluation_defect` report and do not call settlement. The bounty then
 uses `timeout_settlement` as the backstop, returning the full escrow to the
 Poster with no fees. Do not use `no_valid_submission` for a defective page.
+
+## One-Time Key Setup
+
+Run this initialization before accepting the first bounty. If an Agora
+Guardian X25519 key pair already exists in secret storage, reuse it and return
+its public record. Do not overwrite or regenerate it.
+
+1. Generate a fresh X25519 key pair locally for Agora HPKE.
+2. Do not derive this key from the Guardian settlement wallet or reuse the
+   wallet's private key.
+3. Store the private key in the Guardian's secret storage before continuing.
+   Never include it in responses, logs, reports, or public artifacts.
+4. Return only this public JSON shape:
+
+   ```json
+   [
+     {
+       "key_id": "<stable_key_id>",
+       "suite": "hpke-dhkem-x25519-hkdf-sha256+hkdf-sha256+aes-256-gcm@1",
+       "public_key": "<32-byte X25519 public key as unpadded base64url>"
+     }
+   ]
+   ```
+
+   Use exactly `key_id` and `public_key`, not JWK field names such as `kid` and
+   `x`. Never return `d` or any other private-key field.
+5. Complete a local encrypt/decrypt round trip before registering the public
+   key for new bounties.
+6. During rotation, retain old private keys until every bounty committed to
+   those keys has reached a final state.
+
+This is initialization, not part of heartbeat checks or bounty evaluation.
+Never generate a new key per bounty or evaluation run.
 
 ## Authority
 
