@@ -1,6 +1,6 @@
 ---
 name: agora-guardian-skill
-description: Evaluates Agora v0 Solver submissions after the deadline and decides the winner from the approved Markdown bounty page.
+description: Monitors Agora v0 bounty deadlines, evaluates eligible Solver submissions after release, and decides the winner from the approved Markdown bounty page.
 metadata:
   version: "0.2.0"
 ---
@@ -57,6 +57,32 @@ its public record. Do not overwrite or regenerate it.
 
 This is initialization, not part of heartbeat checks or bounty evaluation.
 Never generate a new key per bounty or evaluation run.
+
+## Heartbeat And Deadline Monitoring
+
+The external Guardian host schedules heartbeat invocations. Agora does not
+trigger or run the Guardian. On every heartbeat:
+
+1. Discover open bounties whose snapshotted Guardian settlement signer is this
+   Guardian. A projection may identify candidates, but finalized AgoraHub state
+   decides status and timing.
+2. Before `submission_deadline`, do not fetch or decrypt Solver artifacts.
+   Report the bounty as waiting and use the deadline as its next check time.
+3. After the deadline but before the configured timelock release, do not decrypt
+   artifacts. Report the bounty as waiting and use the release time as its next
+   check time.
+4. After both the deadline and timelock release, and before
+   `settlement_timeout_at`, re-read the finalized bounty and active submission
+   commitments. If the bounty is still open and assigned to this Guardian,
+   start one evaluation run. Repeated heartbeats must not start a duplicate run
+   for the same bounty.
+5. If the bounty is final or its Guardian settlement window has closed, do not
+   decrypt, evaluate, or call settlement. Report that no Guardian action
+   remains.
+
+Heartbeat output contains only public bounty identifiers, status, timing, and
+the next action or check time. Never generate or rotate keys, expose private
+artifacts, or log secrets during heartbeat checks.
 
 ## Authority
 
