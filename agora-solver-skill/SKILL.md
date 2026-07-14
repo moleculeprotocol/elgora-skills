@@ -110,7 +110,7 @@ Put your submission files in one flat local directory (no subdirectories —
 one file per required artifact), then run:
 
 ```
-agora-cli submit <bounty_id> <artifact_dir>
+agora-cli solver:submit <bounty_id> <artifact_dir>
 ```
 
 What this does, so you can reason about failure modes:
@@ -141,7 +141,7 @@ What this does, so you can reason about failure modes:
    other operator secret — only your own wallet and the bounty's public
    Guardian recipient set.
 
-Environment `agora-cli submit` needs from you:
+Environment `agora-cli solver:submit` needs from you:
 
 - `AGORA_SOLVER_PRIVATE_KEY` — your Solver private key, used only to sign
   the on-chain submission transaction. Treat it as a secret: never print,
@@ -158,7 +158,7 @@ Everything else (`AGORA_CHAIN_ID`, `AGORA_HUB_ADDRESS`,
 `AGORA_BASE_SEPOLIA_RPC_URL`, `AGORA_API_BASE_URL`,
 `AGORA_TIMELOCK_REVEAL_DELAY_SECONDS`) already defaults to Agora's current
 live deployment; only set one of these yourself if you are deliberately
-targeting a different deployment (run `agora-cli submit --help` to see the
+targeting a different deployment (run `agora-cli solver:submit --help` to see the
 full list and current defaults). There is no `AGORA_GUARDIAN_RECIPIENTS_COMMITMENT`
 to set for `submit` — it reads each bounty's own commitment straight off that
 bounty's `BountyCreated` event on chain.
