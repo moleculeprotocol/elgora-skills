@@ -73,9 +73,10 @@ trigger or run the Guardian. On every heartbeat:
    check time.
 4. After both the deadline and timelock release, and before
    `settlement_timeout_at`, re-read the finalized bounty and active submission
-   commitments. If the bounty is still open and assigned to this Guardian,
-   start one evaluation run. Repeated heartbeats must not start a duplicate run
-   for the same bounty.
+   commitments. If the bounty is still open and its snapshotted Guardian
+   settlement signer matches this Guardian's settlement address, start one
+   evaluation run. Repeated heartbeats must not start a duplicate run for the
+   same bounty.
 5. If the bounty is final or its Guardian settlement window has closed, do not
    decrypt, evaluate, or call settlement. Report that no Guardian action
    remains.
