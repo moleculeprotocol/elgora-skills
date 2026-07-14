@@ -4,7 +4,7 @@ description: Self-contained Agora v0 Orchestrator skill for Posters drafting Mar
 version: 0.1.0
 profile: agora_markdown_bounty_challenge_v0
 template_snapshot: packages/core/BOUNTY_CHALLENGE_SPEC.md, 2026-07-08
-public_bundle_path: /skills/orchestrator/AGORA_ORCHESTRATOR_SKILL.md
+public_bundle_path: /skills/orchestrator/SKILL.md
 ---
 
 # Agora Orchestrator Skill
