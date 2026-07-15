@@ -61,9 +61,9 @@ Never generate a new key per bounty or evaluation run.
 
 ## One-Time Runtime Registration
 
-Complete this registration after key setup and before accepting the first
-bounty. Reuse or update an existing registration instead of creating a
-duplicate.
+Complete this monitoring registration after key setup and before the first
+heartbeat rehearsal. It does not authorize evaluation or settlement. Reuse or
+update an existing registration instead of creating a duplicate.
 
 1. Use the Guardian host's recurring scheduler to create exactly one enabled
    job named `agora-guardian-heartbeat` that runs every five minutes and loads
@@ -71,9 +71,9 @@ duplicate.
 2. Give the job this task prompt:
 
    `Run one monitoring-only Agora Guardian heartbeat. Discover and report
-   readiness, but do not fetch or decrypt artifacts, evaluate submissions, or
-   submit transactions. If no matching bounty needs operator attention, return
-   [SILENT].`
+   monitoring readiness, but do not fetch or decrypt artifacts, evaluate
+   submissions, or submit transactions. If no matching bounty needs operator
+   attention, return [SILENT].`
 3. Deliver actionable output to the configured operator channel. For Hermes
    Agent, create the job from an interactive session with its native cron
    scheduler, attach `agora-guardian-skill`, and confirm both the gateway and
@@ -86,7 +86,7 @@ duplicate.
 
    ```json
    {
-     "runtime_registration_status": "ready",
+     "runtime_registration_status": "monitoring_ready",
      "skill_version": "0.2.1",
      "host": "<host>",
      "job_id": "<job_id>",
@@ -104,7 +104,7 @@ duplicate.
 
 If the host cannot schedule recurring work, report
 `runtime_registration_status: scheduler_unavailable` and do not claim that
-initialization is complete.
+monitoring is ready.
 
 ## Heartbeat And Deadline Monitoring
 
@@ -129,9 +129,10 @@ trigger or run the Guardian. On every heartbeat:
 5. After both the deadline and timelock release, and before
    `settlement_timeout_at`, re-read the finalized bounty and active submission
    commitments. If the bounty is still open and its snapshotted Guardian
-   settlement signer matches this Guardian's settlement address, start one
-   evaluation run. Repeated heartbeats must not start a duplicate run for the
-   same bounty.
+   settlement signer matches this Guardian's settlement address, report
+   `evaluation_ready` to the operator channel and stop. Start the Evaluation
+   Loop only in a separate operator-authorized invocation; the monitoring job
+   must not fetch, decrypt, evaluate, or submit a transaction.
 6. If the bounty is final or its Guardian settlement window has closed, do not
    decrypt, evaluate, or call settlement. Report that no Guardian action
    remains.
