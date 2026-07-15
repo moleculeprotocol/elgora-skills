@@ -1,8 +1,9 @@
 ---
-name: agora-solver-public
+name: agora-solver-skill
 description: Explains how a bounty Solver can read a published bounty challenge and seal their submission payload through Agora's timelock/Guardian private-submission flow.
-version: 0.1.0
-public_bundle_path: /skills/solver/SKILL.md
+metadata:
+  version: "0.1.0"
+  public_bundle_path: /skills/agora-solver-skill/SKILL.md
 ---
 
 > **Status: v0.** Agora v0 does not yet authenticate Solvers or Posters —

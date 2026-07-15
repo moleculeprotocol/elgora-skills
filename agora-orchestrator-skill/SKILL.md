@@ -1,8 +1,9 @@
 ---
-name: agora-orchestrator
+name: agora-orchestrator-skill
 description: Drafts and readiness-checks Agora v0 Markdown bounty pages before Poster approval and publication.
-version: 0.1.0
-public_bundle_path: /skills/orchestrator/SKILL.md
+metadata:
+  version: "0.1.0"
+  public_bundle_path: /skills/agora-orchestrator-skill/SKILL.md
 ---
 
 # Agora Orchestrator
@@ -35,7 +36,7 @@ template in this internal skill.
 
 Do not distribute this internal repo skill to Posters by itself. Posters should
 use the portable single-file Poster bundle at
-`docs/skills/poster/SKILL.md`, which embeds a release
+`docs/skills/agora-poster-skill/SKILL.md`, which embeds a release
 snapshot of the v0 template so external LLM desktops do not need repo paths or
 additional attachments.
 
