@@ -111,21 +111,28 @@ initialization is complete.
 The external Guardian host schedules heartbeat invocations. Agora does not
 trigger or run the Guardian. On every heartbeat:
 
-1. Discover open bounties whose snapshotted Guardian settlement signer is this
-   Guardian. A projection may identify candidates, but finalized AgoraHub state
-   decides status and timing.
-2. Before `submission_deadline`, do not fetch or decrypt Solver artifacts.
-   Report the bounty as waiting and use the deadline as its next check time.
-3. After the deadline but before the configured timelock release, do not decrypt
+1. Query the Agora subgraph for candidates instead of scanning AgoraHub bounty
+   ids. Filter for `Open` bounties whose creation-time
+   `guardianSettlementSigner` matches this Guardian's settlement address and
+   whose `guardianRecipientsCommitment` matches a recipient set whose private
+   keys this Guardian still securely retains, with
+   `submissionDeadline <= now < settlementTimeoutAt`.
+   Read the recipient commitment from the bounty's `BountyCreated` event; never
+   substitute the current global commitment after a Guardian rotation.
+2. If no candidate matches, return `[SILENT]`.
+3. For each candidate, re-read finalized AgoraHub state before reporting it as
+   actionable. AgoraHub decides status, timing, and settlement authority; the
+   subgraph is only the discovery projection.
+4. After the deadline but before the configured timelock release, do not decrypt
    artifacts. Report the bounty as waiting and use the release time as its next
    check time.
-4. After both the deadline and timelock release, and before
+5. After both the deadline and timelock release, and before
    `settlement_timeout_at`, re-read the finalized bounty and active submission
    commitments. If the bounty is still open and its snapshotted Guardian
    settlement signer matches this Guardian's settlement address, start one
    evaluation run. Repeated heartbeats must not start a duplicate run for the
    same bounty.
-5. If the bounty is final or its Guardian settlement window has closed, do not
+6. If the bounty is final or its Guardian settlement window has closed, do not
    decrypt, evaluate, or call settlement. Report that no Guardian action
    remains.
 
