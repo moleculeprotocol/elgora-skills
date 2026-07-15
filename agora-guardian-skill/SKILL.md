@@ -1,7 +1,8 @@
 ---
-name: agora-guardian
+name: agora-guardian-skill
 description: Evaluates Agora v0 Solver submissions after the deadline and decides the winner from the approved Markdown bounty page.
-version: 0.1.0
+metadata:
+  version: "0.1.0"
 ---
 
 # Agora Guardian
