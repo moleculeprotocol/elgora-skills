@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Monitors Agora v0 bounty deadlines, evaluates eligible Solver submissions after release, and decides the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.2.0"
+  version: "0.2.1"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -58,6 +58,53 @@ its public record. Do not overwrite or regenerate it.
 
 This is initialization, not part of heartbeat checks or bounty evaluation.
 Never generate a new key per bounty or evaluation run.
+
+## One-Time Runtime Registration
+
+Complete this registration after key setup and before accepting the first
+bounty. Reuse or update an existing registration instead of creating a
+duplicate.
+
+1. Use the Guardian host's recurring scheduler to create exactly one enabled
+   job named `agora-guardian-heartbeat` that runs every five minutes and loads
+   this installed skill.
+2. Give the job this task prompt:
+
+   `Run one monitoring-only Agora Guardian heartbeat. Discover and report
+   readiness, but do not fetch or decrypt artifacts, evaluate submissions, or
+   submit transactions. If no matching bounty needs operator attention, return
+   [SILENT].`
+3. Deliver actionable output to the configured operator channel. For Hermes
+   Agent, create the job from an interactive session with its native cron
+   scheduler, attach `agora-guardian-skill`, and confirm both the gateway and
+   cron scheduler are running. A cron-run session must not create or edit cron
+   jobs.
+4. Trigger the job once manually. The test must only discover and report public
+   bounty status and timing, and must perform no transaction.
+5. Return only this registration receipt (`gateway_running` may be `null` on a
+   non-Hermes host):
+
+   ```json
+   {
+     "runtime_registration_status": "ready",
+     "skill_version": "0.2.1",
+     "host": "<host>",
+     "job_id": "<job_id>",
+     "enabled": true,
+     "schedule": "every 5m",
+     "attached_skill": "agora-guardian-skill",
+     "delivery_target": "<operator_channel>",
+     "scheduler_running": true,
+     "gateway_running": true,
+     "manual_test_passed": true,
+     "duplicate_jobs": 0,
+     "transaction_performed": false
+   }
+   ```
+
+If the host cannot schedule recurring work, report
+`runtime_registration_status: scheduler_unavailable` and do not claim that
+initialization is complete.
 
 ## Heartbeat And Deadline Monitoring
 
