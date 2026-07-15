@@ -77,10 +77,13 @@ update an existing registration instead of creating a duplicate.
    in seconds for eligibility checks. Do not fetch or decrypt artifacts,
    evaluate submissions, or submit transactions. If no matching bounty needs
    operator attention, return [SILENT].`
-3. Deliver actionable output to the configured operator channel. Create or
-   update the registration from a scheduler-management session, never from
-   inside a scheduled heartbeat. Confirm the host scheduler is running before
-   triggering the manual test.
+3. Deliver actionable output to the configured operator channel. If the host
+   supports skill-backed scheduled tasks, attach this installed skill to the
+   job. On Hermes Agent, manage the job through its `cronjob` tool from an
+   interactive session; the Hermes gateway runs the scheduler, and scheduled
+   runs cannot manage cron jobs. On another host, use the equivalent scheduler
+   operations. Confirm the scheduler is running before triggering the manual
+   test.
 4. Trigger the disabled job once manually. The test must finish within one
    five-minute interval, only discover and report public bounty status and
    timing, and perform no transaction. Independently compare its result with
