@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Monitors Agora v0 bounty deadlines, evaluates eligible Solver submissions after release, and decides the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.2.0"
+  version: "0.2.1"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -59,26 +59,81 @@ its public record. Do not overwrite or regenerate it.
 This is initialization, not part of heartbeat checks or bounty evaluation.
 Never generate a new key per bounty or evaluation run.
 
+## One-Time Runtime Registration
+
+Complete this monitoring registration after key setup and before the first
+heartbeat rehearsal. It does not authorize evaluation or settlement. Reuse or
+update an existing registration instead of creating a duplicate.
+
+1. Use the Guardian host's recurring scheduler to create exactly one enabled
+   job named `agora-guardian-heartbeat` that runs every five minutes and loads
+   this installed skill.
+2. Give the job this task prompt:
+
+   `Run one monitoring-only Agora Guardian heartbeat. Discover and report
+   monitoring readiness, but do not fetch or decrypt artifacts, evaluate
+   submissions, or submit transactions. If no matching bounty needs operator
+   attention, return [SILENT].`
+3. Deliver actionable output to the configured operator channel. For Hermes
+   Agent, create the job from an interactive session with its native cron
+   scheduler, attach `agora-guardian-skill`, and confirm both the gateway and
+   cron scheduler are running. A cron-run session must not create or edit cron
+   jobs.
+4. Trigger the job once manually. The test must only discover and report public
+   bounty status and timing, and must perform no transaction.
+5. Return only this registration receipt (`gateway_running` may be `null` on a
+   non-Hermes host):
+
+   ```json
+   {
+     "runtime_registration_status": "monitoring_ready",
+     "skill_version": "0.2.1",
+     "host": "<host>",
+     "job_id": "<job_id>",
+     "enabled": true,
+     "schedule": "every 5m",
+     "attached_skill": "agora-guardian-skill",
+     "delivery_target": "<operator_channel>",
+     "scheduler_running": true,
+     "gateway_running": true,
+     "manual_test_passed": true,
+     "duplicate_jobs": 0,
+     "transaction_performed": false
+   }
+   ```
+
+If the host cannot schedule recurring work, report
+`runtime_registration_status: scheduler_unavailable` and do not claim that
+monitoring is ready.
+
 ## Heartbeat And Deadline Monitoring
 
 The external Guardian host schedules heartbeat invocations. Agora does not
 trigger or run the Guardian. On every heartbeat:
 
-1. Discover open bounties whose snapshotted Guardian settlement signer is this
-   Guardian. A projection may identify candidates, but finalized AgoraHub state
-   decides status and timing.
-2. Before `submission_deadline`, do not fetch or decrypt Solver artifacts.
-   Report the bounty as waiting and use the deadline as its next check time.
-3. After the deadline but before the configured timelock release, do not decrypt
+1. Query the Agora subgraph for candidates instead of scanning AgoraHub bounty
+   ids. Filter for `Open` bounties whose creation-time
+   `guardianSettlementSigner` matches this Guardian's settlement address and
+   whose `guardianRecipientsCommitment` matches a recipient set whose private
+   keys this Guardian still securely retains, with
+   `submissionDeadline <= now < settlementTimeoutAt`.
+   Read the recipient commitment from the bounty's `BountyCreated` event; never
+   substitute the current global commitment after a Guardian rotation.
+2. If no candidate matches, return `[SILENT]`.
+3. For each candidate, re-read finalized AgoraHub state before reporting it as
+   actionable. AgoraHub decides status, timing, and settlement authority; the
+   subgraph is only the discovery projection.
+4. After the deadline but before the configured timelock release, do not decrypt
    artifacts. Report the bounty as waiting and use the release time as its next
    check time.
-4. After both the deadline and timelock release, and before
+5. After both the deadline and timelock release, and before
    `settlement_timeout_at`, re-read the finalized bounty and active submission
    commitments. If the bounty is still open and its snapshotted Guardian
-   settlement signer matches this Guardian's settlement address, start one
-   evaluation run. Repeated heartbeats must not start a duplicate run for the
-   same bounty.
-5. If the bounty is final or its Guardian settlement window has closed, do not
+   settlement signer matches this Guardian's settlement address, report
+   `evaluation_ready` to the operator channel and stop. Start the Evaluation
+   Loop only in a separate operator-authorized invocation; the monitoring job
+   must not fetch, decrypt, evaluate, or submit a transaction.
+6. If the bounty is final or its Guardian settlement window has closed, do not
    decrypt, evaluate, or call settlement. Report that no Guardian action
    remains.
 
