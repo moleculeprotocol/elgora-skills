@@ -151,7 +151,8 @@ trigger or run the Guardian. On every heartbeat:
 3. If every filtered response has an empty `data.bounties` array, return
    `[SILENT]` immediately. Do not read AgoraHub when there is no candidate.
 4. For each candidate, re-read finalized AgoraHub state before reporting it as
-   actionable. Use the deployed AgoraHub ABI to decode `getBounty(uint256)`.
+   actionable. Call `getBounty(uint256)` with the JSON-RPC block tag
+   `finalized`, and decode it with the deployed AgoraHub ABI.
    Treat its fields in the canonical return order: `poster`, `status`,
    `submissionDeadline`, `settlementTimeoutAt`, `guardianSettlementSigner`,
    `treasuryRecipient`, `guardianFeeRecipient`, `treasuryFeeBps`,
@@ -163,12 +164,12 @@ trigger or run the Guardian. On every heartbeat:
    artifacts or include the bounty in the final response. The recurring job
    will check it again.
 6. After both the deadline and timelock release, and before
-   `settlement_timeout_at`, re-read the finalized bounty and active submission
-   commitments. If the bounty is still open and its snapshotted Guardian
-   settlement signer matches this Guardian's settlement address, include it as
-   `evaluation_ready` in the final response. Start the Evaluation Loop only in
-   a separate operator-authorized invocation; the monitoring job must not
-   fetch, decrypt, evaluate, or submit a transaction.
+   `settlement_timeout_at`, use the finalized bounty from step 4. If it is still
+   open and its snapshotted Guardian settlement signer matches this Guardian's
+   settlement address, include it as `evaluation_ready` in the final response.
+   Start the Evaluation Loop only in a separate operator-authorized invocation;
+   the monitoring job must not fetch, decrypt, evaluate, or submit a
+   transaction.
 7. If the bounty is final or its Guardian settlement window has closed, do not
    decrypt, evaluate, call settlement, or include it in the final response.
 
