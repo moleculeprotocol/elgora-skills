@@ -1,8 +1,8 @@
 ---
 name: agora-guardian-skill
-description: Evaluates Agora v0 Solver submissions after the deadline and decides the winner from the approved Markdown bounty page.
+description: Monitors Agora v0 bounty deadlines, evaluates eligible Solver submissions after release, and decides the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Agora Guardian
@@ -24,6 +24,66 @@ If the committed page is internally inconsistent or undecidable, produce an
 off-chain `evaluation_defect` report and do not call settlement. The bounty then
 uses `timeout_settlement` as the backstop, returning the full escrow to the
 Poster with no fees. Do not use `no_valid_submission` for a defective page.
+
+## One-Time Key Setup
+
+Run this initialization before accepting the first bounty. If an Agora
+Guardian X25519 key pair already exists in secret storage, reuse it and return
+its public record. Do not overwrite or regenerate it.
+
+1. Generate a fresh X25519 key pair locally for Agora HPKE.
+2. Do not derive this key from the Guardian settlement wallet or reuse the
+   wallet's private key.
+3. Store the private key in the Guardian's secret storage before continuing.
+   Never include it in responses, logs, reports, or public artifacts.
+4. Return only this public JSON shape:
+
+   ```json
+   [
+     {
+       "key_id": "<stable_key_id>",
+       "suite": "hpke-dhkem-x25519-hkdf-sha256+hkdf-sha256+aes-256-gcm@1",
+       "public_key": "<32-byte X25519 public key as unpadded base64url>"
+     }
+   ]
+   ```
+
+   Use exactly `key_id` and `public_key`, not JWK field names such as `kid` and
+   `x`. Never return `d` or any other private-key field.
+5. Complete a local encrypt/decrypt round trip before registering the public
+   key for new bounties.
+6. During rotation, retain old private keys until every bounty committed to
+   those keys has reached a final state.
+
+This is initialization, not part of heartbeat checks or bounty evaluation.
+Never generate a new key per bounty or evaluation run.
+
+## Heartbeat And Deadline Monitoring
+
+The external Guardian host schedules heartbeat invocations. Agora does not
+trigger or run the Guardian. On every heartbeat:
+
+1. Discover open bounties whose snapshotted Guardian settlement signer is this
+   Guardian. A projection may identify candidates, but finalized AgoraHub state
+   decides status and timing.
+2. Before `submission_deadline`, do not fetch or decrypt Solver artifacts.
+   Report the bounty as waiting and use the deadline as its next check time.
+3. After the deadline but before the configured timelock release, do not decrypt
+   artifacts. Report the bounty as waiting and use the release time as its next
+   check time.
+4. After both the deadline and timelock release, and before
+   `settlement_timeout_at`, re-read the finalized bounty and active submission
+   commitments. If the bounty is still open and its snapshotted Guardian
+   settlement signer matches this Guardian's settlement address, start one
+   evaluation run. Repeated heartbeats must not start a duplicate run for the
+   same bounty.
+5. If the bounty is final or its Guardian settlement window has closed, do not
+   decrypt, evaluate, or call settlement. Report that no Guardian action
+   remains.
+
+Heartbeat output contains only public bounty identifiers, status, timing, and
+the next action or check time. Never generate or rotate keys, expose private
+artifacts, or log secrets during heartbeat checks.
 
 ## Authority
 
