@@ -3,6 +3,7 @@ name: agora-guardian-skill
 description: Monitors Agora v0 bounty deadlines, evaluates eligible Solver submissions after release, and decides the winner from the approved Markdown bounty page.
 metadata:
   version: "0.2.0"
+  public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
 # Agora Guardian
