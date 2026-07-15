@@ -72,16 +72,15 @@ update an existing registration instead of creating a duplicate.
 2. Give the job this task prompt:
 
    `Run exactly one monitoring-only Agora Guardian heartbeat by following the
-   Heartbeat And Deadline Monitoring section of the installed skill. Use its
-   exact subgraph query and one raw Unix-seconds value; do not improvise an
-   alternate query, ABI layout, or formatted-date eligibility check. Do not
-   fetch or decrypt artifacts, evaluate submissions, or submit transactions.
-   If no matching bounty needs operator attention, return [SILENT].`
-3. Deliver actionable output to the configured operator channel. For Hermes
-   Agent, create the job from an interactive session with its native cron
-   scheduler, attach `agora-guardian-skill`, and confirm both the gateway and
-   cron scheduler are running. A cron-run session must not create or edit cron
-   jobs.
+   Heartbeat And Deadline Monitoring section of the installed skill. Use the
+   configured Agora subgraph, the deployed AgoraHub ABI, and one Unix timestamp
+   in seconds for eligibility checks. Do not fetch or decrypt artifacts,
+   evaluate submissions, or submit transactions. If no matching bounty needs
+   operator attention, return [SILENT].`
+3. Deliver actionable output to the configured operator channel. Create or
+   update the registration from a scheduler-management session, never from
+   inside a scheduled heartbeat. Confirm the host scheduler is running before
+   triggering the manual test.
 4. Trigger the disabled job once manually. The test must finish within one
    five-minute interval, only discover and report public bounty status and
    timing, and perform no transaction. Independently compare its result with
@@ -107,9 +106,9 @@ monitoring is ready.
 The external Guardian host schedules heartbeat invocations. Agora does not
 trigger or run the Guardian. On every heartbeat:
 
-1. Read the current time once as an integer Unix timestamp in seconds. Keep
-   that raw integer as `now` for every eligibility comparison in this
-   heartbeat; do not convert dates or calculate milliseconds.
+1. Read the current time once as an integer Unix timestamp in seconds. Use that
+   value as `now` for every eligibility comparison in this heartbeat; the
+   subgraph and AgoraHub timestamps are also Unix seconds.
 2. Query the Agora subgraph with this exact candidate query instead of scanning
    AgoraHub bounty ids:
 
@@ -148,14 +147,14 @@ trigger or run the Guardian. On every heartbeat:
 3. If every filtered response has an empty `data.bounties` array, return
    `[SILENT]` immediately. Do not read AgoraHub when there is no candidate.
 4. For each candidate, re-read finalized AgoraHub state before reporting it as
-   actionable. Decode `getBounty(uint256)` with the deployed AgoraHub ABI and
-   its canonical return order: `poster`, `status`, `submissionDeadline`,
-   `settlementTimeoutAt`, `guardianSettlementSigner`, `treasuryRecipient`,
-   `guardianFeeRecipient`, `treasuryFeeBps`, `guardianFeeBps`, and
-   `escrowAmount`. Do not infer fields from raw ABI slots or use a hand-written
-   alternate layout. Compare raw integer timestamps. AgoraHub decides status,
-   timing, and settlement authority; the subgraph is only the discovery
-   projection.
+   actionable. Use the deployed AgoraHub ABI to decode `getBounty(uint256)`.
+   Treat its fields in the canonical return order: `poster`, `status`,
+   `submissionDeadline`, `settlementTimeoutAt`, `guardianSettlementSigner`,
+   `treasuryRecipient`, `guardianFeeRecipient`, `treasuryFeeBps`,
+   `guardianFeeBps`, and `escrowAmount`. Compare timestamp fields as integer
+   Unix seconds. AgoraHub
+   decides status, timing, and settlement authority; the subgraph is only the
+   discovery projection.
 5. After the deadline but before the configured timelock release, do not decrypt
    artifacts. Report the bounty as waiting and use the release time as its next
    check time.
