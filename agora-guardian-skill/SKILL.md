@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Evaluates eligible Agora v0 Solver submissions and decides the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.2.3"
+  version: "0.2.4"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -65,6 +65,7 @@ Install Agora's public CLI once on the Guardian host:
 
 ```sh
 npm install -g @moleculeagora/cli
+agora-cli help guardian:judgeable
 agora-cli help guardian:open
 agora-cli help guardian:settle-awarded
 ```
@@ -73,8 +74,21 @@ Keep `AGORA_GUARDIAN_PRIVATE_KEYS_JSON` in the Guardian's secret storage and
 load it only for `guardian:open`. Load the Guardian settlement wallet only when
 an awarded settlement transaction is authorized. Never print either secret.
 
-This skill begins with an evaluation-ready `bounty_id`. Scheduling and bounty
-discovery belong to the invoking harness, not this skill.
+## Invocation Contract
+
+The external Guardian host owns scheduling; this skill owns evaluation. Connect
+them through the public CLI:
+
+1. Run `agora-cli guardian:judgeable` on the host's recurring schedule.
+2. If stdout is empty, do not invoke this skill.
+3. For each returned
+   `{"bounty_id":"<decimal>","next_action":"evaluation_ready"}` record, invoke
+   this skill with that `bounty_id` and complete the Evaluation Loop below.
+
+Use `guardian:judgeable` as the discovery implementation. Do not recreate its
+chain, subgraph, timing, or recipient-selection logic in a prompt or host
+script. Keep the scheduled discovery step read-only: it must not decrypt,
+evaluate, or submit transactions.
 
 ## Authority
 
@@ -121,8 +135,8 @@ page's disqualification rules and the protocol facts Agora provides.
    is `no_valid_submission`.
 6. **Prepare the report.** Produce a public verdict summary and keep sensitive
    raw evidence sealed according to Agora's private-submission rules.
-7. **Settle an awarded result.** After the report is complete and the
-   transaction is authorized, run:
+7. **Settle an awarded result.** After the report is complete and settlement is
+   authorized either for this run or by a standing operator policy, run:
 
    ```sh
    agora-cli guardian:settle-awarded <bounty_id> <winner>
