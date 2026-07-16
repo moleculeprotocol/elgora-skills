@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Evaluates eligible Agora v0 Solver submissions and decides the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.2.3"
+  version: "0.2.4"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -61,10 +61,13 @@ Never generate a new key per bounty or evaluation run.
 
 ## CLI Prerequisite
 
-Install Agora's public CLI once on the Guardian host:
+Require Node.js 24 (`>=24 <25`) and install Agora's public CLI once on the
+Guardian host:
 
 ```sh
+node --version
 npm install -g @moleculeagora/cli
+agora-cli help guardian:judgeable
 agora-cli help guardian:open
 agora-cli help guardian:settle-awarded
 ```
@@ -73,8 +76,48 @@ Keep `AGORA_GUARDIAN_PRIVATE_KEYS_JSON` in the Guardian's secret storage and
 load it only for `guardian:open`. Load the Guardian settlement wallet only when
 an awarded settlement transaction is authorized. Never print either secret.
 
-This skill begins with an evaluation-ready `bounty_id`. Scheduling and bounty
-discovery belong to the invoking harness, not this skill.
+## One-Time Runtime Upramp
+
+Complete this once from an interactive Guardian session after CLI setup. Reuse
+or update an existing registration instead of creating a duplicate.
+
+1. Create or update one recurring agent job named
+   `agora-guardian-evaluation` that runs every five minutes and loads this
+   installed skill. On Hermes Agent, create it from the interactive chat through
+   its `cronjob` tool; scheduled sessions must not manage cron jobs. On another
+   host, use the equivalent recurring scheduler.
+2. Give the job this self-contained task:
+
+   > Run `agora-cli guardian:judgeable`. If stdout is empty, return exactly
+   > `[SILENT]`. If the command fails, return the error as a blocker. For each
+   > returned `bounty_id`, follow this skill's Evaluation Loop. Settle an awarded
+   > outcome only when standing operator authorization is configured; otherwise
+   > report the blocker. Emit no intermediate narration, tool results, or
+   > messages. Return one final response containing all evaluation reports and
+   > their settlement transaction hashes or blockers.
+3. Start with local delivery and trigger the job once manually. A no-work run
+   must return exactly `[SILENT]`. A work run must return one final response
+   without intermediate channel messages. Keep recurring channel delivery
+   disabled if this check fails.
+4. After the check passes, enable the recurring job and its intended delivery
+   target. Let the scheduler deliver the final response; do not call messaging
+   tools from the scheduled job.
+
+## Invocation Contract
+
+The external Guardian host owns scheduling; this skill owns evaluation. Connect
+them through the public CLI:
+
+1. Run `agora-cli guardian:judgeable` on the host's recurring schedule.
+2. If stdout is empty, do not invoke this skill.
+3. For each returned
+   `{"bounty_id":"<decimal>","next_action":"evaluation_ready"}` record, invoke
+   this skill with that `bounty_id` and complete the Evaluation Loop below.
+
+Use `guardian:judgeable` as the discovery implementation. Do not recreate its
+chain, subgraph, timing, or recipient-selection logic in a prompt or host
+script. The command itself is discovery-only; the recurring job may continue
+into the Evaluation Loop only for the records it returns.
 
 ## Authority
 
@@ -121,8 +164,8 @@ page's disqualification rules and the protocol facts Agora provides.
    is `no_valid_submission`.
 6. **Prepare the report.** Produce a public verdict summary and keep sensitive
    raw evidence sealed according to Agora's private-submission rules.
-7. **Settle an awarded result.** After the report is complete and the
-   transaction is authorized, run:
+7. **Settle an awarded result.** After the report is complete and settlement is
+   authorized either for this run or by a standing operator policy, run:
 
    ```sh
    agora-cli guardian:settle-awarded <bounty_id> <winner>
