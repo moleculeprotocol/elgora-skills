@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Monitors Agora v0 bounty deadlines, evaluates eligible Solver submissions after release, and decides the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.2.2"
+  version: "0.2.3"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -65,25 +65,22 @@ Complete this monitoring registration after key setup and before the first
 heartbeat rehearsal. It does not authorize evaluation or settlement. Reuse or
 update an existing registration instead of creating a duplicate.
 
-1. Use the Guardian host's recurring scheduler to create or update exactly one
-   job named `agora-guardian-heartbeat` that runs every five minutes and loads
-   this installed skill. Keep it disabled until the manual test in step 4
-   passes, then enable it.
-2. Give the job this task prompt:
-
-   `Run exactly one monitoring-only Agora Guardian heartbeat by following the
-   Heartbeat And Deadline Monitoring section of the installed skill. Use the
-   configured chain RPC, Agora subgraph, and deployed AgoraHub ABI. Use the
-   latest finalized block timestamp for eligibility checks. Do not fetch or
-   decrypt artifacts, evaluate submissions, or submit transactions. Return
-   only the final response defined by that section.`
-3. Deliver actionable output to the configured operator channel. If the host
-   supports skill-backed scheduled tasks, attach this installed skill to the
-   job. On Hermes Agent, manage the job through its `cronjob` tool from an
-   interactive session; the Hermes gateway runs the scheduler, and scheduled
-   runs cannot manage cron jobs. On another host, use the equivalent scheduler
-   operations. Confirm the scheduler is running before triggering the manual
-   test.
+1. Create or update one deterministic script that performs exactly the
+   `Heartbeat And Deadline Monitoring` steps below. The script must use only
+   public chain, subgraph, Guardian-address, and recipient-commitment data. It
+   must not read Guardian private keys, decrypt artifacts, evaluate
+   submissions, or submit transactions.
+2. Use the Guardian host's recurring scheduler to create or update exactly one
+   script-only job named `agora-guardian-heartbeat` that runs the script every
+   five minutes. Do not attach an LLM, prompt, model, or skill to the scheduled
+   run. Keep the job disabled until the manual test in step 4 passes, then
+   enable it.
+3. Deliver the script's actionable stdout to the configured operator channel.
+   On Hermes Agent, store the script under `~/.hermes/scripts/` and manage one
+   `no_agent=True` job through the interactive session's `cronjob` tool. Empty
+   stdout suppresses delivery; a non-zero exit produces an operator-visible
+   error. On another host, use the equivalent script-only scheduler behavior.
+   Confirm the scheduler is running before triggering the manual test.
 4. Trigger the disabled job once manually. The test must finish within one
    five-minute interval, only discover and report public bounty status and
    timing, and perform no transaction. Independently compare its result with
@@ -106,13 +103,18 @@ monitoring is ready.
 
 ## Heartbeat And Deadline Monitoring
 
-The external Guardian host schedules heartbeat invocations. Agora does not
-trigger or run the Guardian. On every heartbeat:
+The external Guardian host schedules the deterministic polling script. Agora
+does not trigger or run the Guardian. On every heartbeat:
 
-1. Call `eth_getBlockByNumber` with params `["finalized", false]` on the
-   configured chain RPC. Decode only `result.timestamp` from hexadecimal to an
-   integer Unix timestamp in seconds, and use it as `now` for every eligibility
-   comparison in this heartbeat. Do not use the Guardian host's clock.
+1. Use a direct, non-caching JSON-RPC HTTP client, not a browser or generic web
+   fetch tool. Send `Cache-Control: no-cache, no-store` and `Pragma: no-cache`.
+   Call `eth_chainId` and require the configured chain id, then call
+   `eth_getBlockByNumber` with params `["finalized", false]` on the configured
+   chain RPC. Decode only `result.timestamp` from hexadecimal to an integer
+   Unix timestamp in seconds, and use it as `now` for every eligibility
+   comparison in this heartbeat. Do not use the Guardian host's clock. If the
+   RPC response is missing, malformed, or for the wrong chain, write no normal
+   stdout and exit non-zero; never convert an RPC failure into a quiet result.
 2. Query the Agora subgraph with this exact candidate query instead of scanning
    AgoraHub bounty ids:
 
@@ -148,8 +150,9 @@ trigger or run the Guardian. On every heartbeat:
    `now`. Repeat the query for each retained recipient commitment. Read each
    commitment from the bounty's `BountyCreated` projection; never substitute
    the current global commitment after a Guardian rotation.
-3. If every filtered response has an empty `data.bounties` array, return
-   `[SILENT]` immediately. Do not read AgoraHub when there is no candidate.
+3. If every filtered response has an empty `data.bounties` array, exit zero
+   immediately with empty stdout. Do not read AgoraHub when there is no
+   candidate.
 4. For each candidate, re-read finalized AgoraHub state before reporting it as
    actionable. Call `getBounty(uint256)` with the JSON-RPC block tag
    `finalized`, and decode it with the deployed AgoraHub ABI.
@@ -161,24 +164,24 @@ trigger or run the Guardian. On every heartbeat:
    decides status, timing, and settlement authority; the subgraph is only the
    discovery projection.
 5. After the deadline but before the configured timelock release, do not decrypt
-   artifacts or include the bounty in the final response. The recurring job
-   will check it again.
+   artifacts or include the bounty in stdout. The recurring job will check it
+   again.
 6. After both the deadline and timelock release, and before
    `settlement_timeout_at`, use the finalized bounty from step 4. If it is still
    open and its snapshotted Guardian settlement signer matches this Guardian's
-   settlement address, include it as `evaluation_ready` in the final response.
+   settlement address, include it as `evaluation_ready` in stdout.
    Start the Evaluation Loop only in a separate operator-authorized invocation;
    the monitoring job must not fetch, decrypt, evaluate, or submit a
    transaction.
 7. If the bounty is final or its Guardian settlement window has closed, do not
-   decrypt, evaluate, call settlement, or include it in the final response.
+   decrypt, evaluate, call settlement, or include it in stdout.
 
-The final heartbeat response must be exactly `[SILENT]` when no candidate needs
-operator attention. Otherwise, return one compact JSON array with one object
-per actionable candidate. Each object contains only `bounty_id` as a decimal
-string and `next_action` as `evaluation_ready`. Never include narration,
+The polling script must write nothing to stdout when no candidate needs
+operator attention. Otherwise, stdout must be one compact JSON array with one
+object per actionable candidate. Each object contains only `bounty_id` as a
+decimal string and `next_action` as `evaluation_ready`. Never write narration,
 commands, provider responses, raw RPC or ABI data, tool-call transcripts, or
-Markdown fences in the final response.
+Markdown fences to stdout.
 
 Never generate or rotate keys, expose private artifacts, or log secrets during
 heartbeat checks.
