@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Monitors Agora v0 bounty deadlines, evaluates eligible Solver submissions after release, and decides the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.2.3"
+  version: "0.2.4"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -65,28 +65,48 @@ Complete this monitoring registration after key setup and before the first
 heartbeat rehearsal. It does not authorize evaluation or settlement. Reuse or
 update an existing registration instead of creating a duplicate.
 
-1. Create or update one deterministic script that performs exactly the
-   `Heartbeat And Deadline Monitoring` steps below. The script must use only
-   public chain, subgraph, Guardian-address, and recipient-commitment data. It
-   must not read Guardian private keys, decrypt artifacts, evaluate
-   submissions, or submit transactions.
-2. Use the Guardian host's recurring scheduler to create or update exactly one
+1. Download the canonical `scripts/agora_guardian_heartbeat.py` file bundled
+   beside this `SKILL.md`. Install those exact bytes as
+   `~/.hermes/scripts/agora_guardian_heartbeat.py` on Hermes, or in the
+   equivalent script directory on another Guardian host. Do not rewrite or
+   regenerate the polling logic.
+2. Configure the script with only these public environment values:
+
+   - `AGORA_CHAIN_ID`;
+   - `AGORA_HUB_ADDRESS`;
+   - `AGORA_RPC_URL`;
+   - `AGORA_SUBGRAPH_ENDPOINT`;
+   - `AGORA_GUARDIAN_SETTLEMENT_SIGNER`;
+   - `AGORA_GUARDIAN_RECIPIENTS_COMMITMENT` for the current recipient set;
+   - optional comma-separated
+     `AGORA_GUARDIAN_RETAINED_RECIPIENTS_COMMITMENTS` for older recipient sets
+     whose private keys this Guardian still retains; and
+   - optional decimal `AGORA_TIMELOCK_REVEAL_DELAY_SECONDS`, which defaults to
+     `0`.
+
+   On Hermes Agent, persist these public values in `~/.hermes/.env`, either
+   directly or with `hermes config set`; the scheduler reloads that file for
+   each run. On another host, use its equivalent persistent job environment.
+   Do not give the script wallet credentials, Guardian private keys, artifact
+   credentials, or transaction capability.
+3. Use the Guardian host's recurring scheduler to create or update exactly one
    script-only job named `agora-guardian-heartbeat` that runs the script every
    five minutes. Do not attach an LLM, prompt, model, or skill to the scheduled
-   run. Keep the job disabled until the manual test in step 4 passes, then
+   run. Keep the job disabled until the manual test in step 5 passes, then
    enable it.
-3. Deliver the script's actionable stdout to the configured operator channel.
-   On Hermes Agent, store the script under `~/.hermes/scripts/` and manage one
-   `no_agent=True` job through the interactive session's `cronjob` tool. Empty
-   stdout suppresses delivery; a non-zero exit produces an operator-visible
-   error. On another host, use the equivalent script-only scheduler behavior.
-   Confirm the scheduler is running before triggering the manual test.
-4. Trigger the disabled job once manually. The test must finish within one
+4. Deliver the script's actionable stdout to the configured operator channel.
+   On Hermes Agent, manage one `no_agent=True` job through the interactive
+   session's `cronjob` tool with
+   `script="agora_guardian_heartbeat.py"`. Empty stdout suppresses delivery; a
+   non-zero exit produces an operator-visible error. On another host, use the
+   equivalent script-only scheduler behavior. Confirm the scheduler is running
+   before triggering the manual test.
+5. Trigger the disabled job once manually. The test must finish within one
    five-minute interval, only discover and report public bounty status and
    timing, and perform no transaction. Independently compare its result with
    the raw subgraph response before marking the test as passed. If the test
    fails or times out, keep the job disabled.
-5. After the test passes and the job is enabled, return only this registration
+6. After the test passes and the job is enabled, return only this registration
    receipt:
 
    ```json
@@ -103,8 +123,10 @@ monitoring is ready.
 
 ## Heartbeat And Deadline Monitoring
 
-The external Guardian host schedules the deterministic polling script. Agora
-does not trigger or run the Guardian. On every heartbeat:
+The external Guardian host schedules the bundled deterministic polling script.
+Agora does not trigger or run the Guardian. The following is the executable
+contract implemented by `scripts/agora_guardian_heartbeat.py`; do not replace it
+with an agent-authored polling prompt. On every heartbeat:
 
 1. Use a direct, non-caching JSON-RPC HTTP client, not a browser or generic web
    fetch tool. Send `Cache-Control: no-cache, no-store` and `Pragma: no-cache`.
