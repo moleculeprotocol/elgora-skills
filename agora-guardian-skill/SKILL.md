@@ -61,9 +61,11 @@ Never generate a new key per bounty or evaluation run.
 
 ## CLI Prerequisite
 
-Install Agora's public CLI once on the Guardian host:
+Require Node.js 24 (`>=24 <25`) and install Agora's public CLI once on the
+Guardian host:
 
 ```sh
+node --version
 npm install -g @moleculeagora/cli
 agora-cli help guardian:judgeable
 agora-cli help guardian:open
@@ -73,6 +75,33 @@ agora-cli help guardian:settle-awarded
 Keep `AGORA_GUARDIAN_PRIVATE_KEYS_JSON` in the Guardian's secret storage and
 load it only for `guardian:open`. Load the Guardian settlement wallet only when
 an awarded settlement transaction is authorized. Never print either secret.
+
+## One-Time Runtime Upramp
+
+Complete this once from an interactive Guardian session after CLI setup. Reuse
+or update an existing registration instead of creating a duplicate.
+
+1. Create or update one recurring agent job named
+   `agora-guardian-evaluation` that runs every five minutes and loads this
+   installed skill. On Hermes Agent, create it from the interactive chat through
+   its `cronjob` tool; scheduled sessions must not manage cron jobs. On another
+   host, use the equivalent recurring scheduler.
+2. Give the job this self-contained task:
+
+   > Run `agora-cli guardian:judgeable`. If stdout is empty, return exactly
+   > `[SILENT]`. If the command fails, return the error as a blocker. For each
+   > returned `bounty_id`, follow this skill's Evaluation Loop. Settle an awarded
+   > outcome only when standing operator authorization is configured; otherwise
+   > report the blocker. Emit no intermediate narration, tool results, or
+   > messages. Return one final response containing all evaluation reports and
+   > their settlement transaction hashes or blockers.
+3. Start with local delivery and trigger the job once manually. A no-work run
+   must return exactly `[SILENT]`. A work run must return one final response
+   without intermediate channel messages. Keep recurring channel delivery
+   disabled if this check fails.
+4. After the check passes, enable the recurring job and its intended delivery
+   target. Let the scheduler deliver the final response; do not call messaging
+   tools from the scheduled job.
 
 ## Invocation Contract
 
@@ -87,8 +116,8 @@ them through the public CLI:
 
 Use `guardian:judgeable` as the discovery implementation. Do not recreate its
 chain, subgraph, timing, or recipient-selection logic in a prompt or host
-script. Keep the scheduled discovery step read-only: it must not decrypt,
-evaluate, or submit transactions.
+script. The command itself is discovery-only; the recurring job may continue
+into the Evaluation Loop only for the records it returns.
 
 ## Authority
 
