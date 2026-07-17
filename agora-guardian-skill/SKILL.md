@@ -198,8 +198,10 @@ page's disqualification rules and the protocol facts Agora provides.
    agora-cli guardian:settle-no-valid-submission --guardian-address <guardian_address> <bounty_id> <evaluation_report_path>
    ```
 
-   Both commands bind the exact report text and settlement decision into the
-   on-chain `guardian_result_commitment` and print one
+   Both commands publish the privacy-safe report through Agora, then bind the
+   exact report text and settlement decision into the on-chain
+   `guardian_result_commitment`. If publication fails, do not settle. With
+   `--guardian-address`, they print one
    `*.transaction_prepared` JSON record containing `chain_id`, `to`, `value`,
    and `data`. `<guardian_address>` must be the bounty's snapshotted Guardian
    settlement signer. Hand the unchanged transaction to that external wallet
