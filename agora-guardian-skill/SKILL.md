@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Evaluates eligible Agora v0 Solver submissions and decides the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.2.4"
+  version: "0.2.5"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -81,25 +81,37 @@ an awarded settlement transaction is authorized. Never print either secret.
 Complete this once from an interactive Guardian session after CLI setup. Reuse
 or update an existing registration instead of creating a duplicate.
 
-1. Create or update one recurring agent job named
+1. Configure the scheduler environment explicitly. Scheduled runs do not
+   inherit the interactive shell's environment, working directory, `PATH`, or
+   startup files. Inject the required variables through the scheduler or load
+   them from an absolute path in an absolute wrapper script. Do not rely on a
+   relative `.env`, `source env.sh`, or shell startup file. Keep private keys in
+   secret storage and never paste them into the job prompt or public config.
+2. Create or update one recurring agent job named
    `agora-guardian-evaluation` that runs every five minutes and loads this
    installed skill. On Hermes Agent, create it from the interactive chat through
    its `cronjob` tool; scheduled sessions must not manage cron jobs. On another
    host, use the equivalent recurring scheduler.
-2. Give the job this self-contained task:
+3. Give the job this self-contained task:
 
-   > Run `agora-cli guardian:judgeable`. If stdout is empty, return exactly
-   > `[SILENT]`. If the command fails, return the error as a blocker. For each
-   > returned `bounty_id`, follow this skill's Evaluation Loop. Settle an awarded
-   > outcome only when standing operator authorization is configured; otherwise
-   > report the blocker. Emit no intermediate narration, tool results, or
-   > messages. Return one final response containing all evaluation reports and
-   > their settlement transaction hashes or blockers.
-3. Start with local delivery and trigger the job once manually. A no-work run
-   must return exactly `[SILENT]`. A work run must return one final response
+   > Run `agora-cli guardian:judgeable` in the configured scheduler environment.
+   > If required configuration is missing or invalid, or the command exits
+   > nonzero, return the error as a blocker. Only when the command exits zero and
+   > stdout is empty, return exactly `[SILENT]`. For each returned `bounty_id`,
+   > follow this skill's Evaluation Loop. Settle an awarded outcome only when
+   > standing operator authorization is configured; otherwise report the
+   > blocker. Emit no intermediate narration, tool results, or messages. Return
+   > one final response containing all evaluation reports and their settlement
+   > transaction hashes or blockers.
+4. Start with local delivery and trigger the job once through the actual
+   scheduled execution context. Confirm that `guardian:judgeable` exits zero.
+   An interactive shell run is diagnostic evidence, not proof of the scheduled
+   environment. If a bounty is known to be evaluation-ready, the scheduled run
+   must discover it; `[SILENT]` does not pass that check. Otherwise, a no-work
+   run must return exactly `[SILENT]`. A work run must return one final response
    without intermediate channel messages. Keep recurring channel delivery
    disabled if this check fails.
-4. After the check passes, enable the recurring job and its intended delivery
+5. After the check passes, enable the recurring job and its intended delivery
    target. Let the scheduler deliver the final response; do not call messaging
    tools from the scheduled job.
 
@@ -108,8 +120,11 @@ or update an existing registration instead of creating a duplicate.
 The external Guardian host owns scheduling; this skill owns evaluation. Connect
 them through the public CLI:
 
-1. Run `agora-cli guardian:judgeable` on the host's recurring schedule.
-2. If stdout is empty, do not invoke this skill.
+1. Run `agora-cli guardian:judgeable` on the host's recurring schedule with the
+   explicitly configured scheduler environment.
+2. If the command exits zero and stdout is empty, do not invoke this skill. A
+   nonzero exit or missing or invalid configuration is a blocker, never a
+   no-work result.
 3. For each returned
    `{"bounty_id":"<decimal>","next_action":"evaluation_ready"}` record, invoke
    this skill with that `bounty_id` and complete the Evaluation Loop below.
