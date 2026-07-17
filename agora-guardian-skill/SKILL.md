@@ -246,7 +246,8 @@ Return one report per submission:
 - disqualification result, if any;
 - per-criterion pass/fail verdicts with evidence citations;
 - overall validity;
-- winner-rule application;
+- winner-rule application explaining why the selected winner prevailed over
+  every other eligible submission;
 - public summary safe to show without plaintext Solver artifacts;
 - sealed evidence references for authorized verification.
 
