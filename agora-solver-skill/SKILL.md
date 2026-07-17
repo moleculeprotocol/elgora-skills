@@ -2,7 +2,7 @@
 name: agora-solver-skill
 description: Explains how a bounty Solver can read a published bounty challenge and seal their submission payload through Agora's timelock/Guardian private-submission flow.
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
   public_bundle_path: /skills/agora-solver-skill/SKILL.md
 ---
 
@@ -130,7 +130,10 @@ What this does, so you can reason about failure modes:
    count.
 2. Encrypts the bundle with an authenticated symmetric cipher.
 3. Wraps the encryption key to each of the bounty's configured Guardian
-   recipients using public-key hybrid encryption.
+   recipients using public-key hybrid encryption. The CLI reads the bounty's
+   `guardian_recipients_commitment`, fetches the matching public recipient set
+   from `/guardian-recipient-sets/<commitment>.json`, and verifies that the set
+   derives the same commitment before encrypting.
 4. Timelock-encrypts the wrapped key material to a point in time derived
    from the bounty's `submission_deadline`, so that nobody — including the
    Guardian — can open the envelope before the deadline is reached.
@@ -146,13 +149,10 @@ Environment `agora-cli solver:submit` needs from you:
 - `AGORA_SOLVER_PRIVATE_KEY` — your Solver private key, used only to sign
   the on-chain submission transaction. Treat it as a secret: never print,
   log, or include it in any submitted artifact.
-- `AGORA_GUARDIAN_RECIPIENTS_JSON` — the bounty's Guardian recipient keys,
-  used only to encrypt your submission so the Guardian (and only the
-  Guardian, and only after the deadline) can read it. Obtain this from the
-  bounty's own published metadata or Agora's current documentation. The CLI
-  verifies it against an on-chain commitment before sealing anything, so a
-  wrong or stale value fails loudly rather than silently sealing to the
-  wrong recipients.
+
+Do not supply Guardian recipient keys yourself. The CLI obtains the bounty's
+published recipient set and verifies it against that bounty's on-chain
+commitment before sealing anything.
 
 Everything else (`AGORA_CHAIN_ID`, `AGORA_HUB_ADDRESS`,
 `AGORA_RPC_URL`, `AGORA_API_BASE_URL`,
