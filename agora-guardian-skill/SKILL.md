@@ -105,7 +105,8 @@ or update an existing registration instead of creating a duplicate.
    > `no_valid_submission` outcome only when standing operator authorization is
    > configured; otherwise report the blocker. Emit no intermediate narration,
    > tool results, or messages. Return one final response containing all
-   > evaluation reports and their settlement transaction hashes or blockers.
+   > evaluation reports and, for each settlement, either its prepared
+   > transaction record, its broadcast transaction hash, or its blocker.
 4. Start with local delivery and trigger the job once through the actual
    scheduled execution context. Confirm that `guardian:judgeable` exits zero.
    An interactive shell run is diagnostic evidence, not proof of the scheduled
