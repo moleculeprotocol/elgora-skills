@@ -70,6 +70,7 @@ npm install -g @moleculeagora/cli
 agora-cli help guardian:judgeable
 agora-cli help guardian:open
 agora-cli help guardian:settle-awarded
+agora-cli help guardian:settle-no-valid-submission
 ```
 
 Keep `AGORA_GUARDIAN_PRIVATE_KEYS_JSON` in the Guardian's secret storage and
@@ -98,11 +99,11 @@ or update an existing registration instead of creating a duplicate.
    > If required configuration is missing or invalid, or the command exits
    > nonzero, return the error as a blocker. Only when the command exits zero and
    > stdout is empty, return exactly `[SILENT]`. For each returned `bounty_id`,
-   > follow this skill's Evaluation Loop. Settle an awarded outcome only when
-   > standing operator authorization is configured; otherwise report the
-   > blocker. Emit no intermediate narration, tool results, or messages. Return
-   > one final response containing all evaluation reports and their settlement
-   > transaction hashes or blockers.
+   > follow this skill's Evaluation Loop. Settle an `awarded` or
+   > `no_valid_submission` outcome only when standing operator authorization is
+   > configured; otherwise report the blocker. Emit no intermediate narration,
+   > tool results, or messages. Return one final response containing all
+   > evaluation reports and their settlement transaction hashes or blockers.
 4. Start with local delivery and trigger the job once through the actual
    scheduled execution context. Confirm that `guardian:judgeable` exits zero.
    An interactive shell run is diagnostic evidence, not proof of the scheduled
@@ -177,17 +178,26 @@ page's disqualification rules and the protocol facts Agora provides.
 5. **Apply the winner rule.** Use `Winner And Tie-Break` to choose the winning
    valid submission. If no eligible submission is valid, the settlement outcome
    is `no_valid_submission`.
-6. **Prepare the report.** Produce a public verdict summary and keep sensitive
-   raw evidence sealed according to Agora's private-submission rules.
-7. **Settle an awarded result.** After the report is complete and settlement is
+6. **Prepare the report.** Write the complete public evaluation report to one
+   UTF-8 file on the Guardian host. Keep sensitive raw evidence sealed according
+   to Agora's private-submission rules, and retain the report file after
+   settlement as the `guardian_result_commitment` preimage.
+7. **Settle the result.** After the report is complete and settlement is
    authorized either for this run or by a standing operator policy, run:
 
    ```sh
-   agora-cli guardian:settle-awarded <bounty_id> <winner>
+   agora-cli guardian:settle-awarded <bounty_id> <winner> <evaluation_report_path>
    ```
 
-   This CLI command supports only `awarded`. Do not call it for
-   `no_valid_submission` or `evaluation_defect`.
+   Or, for `no_valid_submission`, run:
+
+   ```sh
+   agora-cli guardian:settle-no-valid-submission <bounty_id> <evaluation_report_path>
+   ```
+
+   Both commands bind the exact report text and settlement decision into the
+   on-chain `guardian_result_commitment`. Do not call either command for
+   `evaluation_defect`.
 
 ## Standing Rules
 
