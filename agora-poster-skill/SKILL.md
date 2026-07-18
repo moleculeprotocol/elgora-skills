@@ -44,8 +44,9 @@ Before drafting, collect enough Poster decisions to avoid placeholders:
   token-unit or decimal amounts such as `"500"` or `"530.28"`;
   Agora will not convert them;
 - submission deadline as an absolute date/time with timezone. Convert it to
-  Unix seconds in UTC for `submission_deadline`, and show the UTC date/time in
-  `At A Glance` and `Reward And Deadline`;
+  Unix seconds in UTC for `submission_deadline`, and render that timestamp as
+  exact `YYYY-MM-DDTHH:mm:ssZ` text in `At A Glance` and
+  `Reward And Deadline`;
 - expected submission files, formats, size limits, and purpose;
 - acceptance criteria, disqualification conditions, out-of-scope boundaries,
   and winner/tie-break rule.
@@ -89,7 +90,7 @@ payout_policy: winner_take_all
 | Field | Value |
 |---|---|
 | Reward | {amount in USDC} |
-| Deadline | {UTC date/time} |
+| Deadline | {YYYY-MM-DDTHH:mm:ssZ} |
 | Expected package | {short file list} |
 | Required execution | {yes/no} |
 | Winner rule | {all criteria pass, then earliest valid / stated metric} |
@@ -100,7 +101,7 @@ payout_policy: winner_take_all
 
 ## Reward And Deadline
 - Reward: {amount in USDC}
-- Submission deadline: {UTC date/time}
+- Submission deadline: {YYYY-MM-DDTHH:mm:ssZ}
 
 ## Challenge Context
 {The background, goal, and what a useful answer would accomplish.}
