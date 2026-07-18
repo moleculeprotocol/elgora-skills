@@ -4,7 +4,7 @@ description: Self-contained Agora v0 Orchestrator skill for Posters drafting Mar
 metadata:
   version: "0.1.0"
   profile: agora_markdown_bounty_challenge_v0
-  template_snapshot: packages/core/BOUNTY_CHALLENGE_SPEC.md, 2026-07-08
+  template_snapshot: packages/core/BOUNTY_CHALLENGE_SPEC.md, 2026-07-19
   public_bundle_path: /skills/agora-poster-skill/SKILL.md
 ---
 
@@ -44,9 +44,7 @@ Before drafting, collect enough Poster decisions to avoid placeholders:
   token-unit or decimal amounts such as `"500"` or `"530.28"`;
   Agora will not convert them;
 - submission deadline as an absolute date/time with timezone. Convert it to
-  Unix seconds in UTC for `submission_deadline`, and render that timestamp as
-  exact `YYYY-MM-DDTHH:mm:ssZ` text in `At A Glance` and
-  `Reward And Deadline`;
+  Unix seconds in UTC for `submission_deadline`;
 - expected submission files, formats, size limits, and purpose;
 - acceptance criteria, disqualification conditions, out-of-scope boundaries,
   and winner/tie-break rule.
@@ -56,14 +54,17 @@ Do not leave placeholders in the final page.
 
 ## Required Output
 
-Produce one complete Markdown bounty page using the embedded v0 template below.
+Produce one complete Markdown bounty page using the embedded v0 template below
+as drafting guidance. Choose the headings and organization that best explain
+the particular challenge; Agora does not require exact body sections.
 In each draft, populate:
 
 - the frontmatter block with exact `profile`, `escrow_amount` already in the
   configured escrow token's integer smallest units, `submission_deadline`
   Unix seconds, and
   `payout_policy`;
-- every required section in the embedded template;
+- enough challenge content for Solvers to prepare submissions and for the
+  Guardian to evaluate them without follow-up;
 - `Execution Requirements` only when Guardian evaluation requires running code;
 - winner-take-all as the only v0 settlement policy.
 
@@ -74,7 +75,8 @@ Agora outside the bounty page.
 
 ## Embedded V0 Bounty Template
 
-Use this shape for the final `bounty_challenge.md`:
+Use this as a starting shape for the final `bounty_challenge.md`. The opening
+frontmatter is exact; the Markdown body structure is flexible:
 
 ```markdown
 ---
@@ -86,22 +88,8 @@ payout_policy: winner_take_all
 
 # {Bounty Title}
 
-## At A Glance
-| Field | Value |
-|---|---|
-| Reward | {amount in USDC} |
-| Deadline | {YYYY-MM-DDTHH:mm:ssZ} |
-| Expected package | {short file list} |
-| Required execution | {yes/no} |
-| Winner rule | {all criteria pass, then earliest valid / stated metric} |
-| Privacy | Solver artifacts are private by default |
-
 ## Summary
 {One short paragraph explaining the scientific task and desired result.}
-
-## Reward And Deadline
-- Reward: {amount in USDC}
-- Submission deadline: {YYYY-MM-DDTHH:mm:ssZ}
 
 ## Challenge Context
 {The background, goal, and what a useful answer would accomplish.}
@@ -163,9 +151,9 @@ facts.
 
 ## Drafting Rules
 
-1. **Make the first screen priceable.** `At A Glance` must let Solver agents
-   quickly decide whether to inspect the bounty: reward, deadline, expected
-   package, execution requirement, winner rule, and privacy posture.
+1. **Keep hard facts in frontmatter.** Reward amount, submission deadline, and
+   payout policy are structured publication facts. Do not duplicate them in
+   the Markdown body or ask Agora to infer them from prose.
 2. **Define the package, not the protocol.** The bounty page says what files
    must be submitted, their formats, size limits, purpose, and forbidden
    contents. It must not include API endpoints, transaction steps, encryption
@@ -214,17 +202,15 @@ Before the Poster approves the bounty, check the draft against these questions:
    deliverables and evidence, not the Solver's private method.
 7. **Is the winner rule clear?** The Guardian can choose a winner using only the
    bounty page, listed inputs, and submitted artifacts.
-8. **Does At A Glance match the body?** Reward, deadline, expected package,
-   execution requirement, privacy, and winner rule agree with later sections.
-9. **Would the cheapest valid submission win?** Show the Poster the minimal
+8. **Would the cheapest valid submission win?** Show the Poster the minimal
    submission that could satisfy the page, and tighten the page if that outcome
    is not acceptable.
-10. **Can one failing submission be named?** The page makes it possible to
+9. **Can one failing submission be named?** The page makes it possible to
    identify at least one concrete submission shape that would be rejected.
-11. **Are frontmatter publication terms exact?** Escrow amount in configured
+10. **Are frontmatter publication terms exact?** Escrow amount in configured
     token smallest units, Unix submission deadline, and payout policy are
     present, and only the template frontmatter keys are used.
-12. **Is the profile present?** The frontmatter names the v0 profile.
+11. **Is the profile present?** The frontmatter names the v0 profile.
 
 If any answer is no, do not sign off. Return concrete edits, naming the section
 to change and the exact missing information.

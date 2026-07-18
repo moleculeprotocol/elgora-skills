@@ -30,9 +30,9 @@ Guardian pre-flight process.
 
 When running inside the Agora repository, produce a complete Markdown bounty
 page using the v0 template in `packages/core/BOUNTY_CHALLENGE_SPEC.md`. That
-file is the canonical owner for required headings, Poster-authored frontmatter
-publication terms, and template shape. Do not carry a second local copy of the
-template in this internal skill.
+file is the canonical owner for Poster-authored frontmatter publication terms
+and recommended challenge guidance. Do not enforce exact headings or carry a
+second local copy of the template in this internal skill.
 
 Do not distribute this internal repo skill to Posters by itself. Posters should
 use the portable single-file Poster bundle at
