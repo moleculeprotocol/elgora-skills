@@ -181,10 +181,11 @@ page's disqualification rules and the protocol facts Agora provides.
 5. **Apply the winner rule.** Use `Winner And Tie-Break` to choose the winning
    valid submission. If no eligible submission is valid, the settlement outcome
    is `no_valid_submission`.
-6. **Prepare the report.** Write the complete public evaluation report to one
-   UTF-8 file on the Guardian host. Keep sensitive raw evidence sealed according
-   to Agora's private-submission rules, and retain the report file after
-   settlement as the `guardian_result_commitment` preimage.
+6. **Prepare the report.** Write the complete public evaluation report body to
+   one UTF-8 Markdown file on the Guardian host. Keep sensitive raw evidence
+   sealed according to Agora's private-submission rules. The settlement command
+   adds strict frontmatter and publishes the resulting Markdown as the
+   `guardian_result_commitment` preimage.
 7. **Settle the result.** After the report is complete and settlement is
    authorized either for this run or by a standing operator policy, run:
 
@@ -198,8 +199,8 @@ page's disqualification rules and the protocol facts Agora provides.
    agora-cli guardian:settle-no-valid-submission --guardian-address <guardian_address> <bounty_id> <evaluation_report_path>
    ```
 
-   Both commands publish the privacy-safe report through Agora, then bind the
-   exact report text and settlement decision into the on-chain
+   Both commands publish one privacy-safe Markdown file through Agora, then bind
+   its exact bytes and settlement decision into the on-chain
    `guardian_result_commitment`. If publication fails, do not settle. With
    `--guardian-address`, they print one
    `*.transaction_prepared` JSON record containing `chain_id`, `to`, `value`,
