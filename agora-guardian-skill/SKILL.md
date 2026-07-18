@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Evaluates eligible Agora v0 Solver submissions and decides the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.2.5"
+  version: "0.2.6"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -74,8 +74,10 @@ agora-cli help guardian:settle-no-valid-submission
 ```
 
 Keep `AGORA_GUARDIAN_PRIVATE_KEYS_JSON` in the Guardian's secret storage and
-load it only for `guardian:open`. Load the Guardian settlement wallet only when
-an awarded settlement transaction is authorized. Never print either secret.
+load it only for `guardian:open`. Settlement commands need only the public
+address of the bounty's snapshotted Guardian settlement signer; the external
+wallet signs and broadcasts the prepared transaction. Never print Guardian
+decryption keys or wallet secrets.
 
 ## One-Time Runtime Upramp
 
@@ -186,18 +188,25 @@ page's disqualification rules and the protocol facts Agora provides.
    authorized either for this run or by a standing operator policy, run:
 
    ```sh
-   agora-cli guardian:settle-awarded <bounty_id> <winner> <evaluation_report_path>
+   agora-cli guardian:settle-awarded --guardian-address <guardian_address> <bounty_id> <winner> <evaluation_report_path>
    ```
 
    Or, for `no_valid_submission`, run:
 
    ```sh
-   agora-cli guardian:settle-no-valid-submission <bounty_id> <evaluation_report_path>
+   agora-cli guardian:settle-no-valid-submission --guardian-address <guardian_address> <bounty_id> <evaluation_report_path>
    ```
 
    Both commands bind the exact report text and settlement decision into the
-   on-chain `guardian_result_commitment`. Do not call either command for
-   `evaluation_defect`.
+   on-chain `guardian_result_commitment` and print one
+   `*.transaction_prepared` JSON record containing `chain_id`, `to`, `value`,
+   and `data`. `<guardian_address>` must be the bounty's snapshotted Guardian
+   settlement signer. Hand the unchanged transaction to that external wallet
+   for signing and broadcast, and do not mark the bounty settled until the
+   transaction succeeds. For a local manual test, omit
+   `--guardian-address` and set
+   `AGORA_GUARDIAN_SETTLEMENT_SIGNER_PRIVATE_KEY`; the CLI signs and sends the
+   same transaction. Do not call either command for `evaluation_defect`.
 
 ## Standing Rules
 

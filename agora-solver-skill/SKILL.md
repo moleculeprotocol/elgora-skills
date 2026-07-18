@@ -2,7 +2,7 @@
 name: agora-solver-skill
 description: Explains how a bounty Solver can read a published bounty challenge and seal their submission payload through Agora's timelock/Guardian private-submission flow.
 metadata:
-  version: "2.0.1"
+  version: "2.0.2"
   public_bundle_path: /skills/agora-solver-skill/SKILL.md
 ---
 
@@ -110,7 +110,7 @@ Put your submission files in one flat local directory (no subdirectories —
 one file per required artifact), then run:
 
 ```
-agora-cli solver:submit <bounty_id> <artifact_dir>
+agora-cli solver:submit --solver-address <solver_address> <bounty_id> <artifact_dir>
 ```
 
 What this does, so you can reason about failure modes:
@@ -138,17 +138,20 @@ What this does, so you can reason about failure modes:
    from the bounty's `submission_deadline`, so that nobody — including the
    Guardian — can open the envelope before the deadline is reached.
 5. Uploads the sealed ciphertext to Agora's object storage via a short-lived
-   signed URL obtained from Agora's public API, then submits the envelope's
-   commitment on-chain against the bounty. Nothing in this path ever asks
-   for or needs an Agora database credential, storage credential, or any
-   other operator secret — only your own wallet and the bounty's public
-   Guardian recipient set.
+   signed URL obtained from Agora's public API, then prints one
+   `submit.transaction_prepared` JSON record containing the canonical
+   `chain_id`, `to`, `value`, and `data` for your wallet to sign and broadcast.
+   The connected wallet must be the same `<solver_address>` supplied to the
+   command. Confirm the wallet transaction succeeds before treating the
+   submission as recorded. Nothing in this path ever asks for or needs an Agora
+   database credential, storage credential, or any other operator secret.
 
-Environment `agora-cli solver:submit` needs from you:
-
-- `AGORA_SOLVER_PRIVATE_KEY` — your Solver private key, used only to sign
-  the on-chain submission transaction. Treat it as a secret: never print,
-  log, or include it in any submitted artifact.
+The recommended flow supplies only the public Solver address. Keep the
+prepared transaction fields unchanged when handing them to the wallet. For a
+local manual test, omit `--solver-address` and set
+`AGORA_SOLVER_PRIVATE_KEY`; the CLI then signs and sends the same transaction
+it would otherwise print. Never print, log, or include that private key in any
+submitted artifact.
 
 Do not supply Guardian recipient keys yourself. The CLI obtains the bounty's
 published recipient set and verifies it against that bounty's on-chain
@@ -174,21 +177,21 @@ active submission at deadline, not your intent.
 If your submission wins, `agora-cli` also exposes the claim step:
 
 ```
-agora-cli claim <bounty_id>
+agora-cli claim --claimant-address <claimant_address> <bounty_id>
 ```
 
-This checks your claimable balance for the bounty and, if it is nonzero,
-signs and sends the on-chain claim transaction. It claims an already-queued
-payout — Guardian settlement, not this step, is what decided you won — so it
-needs only:
+This checks the supplied address's claimable balance and, if it is nonzero,
+prints one `claim.transaction_prepared` JSON record for that wallet to sign and
+broadcast. It claims an already-queued payout — Guardian settlement, not this
+step, is what decided you won. AgoraHub indexes claims by the winning Solver's
+own address and pays that same address, so `<claimant_address>` normally equals
+`<solver_address>`. Confirm the wallet transaction succeeds before treating the
+payout as claimed.
 
-- `AGORA_CLAIMANT_PRIVATE_KEY` — the private key for the address that already
-  holds the queued claimable balance for this bounty. AgoraHub indexes claims
-  by the winning Solver's own address and pays that same address, so this
-  normally must be `AGORA_SOLVER_PRIVATE_KEY` itself; use a different key only
-  if that other address is the one that actually holds the claimable balance.
-  As with submit, treat it as a secret and never include it in any artifact or
-  log output.
+For a local manual test, omit `--claimant-address` and set
+`AGORA_CLAIMANT_PRIVATE_KEY`; the CLI signs and sends the same claim
+transaction. Treat that key as a secret and never include it in an artifact or
+log output.
 
 As with Step 3, `AGORA_CHAIN_ID`, `AGORA_HUB_ADDRESS`, and
 `AGORA_RPC_URL` default to Agora's current live deployment;
