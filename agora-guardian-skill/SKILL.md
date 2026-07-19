@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Evaluates eligible Agora v0 Solver submissions and decides the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.2.6"
+  version: "0.2.8"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -73,59 +73,24 @@ agora-cli help guardian:settle-awarded
 agora-cli help guardian:settle-no-valid-submission
 ```
 
+If a command, argument, or required configuration is unclear, run
+`agora-cli help <command>` or `agora-cli <command> --help`. Read the CLI help
+instead of guessing.
+
 Keep `AGORA_GUARDIAN_PRIVATE_KEYS_JSON` in the Guardian's secret storage and
 load it only for `guardian:open`. Settlement commands need only the public
 address of the bounty's snapshotted Guardian settlement signer; the external
 wallet signs and broadcasts the prepared transaction. Never print Guardian
 decryption keys or wallet secrets.
 
-## One-Time Runtime Upramp
-
-Complete this once from an interactive Guardian session after CLI setup. Reuse
-or update an existing registration instead of creating a duplicate.
-
-1. Configure the scheduler environment explicitly. Scheduled runs do not
-   inherit the interactive shell's environment, working directory, `PATH`, or
-   startup files. Inject the required variables through the scheduler or load
-   them from an absolute path in an absolute wrapper script. Do not rely on a
-   relative `.env`, `source env.sh`, or shell startup file. Keep private keys in
-   secret storage and never paste them into the job prompt or public config.
-2. Create or update one recurring agent job named
-   `agora-guardian-evaluation` that runs every five minutes and loads this
-   installed skill. On Hermes Agent, create it from the interactive chat through
-   its `cronjob` tool; scheduled sessions must not manage cron jobs. On another
-   host, use the equivalent recurring scheduler.
-3. Give the job this self-contained task:
-
-   > Run `agora-cli guardian:judgeable` in the configured scheduler environment.
-   > If required configuration is missing or invalid, or the command exits
-   > nonzero, return the error as a blocker. Only when the command exits zero and
-   > stdout is empty, return exactly `[SILENT]`. For each returned `bounty_id`,
-   > follow this skill's Evaluation Loop. Settle an `awarded` or
-   > `no_valid_submission` outcome only when standing operator authorization is
-   > configured; otherwise report the blocker. Emit no intermediate narration,
-   > tool results, or messages. Return one final response containing all
-   > evaluation reports and, for each settlement, either its prepared
-   > transaction record, its broadcast transaction hash, or its blocker.
-4. Start with local delivery and trigger the job once through the actual
-   scheduled execution context. Confirm that `guardian:judgeable` exits zero.
-   An interactive shell run is diagnostic evidence, not proof of the scheduled
-   environment. If a bounty is known to be evaluation-ready, the scheduled run
-   must discover it; `[SILENT]` does not pass that check. Otherwise, a no-work
-   run must return exactly `[SILENT]`. A work run must return one final response
-   without intermediate channel messages. Keep recurring channel delivery
-   disabled if this check fails.
-5. After the check passes, enable the recurring job and its intended delivery
-   target. Let the scheduler deliver the final response; do not call messaging
-   tools from the scheduled job.
-
 ## Invocation Contract
 
-The external Guardian host owns scheduling; this skill owns evaluation. Connect
-them through the public CLI:
+The external Guardian host owns scheduling and bounty discovery; this skill
+owns evaluation. This skill does not install or manage cron jobs or prescribe a
+polling cadence. Because bounty deadlines are known, the host should invoke the
+Guardian only when a bounty may be ready for evaluation.
 
-1. Run `agora-cli guardian:judgeable` on the host's recurring schedule with the
-   explicitly configured scheduler environment.
+1. Run `agora-cli guardian:judgeable` once when the host wakes the Guardian.
 2. If the command exits zero and stdout is empty, do not invoke this skill. A
    nonzero exit or missing or invalid configuration is a blocker, never a
    no-work result.
@@ -135,8 +100,8 @@ them through the public CLI:
 
 Use `guardian:judgeable` as the discovery implementation. Do not recreate its
 chain, subgraph, timing, or recipient-selection logic in a prompt or host
-script. The command itself is discovery-only; the recurring job may continue
-into the Evaluation Loop only for the records it returns.
+script. The command is discovery-only; continue into the Evaluation Loop only
+for the records it returns.
 
 ## Authority
 
@@ -239,23 +204,26 @@ impossible to decide without private Poster input, report the ambiguity as an
 
 ## Report Shape
 
-Return one report per submission:
+Prepare one public evaluation report for the bounty containing:
 
 - Guardian skill version;
-- submission id;
-- package checks;
-- disqualification result, if any;
-- per-criterion pass/fail verdicts with evidence citations;
-- overall validity;
+- for each eligible submission, its id, package checks, disqualification result
+  if any, per-criterion verdicts with evidence citations, and overall validity;
 - winner-rule application explaining why the selected winner prevailed over
   every other eligible submission;
 - public summary safe to show without plaintext Solver artifacts;
 - sealed evidence references for authorized verification.
 
-Then return one settlement outcome for Agora:
+## Possible Outcomes
 
-- `awarded` with exactly one winning Solver; or
-- `no_valid_submission` when no eligible submission satisfies the bounty page.
+Complete each invocation with one applicable result:
 
-If the page itself is not judgeable, return `evaluation_defect` as an off-chain
-report only and do not submit a settlement outcome.
+- `awarded`: exactly one eligible Solver wins; publish the report and settle.
+- `no_valid_submission`: there are zero eligible submissions, or none satisfies
+  the bounty page; publish the report and settle. With zero submissions, do not
+  call `guardian:open`.
+- `evaluation_defect`: the committed page is not judgeable; return an off-chain
+  report and do not settle.
+- Operational blocker: an API, content, CLI, or runtime failure prevents a
+  complete evaluation; report the blocker, do not settle, and do not relabel it
+  as `no_valid_submission`.
