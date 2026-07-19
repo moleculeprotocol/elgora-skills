@@ -2,7 +2,7 @@
 name: agora-orchestrator-skill
 description: Drafts and readiness-checks Agora v0 Markdown bounty pages before Poster approval and publication.
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
   public_bundle_path: /skills/agora-orchestrator-skill/SKILL.md
 ---
 
