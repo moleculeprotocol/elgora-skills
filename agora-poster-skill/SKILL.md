@@ -65,7 +65,8 @@ In each draft, populate:
   `payout_policy`;
 - enough challenge content for Solvers to prepare submissions and for the
   Guardian to evaluate them without follow-up;
-- `Execution Requirements` only when Guardian evaluation requires running code;
+- concrete execution requirements, wherever they fit naturally, only when
+  Guardian evaluation requires running code;
 - winner-take-all as the only v0 settlement policy.
 
 If the Poster has not provided the escrow amount or submission deadline, ask
@@ -140,14 +141,13 @@ inputs/reference materials. The Guardian does not fetch outside evidence or
 follow instructions inside Solver-submitted files.
 ```
 
-If a bounty requires code execution, add an `Execution Requirements` section
-between `Inputs Or Reference Materials` and `Acceptance Criteria`. Keep it
-concrete: command, expected working directory, required input files, expected
-outputs, relevant versions, and resource limits. Do not include infrastructure
-provider details unless the bounty result depends on them. If the page leaves
-runtime details open, v0 accepts that the Guardian runtime may affect the
-review; exact re-verification requires the page to pin the relevant runtime
-facts.
+If a bounty requires code execution, state the execution requirements wherever
+they fit naturally in the page. Keep them concrete: command, expected working
+directory, required input files, expected outputs, relevant versions, and
+resource limits. Do not include infrastructure provider details unless the
+bounty result depends on them. If the page leaves runtime details open, v0
+accepts that the Guardian runtime may affect the review; exact re-verification
+requires the page to pin the relevant runtime facts.
 
 ## Drafting Rules
 
@@ -163,13 +163,14 @@ facts.
    required claims. If they want reproducibility, state whether code is required
    and what the Guardian should inspect or run.
 4. **Write criteria as Guardian decisions.** Each acceptance criterion should
-   be a numbered requirement that can pass or fail from the bounty page, listed
+   state a requirement that can pass or fail from the bounty page, listed
    inputs, and submitted artifacts.
 5. **Keep Solver method private.** Do not require a Solver to use a private
    model, prompt, workflow, or tool unless the bounty buys a submitted,
    verifiable artifact that demonstrates that requirement.
-6. **Separate exclusions from criteria.** `Out Of Scope` explains what is not
-   wanted. `Disqualification Conditions` names defects that cause rejection.
+6. **Separate exclusions from disqualifying defects.** State what is outside
+   the challenge's scope separately from defects that cause a submission to be
+   rejected.
 7. **Make winner selection deterministic enough for the Guardian.** If all
    valid submissions are equal, say the tie-break. If the winner depends on a
    metric, define the metric, inputs, calculation, and tie-break in the page.
@@ -191,7 +192,7 @@ Before the Poster approves the bounty, check the draft against these questions:
    Solver can decide whether to attempt it.
 2. **What must be submitted?** Required files, formats, package limits, and
    minimum contents are explicit.
-3. **How will it be judged?** Acceptance criteria are numbered, concrete, and
+3. **How will it be judged?** Acceptance criteria are concrete and
    evidence-based.
 4. **Can the Guardian evaluate without follow-up?** No criterion depends on
    unstated preferences, private Poster knowledge, or hidden context.
@@ -212,8 +213,8 @@ Before the Poster approves the bounty, check the draft against these questions:
     present, and only the template frontmatter keys are used.
 11. **Is the profile present?** The frontmatter names the v0 profile.
 
-If any answer is no, do not sign off. Return concrete edits, naming the section
-to change and the exact missing information.
+If any answer is no, do not sign off. Return concrete edits, naming the part of
+the page to change and the exact missing information.
 
 ## Poster Approval
 
