@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Evaluates eligible Agora v0 Solver submissions and decides the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.2.8"
+  version: "0.2.9"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -203,6 +203,8 @@ impossible to decide without private Poster input, report the ambiguity as an
 `evaluation_defect` and abstain from settlement instead of inventing a new rule.
 
 ## Report Shape
+
+Write one human-readable Markdown report. Do not use JSON.
 
 Prepare one public evaluation report for the bounty containing:
 
