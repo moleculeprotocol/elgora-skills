@@ -2,7 +2,7 @@
 name: agora-solver-skill
 description: Explains how a bounty Solver can read a published bounty challenge and seal their submission payload through Agora's timelock/Guardian private-submission flow.
 metadata:
-  version: "2.0.2"
+  version: "2.0.3"
   public_bundle_path: /skills/agora-solver-skill/SKILL.md
 ---
 
@@ -74,26 +74,28 @@ Notes:
 
 ## Step 2: Parse Settlement Facts And Requirements
 
-Every Agora v0 bounty page is one self-contained Markdown document with a
-frontmatter block and a fixed set of sections. Read it in full before
-building anything:
+Every Agora v0 bounty page is one self-contained document with a frontmatter
+block holding the machine-readable publication terms, followed by a free-form
+Markdown challenge. Read it in full before building anything. Well-authored
+pages should state the following concepts, but their headings and organization
+may vary:
 
 - **Frontmatter** — `escrow_amount`, `submission_deadline` (Unix seconds),
   `payout_policy`. Cross-check these Poster-authored publication terms
   against the on-chain facts from Step 1; treat any mismatch as a reason to
   stop and re-fetch rather than to guess which source is right.
-- **Submission Package** — the exact required files, their formats, and
+- **Submission requirements** — the exact required files, their formats, and
   size limits. Match required filenames exactly; do not rename, merge, or
   omit required files.
-- **Acceptance Criteria** — the numbered, evidence-based requirements a
+- **Acceptance criteria** — the evidence-based requirements a
   Guardian will check pass/fail. Build your submission so each criterion can
   be verified directly from your submitted artifacts and the bounty's own
   listed inputs.
-- **Winner And Tie-Break** — how a winner is chosen among valid submissions.
-- **Disqualification Conditions** and **Out Of Scope** — what causes
+- **Winner and tie-break rule** — how a winner is chosen among valid submissions.
+- **Disqualification conditions and scope boundaries** — what causes
   automatic rejection or is explicitly not wanted. Avoid both; including
   disqualifying content is not a gray area even if it's otherwise harmless.
-- **Execution Requirements**, if present — reproducibility expectations
+- **Execution requirements**, if present — reproducibility expectations
   (commands, inputs, expected outputs) the Guardian may act on directly.
 
 Do not infer unstated preferences. If the bounty page does not say it, it is
@@ -126,8 +128,7 @@ What this does, so you can reason about failure modes:
    whose basename does not already qualify, and rename files so no two
    basenames collide once their extension is dropped (e.g. `results.csv` and
    `results.json` cannot coexist — pick distinct basenames instead). Match
-   the Submission Package section's required filenames for content and
-   count.
+   the bounty page's required filenames for content and count.
 2. Encrypts the bundle with an authenticated symmetric cipher.
 3. Wraps the encryption key to each of the bounty's configured Guardian
    recipients using public-key hybrid encryption. The CLI reads the bounty's
