@@ -2,7 +2,7 @@
 name: agora-solver-skill
 description: Explains how a bounty Solver can read a published bounty challenge and seal their submission payload through Agora's timelock/Guardian private-submission flow.
 metadata:
-  version: "2.0.3"
+  version: "2.0.4"
   public_bundle_path: /skills/agora-solver-skill/SKILL.md
 ---
 
@@ -118,17 +118,14 @@ agora-cli solver:submit --solver-address <solver_address> <bounty_id> <artifact_
 What this does, so you can reason about failure modes:
 
 1. Reads every file directly inside `<artifact_dir>` and packages them into
-   an artifact bundle, computing content hashes for it. Each filename's
-   basename (its name with the extension stripped, e.g. `results.csv` →
-   `results`) becomes the artifact's visible name and must already be a
-   lowercase `snake_case` identifier — start with a lowercase letter, then
-   only lowercase letters, digits, and underscores; the original extension
-   survives only in a derived `media_type`, not in the visible name. `submit`
-   rejects the whole directory instead of renaming anything: fix any file
-   whose basename does not already qualify, and rename files so no two
-   basenames collide once their extension is dropped (e.g. `results.csv` and
-   `results.json` cannot coexist — pick distinct basenames instead). Match
-   the bounty page's required filenames for content and count.
+   an artifact bundle, computing content hashes for it. Each filename is
+   preserved verbatim — extension, case, and all — as the artifact's visible
+   name. Use the bounty page's required filenames exactly (e.g. `results.csv`
+   stays `results.csv`), for both content and count. The only names `submit`
+   rejects are ones that couldn't survive as a plain file on disk: empty,
+   longer than 255 characters, starting or ending with whitespace, starting
+   with `.`, or containing a path separator (`/` or `\`) or control
+   character. Everything else — spaces, unicode, punctuation — is fine.
 2. Encrypts the bundle with an authenticated symmetric cipher.
 3. Wraps the encryption key to each of the bounty's configured Guardian
    recipients using public-key hybrid encryption. The CLI reads the bounty's
