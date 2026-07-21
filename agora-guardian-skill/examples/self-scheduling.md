@@ -42,11 +42,24 @@ Work the board one bounty at a time, nearest `settlement_timeout_at` first.
 Judging one at a time also keeps your single settlement signer from sending two
 transactions at once.
 
+**Only one active judging cycle at a time.** A fixed-cadence wake can still
+overlap a long-running evaluation from the previous cycle — if that happens,
+two cycles can pick different bounties and call `guardian:settle` concurrently,
+racing the settlement signer's nonce. Guard against this with whatever your
+host offers (a single-flight lock file, a `flock`, your scheduler's own
+"skip if already running" / max-concurrency-1 policy) — the mechanism stays
+host-owned, but the one-at-a-time guarantee must hold across cycles, not just
+within one.
+
 ## One cycle, in pseudo-code
 
 ```
-ready = run("agora-cli guardian:judgeable")        # [] means no work → stop
+ready = run("agora-cli guardian:judgeable")   # empty stdout means no work → stop
 for each r in ready: ensure todo/<r.bounty_id>.json exists (with its timeout)
+
+reconcile against this fresh ready list before picking:
+  any doing/ file left over from a crashed cycle → move back to todo/
+  any failed/ file whose next_attempt_after has passed → move back to todo/
 
 pick the todo/ bounty with the smallest settlement_timeout_at
 move it to doing/
