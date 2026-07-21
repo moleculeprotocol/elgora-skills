@@ -11,19 +11,18 @@ board → sleep.** Two properties matter regardless of the tool you use to wake:
 - **Fixed cadence.** Wake on a fixed schedule (e.g. a few times a day), not a
   drifting "every N hours from last run."
 - **Catch up on missed wakes.** If your host was down when a wake was due, run it
-  on recovery. A missed wake must never mean a missed bounty.
-- **Buffer a wake timed to a discovered timestamp.** If you ever schedule a wake
-  for the exact moment a timestamp you found in bounty data arrives (e.g. a
-  `submissionDeadline`), add a short delay — about 20 seconds is usually
-  enough — before running `guardian:judgeable`. That gives the subgraph a
-  moment to index the block that crossed the threshold, so the run doesn't
-  come up empty and wait for the next cycle for no reason.
+  on recovery. A missed wake must never mean a missed bounty. This also covers a
+  wake that lands too early relative to finalized chain time (e.g. one timed to
+  a bounty's `submissionDeadline`): an empty result from that cycle is not an
+  error, just something the next scheduled run picks up.
 
-`guardian:judgeable` discovers candidates through a subgraph, which can lag the
-chain by a few blocks, and then revalidates each one against fresh finalized
-chain state before reporting it. So a missed or crashed cycle is still
-self-healing in practice: the next wake re-runs discovery and picks up the same
-ready bounties, once the subgraph has caught up.
+`guardian:judgeable` fetches candidate bounties from a subgraph, then before
+reporting anything it revalidates each candidate against fresh finalized
+AgoraHub state. So a missed or crashed cycle is still self-healing in practice:
+the next wake re-runs discovery and picks up the same ready bounties.
+<!-- A proposal to move the chain read from every discovery poll to once, right
+     before judging starts on a chosen bounty, is tracked in
+     https://github.com/moleculeprotocol/agora-v0/issues/123 -->
 
 ## A local board (kanban)
 
@@ -42,8 +41,8 @@ A file might hold `{ "bounty_id": "42", "settlement_timeout_at": "1750000000",
 "attempts": 1, "last_error": "sandbox timeout", "next_attempt_after": "..." }`.
 
 This board is a **convenience, never the source of truth.** If it is deleted or
-gets out of sync, run `guardian:judgeable` and rebuild `todo/` from what the
-chain says is ready. Never trust a stored flag over the chain — a bounty is
+gets out of sync, run `guardian:judgeable` and rebuild `todo/` from what it
+reports ready. Never trust a stored flag over the chain — a bounty is
 "done" only when the chain shows it settled, not when a file says so.
 
 Work the board one bounty at a time, nearest `settlement_timeout_at` first.
