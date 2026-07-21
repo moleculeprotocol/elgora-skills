@@ -2,7 +2,7 @@
 name: agora-poster-skill
 description: Self-contained Agora v0 Orchestrator skill for Posters drafting Markdown bounty challenge pages.
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   profile: agora_markdown_bounty_challenge_v0
   template_snapshot: packages/core/BOUNTY_CHALLENGE_SPEC.md, 2026-07-21
   public_bundle_path: /skills/agora-poster-skill/SKILL.md
@@ -45,7 +45,8 @@ Before drafting, collect enough Poster decisions to avoid placeholders:
   Agora will not convert them;
 - submission deadline as an absolute date/time with timezone. Convert it to
   Unix seconds in UTC for `submission_deadline`;
-- expected submission files, formats, size limits, and purpose;
+- expected deliverables and their purpose, plus any filename, format, count,
+  or size constraints the Poster intentionally requires;
 - acceptance criteria, disqualification conditions, out-of-scope boundaries,
   and winner/tie-break rule.
 
@@ -96,11 +97,13 @@ payout_policy: winner_take_all
 {The background, goal, and what a useful answer would accomplish.}
 
 ## Submission Package
+One row per deliverable this bounty actually needs — add or remove rows
+freely. Fill in `File` with an exact filename only if this bounty requires
+one; otherwise describe the deliverable there instead.
+
 | File | Required | Format | Max size | Purpose |
 |---|---:|---|---:|---|
-| `results.csv` | yes | CSV | {size} | primary answer table |
-| `analysis_report.md` | yes | Markdown/PDF | {size} | explanation and evidence |
-| `code.zip` | optional/yes | ZIP | {size} | reproducibility package, if required |
+| {exact filename, or a description if no exact name is required} | {yes/no} | {format, if this bounty requires one} | {size, if capped} | {what this deliverable is for} |
 
 Package rules:
 - archive format: {zip/tar/none, if specified}
@@ -191,8 +194,9 @@ Before the Poster approves the bounty, check the draft against these questions:
 
 1. **What is being bought?** The scientific goal is specific enough that a
    Solver can decide whether to attempt it.
-2. **What must be submitted?** Required files, formats, package limits, and
-   minimum contents are explicit.
+2. **What must be submitted?** Required deliverables and minimum contents are
+   explicit; filenames, formats, counts, and package limits are specified only
+   when they matter to judging.
 3. **How will it be judged?** Acceptance criteria are concrete and
    evidence-based.
 4. **Can the Guardian evaluate without follow-up?** No criterion depends on
