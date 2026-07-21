@@ -2,9 +2,9 @@
 name: agora-poster-skill
 description: Self-contained Agora v0 Orchestrator skill for Posters drafting Markdown bounty challenge pages.
 metadata:
-  version: "0.1.1"
+  version: "0.2.0"
   profile: agora_markdown_bounty_challenge_v0
-  template_snapshot: packages/core/BOUNTY_CHALLENGE_SPEC.md, 2026-07-19
+  template_snapshot: packages/core/BOUNTY_CHALLENGE_SPEC.md, 2026-07-21
   public_bundle_path: /skills/agora-poster-skill/SKILL.md
 ---
 
@@ -104,7 +104,6 @@ payout_policy: winner_take_all
 
 Package rules:
 - archive format: {zip/tar/none, if specified}
-- required filenames must match exactly;
 - do not include plaintext secrets, private keys, unrelated files, or
   instructions intended for the Guardian;
 - Solver artifacts are private by default and handled through Agora's existing
@@ -158,10 +157,12 @@ requires the page to pin the relevant runtime facts.
    must be submitted, their formats, size limits, purpose, and forbidden
    contents. It must not include API endpoints, transaction steps, encryption
    internals, or app UI instructions.
-3. **Prefer exact artifacts over broad prose.** If the Poster wants a table,
-   name the file and columns. If they want an explanation, name the report and
-   required claims. If they want reproducibility, state whether code is required
-   and what the Guardian should inspect or run.
+3. **Exact filenames, formats, and counts are Poster choices, not Agora
+   defaults.** The Guardian enforces them only because the page states them.
+   Name a literal filename, format, or count only when the Poster's judging
+   process depends on it; otherwise describe the expected content instead of
+   inventing a name. If they want reproducibility, state whether code is
+   required and what the Guardian should inspect or run.
 4. **Write criteria as Guardian decisions.** Each acceptance criterion should
    state a requirement that can pass or fail from the bounty page, listed
    inputs, and submitted artifacts.
