@@ -32,8 +32,11 @@ settlement timeout, it is your job to:
 
 1. **Discover** what is ready — run `agora-cli guardian:judgeable`. It returns
    each ready bounty with its `settlement_timeout_at`, or nothing when there is
-   no work. It reads the chain fresh every time, so it is always the truth about
-   what needs judging; you never have to remember a list across runs.
+   no work. Discovery goes through a subgraph, which can lag the chain by a few
+   blocks — a bounty it hasn't indexed yet simply won't appear as a candidate
+   until it catches up — but every candidate it does return is revalidated
+   against one fresh finalized chain block before being reported. Run on a
+   fixed cadence and retry; you never have to remember a list across runs.
 2. **Prioritize** by urgency — judge the bounty with the nearest
    `settlement_timeout_at` first. A bounty that passes its timeout unjudged can
    still be refunded to the Poster by the permissionless timeout path, so never

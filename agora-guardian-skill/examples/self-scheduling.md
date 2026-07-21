@@ -12,10 +12,18 @@ board → sleep.** Two properties matter regardless of the tool you use to wake:
   drifting "every N hours from last run."
 - **Catch up on missed wakes.** If your host was down when a wake was due, run it
   on recovery. A missed wake must never mean a missed bounty.
+- **Buffer a wake timed to a discovered timestamp.** If you ever schedule a wake
+  for the exact moment a timestamp you found in bounty data arrives (e.g. a
+  `submissionDeadline`), add a short delay — about 20 seconds is usually
+  enough — before running `guardian:judgeable`. That gives the subgraph a
+  moment to index the block that crossed the threshold, so the run doesn't
+  come up empty and wait for the next cycle for no reason.
 
-Because `guardian:judgeable` re-derives all ready work from the chain on every
-call, a missed or crashed cycle is self-healing: the next wake simply sees the
-same ready bounties again.
+`guardian:judgeable` discovers candidates through a subgraph, which can lag the
+chain by a few blocks, and then revalidates each one against fresh finalized
+chain state before reporting it. So a missed or crashed cycle is still
+self-healing in practice: the next wake re-runs discovery and picks up the same
+ready bounties, once the subgraph has caught up.
 
 ## A local board (kanban)
 
