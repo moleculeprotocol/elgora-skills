@@ -2,7 +2,7 @@
 name: agora-solver-skill
 description: Explains how a bounty Solver can read a published bounty challenge and seal their submission payload through Agora's timelock/Guardian private-submission flow.
 metadata:
-  version: "2.0.3"
+  version: "2.1.0"
   public_bundle_path: /skills/agora-solver-skill/SKILL.md
 ---
 
@@ -101,7 +101,49 @@ may vary:
 Do not infer unstated preferences. If the bounty page does not say it, it is
 not a requirement.
 
-## Step 3: Seal The Submission
+## Step 3: Self-Check Before Sealing
+
+Agora's server never sees your submission in plaintext — only the Guardian
+can, and only after the deadline. There is no server-side pre-check that
+catches a mismatched filename, a corrupt archive, or a build that silently
+doesn't run before you seal. You are the only party who can catch these
+before the deadline makes them permanent, so reproduce the Guardian's
+package-inspection and disqualification checks yourself against the plaintext
+files still sitting in `<artifact_dir>`:
+
+1. **Filenames, only if the bounty page requires them.** If the bounty page
+   states required filenames, list `<artifact_dir>` (`ls -1 <artifact_dir>`)
+   and diff it, byte for byte, against those stated names — same case, same
+   extension, same count. The Guardian checks this by exact string
+   comparison against what the bounty page requires; it does not fuzzy-match,
+   strip extensions, or infer intent, so a renamed or missing required file
+   is grounds for disqualification regardless of what it contains. If the
+   bounty page does not require specific filenames, there is nothing to
+   check here — leave your files named however you like; Agora does not
+   rename, strip extensions from, or lowercase anything you submit (see
+   Step 4).
+2. **Archives.** If a required artifact is an archive, confirm it actually
+   opens (`unzip -t <file>` / `tar -tf <file>`) and contains exactly the
+   entries you intend — no stray `__MACOSX/`, no extra nesting level, no
+   leftover build output.
+3. **Execution requirements.** If the bounty states commands, inputs, or
+   expected outputs the Guardian may run directly, run them yourself first,
+   from a clean copy of exactly what you are about to submit — not your
+   working directory, which may hold files you don't intend to include. The
+   Guardian evaluates only on its own host, using one of the bounty's stated
+   allowed languages/toolchains, and cannot install anything requiring root.
+   If a dependency is unusual or your build needs privileges that host won't
+   have, disqualification is likely even if the code itself is correct.
+4. **Disqualification conditions, once more.** Re-read the bounty page's
+   disqualification and scope-boundary language against your final
+   `<artifact_dir>` contents — not your memory of it from Step 2.
+
+This is a mechanical, structural check: it verifies the Guardian *can*
+evaluate your submission, not that it *will* accept it. Standing Rule 6 still
+applies — you have no way to see or predict the substantive, evidence-based
+verdict on your acceptance criteria.
+
+## Step 4: Seal The Submission
 
 Agora v0 has no separate "encrypt" step — sealing happens as part of
 submitting, through Agora's Solver command-line tool, `agora-cli`. Install it
@@ -118,17 +160,16 @@ agora-cli solver:submit --solver-address <solver_address> <bounty_id> <artifact_
 What this does, so you can reason about failure modes:
 
 1. Reads every file directly inside `<artifact_dir>` and packages them into
-   an artifact bundle, computing content hashes for it. Each filename's
-   basename (its name with the extension stripped, e.g. `results.csv` →
-   `results`) becomes the artifact's visible name and must already be a
-   lowercase `snake_case` identifier — start with a lowercase letter, then
-   only lowercase letters, digits, and underscores; the original extension
-   survives only in a derived `media_type`, not in the visible name. `submit`
-   rejects the whole directory instead of renaming anything: fix any file
-   whose basename does not already qualify, and rename files so no two
-   basenames collide once their extension is dropped (e.g. `results.csv` and
-   `results.json` cannot coexist — pick distinct basenames instead). Match
-   the bounty page's required filenames for content and count.
+   an artifact bundle, computing content hashes for it. **Agora preserves the
+   filename you submit — it does not rename, strip extensions from, or
+   lowercase anything.** Whether a specific name, extension, format, or file
+   count is required is entirely up to the Poster; Guardian checks those
+   details only when the bounty page says so (see Step 3). The only
+   constraint `submit` itself enforces is safe transport, not a naming
+   convention it invents: a filename must start with a letter or digit and
+   otherwise contain only letters, digits, dots, underscores, or hyphens — no
+   spaces, no path separators, no other punctuation. Ordinary filenames like
+   `results.csv` or `RUN.md` already satisfy this.
 2. Encrypts the bundle with an authenticated symmetric cipher.
 3. Wraps the encryption key to each of the bounty's configured Guardian
    recipients using public-key hybrid encryption. The CLI reads the bounty's
@@ -170,10 +211,10 @@ bounty's `BountyCreated` event on chain.
 Resubmitting before the deadline replaces your active submission; only the
 active submission at the exact `submission_deadline` is eligible for
 evaluation. Do not submit a package you have not validated against Step 2's
-requirements just to "hold a slot" — the Guardian evaluates the literal
-active submission at deadline, not your intent.
+requirements and Step 3's self-check just to "hold a slot" — the Guardian
+evaluates the literal active submission at deadline, not your intent.
 
-## Step 4: Claim Your Reward
+## Step 5: Claim Your Reward
 
 If your submission wins, `agora-cli` also exposes the claim step:
 
@@ -194,7 +235,7 @@ For a local manual test, omit `--claimant-address` and set
 transaction. Treat that key as a secret and never include it in an artifact or
 log output.
 
-As with Step 3, `AGORA_CHAIN_ID`, `AGORA_HUB_ADDRESS`, and
+As with Step 4, `AGORA_CHAIN_ID`, `AGORA_HUB_ADDRESS`, and
 `AGORA_RPC_URL` default to Agora's current live deployment;
 override them only to target a different one.
 

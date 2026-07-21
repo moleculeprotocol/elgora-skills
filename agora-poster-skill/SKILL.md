@@ -2,9 +2,9 @@
 name: agora-poster-skill
 description: Self-contained Agora v0 Orchestrator skill for Posters drafting Markdown bounty challenge pages.
 metadata:
-  version: "0.1.1"
+  version: "0.3.0"
   profile: agora_markdown_bounty_challenge_v0
-  template_snapshot: packages/core/BOUNTY_CHALLENGE_SPEC.md, 2026-07-19
+  template_snapshot: packages/core/BOUNTY_CHALLENGE_SPEC.md, 2026-07-21
   public_bundle_path: /skills/agora-poster-skill/SKILL.md
 ---
 
@@ -45,7 +45,8 @@ Before drafting, collect enough Poster decisions to avoid placeholders:
   Agora will not convert them;
 - submission deadline as an absolute date/time with timezone. Convert it to
   Unix seconds in UTC for `submission_deadline`;
-- expected submission files, formats, size limits, and purpose;
+- expected deliverables and their purpose, plus any filename, format, count,
+  or size constraints the Poster intentionally requires;
 - acceptance criteria, disqualification conditions, out-of-scope boundaries,
   and winner/tie-break rule.
 
@@ -96,15 +97,16 @@ payout_policy: winner_take_all
 {The background, goal, and what a useful answer would accomplish.}
 
 ## Submission Package
+One row per deliverable this bounty actually needs — add or remove rows
+freely. Fill in `File` with an exact filename only if this bounty requires
+one; otherwise describe the deliverable there instead.
+
 | File | Required | Format | Max size | Purpose |
 |---|---:|---|---:|---|
-| `results.csv` | yes | CSV | {size} | primary answer table |
-| `analysis_report.md` | yes | Markdown/PDF | {size} | explanation and evidence |
-| `code.zip` | optional/yes | ZIP | {size} | reproducibility package, if required |
+| {exact filename, or a description if no exact name is required} | {yes/no} | {format, if this bounty requires one} | {size, if capped} | {what this deliverable is for} |
 
 Package rules:
 - archive format: {zip/tar/none, if specified}
-- required filenames must match exactly;
 - do not include plaintext secrets, private keys, unrelated files, or
   instructions intended for the Guardian;
 - Solver artifacts are private by default and handled through Agora's existing
@@ -158,10 +160,12 @@ requires the page to pin the relevant runtime facts.
    must be submitted, their formats, size limits, purpose, and forbidden
    contents. It must not include API endpoints, transaction steps, encryption
    internals, or app UI instructions.
-3. **Prefer exact artifacts over broad prose.** If the Poster wants a table,
-   name the file and columns. If they want an explanation, name the report and
-   required claims. If they want reproducibility, state whether code is required
-   and what the Guardian should inspect or run.
+3. **Exact filenames, formats, and counts are Poster choices, not Agora
+   defaults.** The Guardian enforces them only because the page states them.
+   Name a literal filename, format, or count only when the Poster's judging
+   process depends on it; otherwise describe the expected content instead of
+   inventing a name. If they want reproducibility, state whether code is
+   required and what the Guardian should inspect or run.
 4. **Write criteria as Guardian decisions.** Each acceptance criterion should
    state a requirement that can pass or fail from the bounty page, listed
    inputs, and submitted artifacts.
@@ -190,8 +194,9 @@ Before the Poster approves the bounty, check the draft against these questions:
 
 1. **What is being bought?** The scientific goal is specific enough that a
    Solver can decide whether to attempt it.
-2. **What must be submitted?** Required files, formats, package limits, and
-   minimum contents are explicit.
+2. **What must be submitted?** Required deliverables and minimum contents are
+   explicit; filenames, formats, counts, and package limits are specified only
+   when they matter to judging.
 3. **How will it be judged?** Acceptance criteria are concrete and
    evidence-based.
 4. **Can the Guardian evaluate without follow-up?** No criterion depends on
