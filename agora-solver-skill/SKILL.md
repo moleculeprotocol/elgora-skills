@@ -111,15 +111,17 @@ before the deadline makes them permanent, so reproduce the Guardian's
 package-inspection and disqualification checks yourself against the plaintext
 files still sitting in `<artifact_dir>`:
 
-1. **Filenames, literally.** List `<artifact_dir>` (`ls -1 <artifact_dir>`)
-   and diff it, byte for byte, against the bounty page's stated required
-   filenames — same case, same extension, same count. The Guardian checks
-   this by exact string comparison against the bounty page; it does not
-   fuzzy-match, strip extensions, or infer intent, so a renamed or missing
-   required file is grounds for disqualification regardless of what it
-   contains. (Step 4's `solver:submit` only rejects filenames that couldn't
-   survive as a plain file on disk at all — it has no way to know any given
-   bounty's required names, so it cannot check this for you.)
+1. **Filenames, only if the bounty page requires them.** If the bounty page
+   states required filenames, list `<artifact_dir>` (`ls -1 <artifact_dir>`)
+   and diff it, byte for byte, against those stated names — same case, same
+   extension, same count. The Guardian checks this by exact string
+   comparison against what the bounty page requires; it does not fuzzy-match,
+   strip extensions, or infer intent, so a renamed or missing required file
+   is grounds for disqualification regardless of what it contains. If the
+   bounty page does not require specific filenames, there is nothing to
+   check here — leave your files named however you like; Agora does not
+   rename, strip extensions from, or lowercase anything you submit (see
+   Step 4).
 2. **Archives.** If a required artifact is an archive, confirm it actually
    opens (`unzip -t <file>` / `tar -tf <file>`) and contains exactly the
    entries you intend — no stray `__MACOSX/`, no extra nesting level, no
@@ -158,14 +160,16 @@ agora-cli solver:submit --solver-address <solver_address> <bounty_id> <artifact_
 What this does, so you can reason about failure modes:
 
 1. Reads every file directly inside `<artifact_dir>` and packages them into
-   an artifact bundle, computing content hashes for it. Each filename is
-   preserved verbatim — extension, case, and all — as the artifact's visible
-   name. Use the bounty page's required filenames exactly (e.g. `results.csv`
-   stays `results.csv`), for both content and count. The only names `submit`
-   rejects are ones that couldn't survive as a plain file on disk: empty,
-   longer than 255 characters, starting or ending with whitespace, starting
-   with `.`, or containing a path separator (`/` or `\`) or control
-   character. Everything else — spaces, unicode, punctuation — is fine.
+   an artifact bundle, computing content hashes for it. **Agora preserves the
+   filename you submit — it does not rename, strip extensions from, or
+   lowercase anything.** Whether a specific name, extension, format, or file
+   count is required is entirely up to the Poster; Guardian checks those
+   details only when the bounty page says so (see Step 3). The only
+   constraint `submit` itself enforces is safe transport, not a naming
+   convention it invents: a filename must start with a letter or digit and
+   otherwise contain only letters, digits, dots, underscores, or hyphens — no
+   spaces, no path separators, no other punctuation. Ordinary filenames like
+   `results.csv` or `RUN.md` already satisfy this.
 2. Encrypts the bundle with an authenticated symmetric cipher.
 3. Wraps the encryption key to each of the bounty's configured Guardian
    recipients using public-key hybrid encryption. The CLI reads the bounty's
