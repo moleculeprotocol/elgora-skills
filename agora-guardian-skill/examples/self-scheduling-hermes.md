@@ -22,9 +22,9 @@ Everything here still obeys the skill's invariants:
 
 Hermes gives you two primitives that map cleanly onto the blueprint:
 
-- **A script-backed cron job.** A lightweight Python script runs on every tick
-  with **no LLM and no tokens** — it polls the chain and updates the board. The
-  LLM only wakes when there is real work, so idle ticks are free.
+- **A script-backed cron job.** A lightweight Python script polls the chain and
+  updates the board on every tick. It returns `wakeAgent:false` while idle, so
+  the LLM only wakes for work or blockers.
 - **A persistent kanban file.** Each cron session is a fresh context with no
   memory of previous runs. An on-disk JSON file tracks every known bounty across
   sessions: it enforces one-at-a-time evaluation, recovers from crashes, and
@@ -47,7 +47,7 @@ The wrapper is a plain bash script at an absolute path that:
 1. Sources nvm from its absolute path (`$NVM_DIR/nvm.sh`).
 2. Selects Node 24 (the skill requires `>=24 <25`) via `nvm use 24 --silent`.
 3. Loads non-secret env vars from an absolute dotenv file (`agora.env`).
-4. Loads secrets from absolute key files into the env vars the CLI expects.
+4. Loads only the secret required by `guardian:open` or `guardian:settle`.
 5. `exec "$@"` — hands off to the `agora-cli` command it was given.
 
 ```bash
@@ -64,20 +64,23 @@ NVM_DIR="/home/<user>/.nvm"
 
 set -a; source "$ENV_FILE"; set +a
 
-export AGORA_GUARDIAN_PRIVATE_KEYS_JSON
-AGORA_GUARDIAN_PRIVATE_KEYS_JSON=$(cat "$KEYS_FILE")
-
-export AGORA_GUARDIAN_SETTLEMENT_SIGNER_PRIVATE_KEY
-AGORA_GUARDIAN_SETTLEMENT_SIGNER_PRIVATE_KEY=$(cat "$WALLET_FILE")
+case "${1:-} ${2:-}" in
+  "agora-cli guardian:open")
+    export AGORA_GUARDIAN_PRIVATE_KEYS_JSON
+    AGORA_GUARDIAN_PRIVATE_KEYS_JSON=$(cat "$KEYS_FILE")
+    ;;
+  "agora-cli guardian:settle")
+    export AGORA_GUARDIAN_SETTLEMENT_SIGNER_PRIVATE_KEY
+    AGORA_GUARDIAN_SETTLEMENT_SIGNER_PRIVATE_KEY=$(cat "$WALLET_FILE")
+    ;;
+esac
 
 exec "$@"
 ```
 
-The two private keys are loaded here so they exist **only in the CLI process's
-environment** for the one command that needs them — `guardian:open` reads
-`AGORA_GUARDIAN_PRIVATE_KEYS_JSON`, `guardian:settle` reads
-`AGORA_GUARDIAN_SETTLEMENT_SIGNER_PRIVATE_KEY`. They never touch a prompt, a job
-definition, or a log.
+The wrapper loads the decryption key only for `guardian:open` and the settlement
+key only for `guardian:settle`. Other commands receive neither. The keys never
+touch a prompt, job definition, or log.
 
 ### The `secrets/` path scanner — use a symlink
 
@@ -192,8 +195,8 @@ without cleaning up after itself.
 If the file is deleted or corrupt, the discovery script rebuilds it from
 `guardian:judgeable` on the next tick (it starts from `{}` and re-adds every
 ready bounty as `todo`). A bounty is only truly `done` when the **chain** shows
-it settled — the `done` flag just stops *us* from re-judging something that can
-linger in `judgeable` until its timeout (see Part 4).
+it settled — the `done` flag just stops *us* from re-judging while that
+settlement reaches the finalized-chain read.
 
 ---
 
@@ -214,18 +217,18 @@ It runs on every tick **before** the LLM and, in order:
 3. Merges ready bounties into the board as `todo` (new ids) and refreshes the
    authoritative timeout on known ids — without resurrecting anything already
    `done`/`failed`.
-4. Enforces one-at-a-time: if any entry is `doing`, prints `BUSY` and stops.
+4. Enforces one-at-a-time: if any entry is `doing`, emits `BUSY` and stops.
 5. Builds the candidate pool as **ready ∩ not-finished** and picks the most
    urgent (nearest `settlement_timeout_at`).
-6. Prints exactly one line:
+6. Emits one JSON line with `wakeAgent` and `guardian_action`:
 
-| Output | Meaning | Agent does |
+| Guardian action | Meaning | `wakeAgent` |
 |---|---|---|
-| `NO_WORK` | nothing ready | reply `[SILENT]` — zero LLM cost |
-| `BUSY:<id>` | a cycle is in progress | reply `[SILENT]` |
-| `BLOCKER:<msg>` | CLI/env failure | report it, stop |
-| `EVALUATE:<id>` | fresh bounty ready | run the full judging cycle |
-| `RETRY:<id>:<n>:<reason>` | previous attempt failed | retry (attempt `n`) |
+| `NO_WORK` | nothing ready | `false` |
+| `BUSY:<id>` | a cycle is in progress | `false` |
+| `BLOCKER:<msg>` | CLI/env failure | `true` |
+| `EVALUATE:<id>` | fresh bounty ready | `true` |
+| `RETRY:<id>:<n>:<reason>` | previous attempt failed | `true` |
 
 ### Why intersect with the fresh ready list
 
@@ -235,9 +238,8 @@ tick* and *what we have not finished*. Two consequences fall out for free:
 - A bounty **settled elsewhere** simply stops appearing in `judgeable`, so it is
   never handed out again — no stale-flag guessing, no risk of wrongly marking a
   still-live bounty done from a transient subgraph blip.
-- A bounty we settled that **lingers** in `judgeable` (a `no_valid_submission`
-  stays listed until its timeout) is skipped because its kanban status is
-  already `done`. The board is exactly what stops the re-judging loop.
+- A bounty we settled can remain in `judgeable` until settlement reaches the
+  finalized-chain read. Its `done` status stops re-judging during that window.
 
 ### One-at-a-time guarantee
 
@@ -276,8 +278,8 @@ The prompt is **static** — the same text every tick. The only per-bounty varia
 is the id, which the agent reads from the script's output. It never carries a
 secret, key, or host path. The prompt must:
 
-1. Read the discovery script's output from the `## Script Output` section.
-2. For `NO_WORK` or `BUSY:<id>` → reply exactly `[SILENT]` and stop.
+1. Read `guardian_action` from the JSON in `## Script Output`.
+2. `NO_WORK` and `BUSY:<id>` do not reach the prompt because `wakeAgent:false`.
 3. For `BLOCKER:<msg>` → report the message and stop; do not settle anything.
 4. For `EVALUATE:<id>` or `RETRY:<id>:<n>:<reason>`:
    - mark the bounty `doing` in the kanban **first**;
@@ -321,7 +323,7 @@ a second cycle could pick it up in parallel.
 ```python
 # 1. Verify the script runs cleanly in a real shell.
 terminal("python3 ~/.hermes/scripts/guardian-discover.py")
-# Expected: NO_WORK (or EVALUATE:<id> if a bounty is genuinely ready)
+# Expected: one JSON line with wakeAgent and guardian_action
 
 # 2. Trigger one manual run and read its output.
 cronjob(action="run", job_id="<job_id>")
@@ -354,16 +356,12 @@ These are the sharp edges observed running this setup against Base Sepolia.
   `submission_count: 0` / empty `submissions[]`, the outcome is immediately
   `no_valid_submission` — `submit` then `settle` it, don't open anything. (This
   is the skill's "with zero submissions, do not call `guardian:open`.")
-- **404 from `guardian:open` = missing content record.** The commitment exists
-  on-chain but no ciphertext was uploaded — a platform-side issue, not a
-  Guardian misconfiguration. Retry once; if still 404, treat the submission per
-  the page's disqualification rules and preserve the 404 as a platform blocker
-  to investigate.
-- **`no_valid_submission` bounties stay in `judgeable` until timeout.** A bounty
-  whose submissions are all disqualified keeps appearing until its
-  `settlementTimeoutAt`. Without the kanban's `done` state a 2-minute job would
-  re-evaluate it ~1440 times over a 48h window. The board's `done` status is
-  what breaks that loop.
+- **404 from `guardian:open` = operational blocker.** Agora could not return the
+  submission content record; this does not prove the submission is invalid.
+  Retry once. If it persists, mark the attempt failed, do not disqualify the
+  submission, and do not settle; retry on a later cycle.
+- **Settled bounties can linger until finality.** The board's `done` status
+  prevents re-evaluation until settlement reaches the finalized-chain read.
 - **API 500 on `submit`/`settle`: retry without re-evaluating.** If the
   upload/settlement step fails with a 500, evaluation is already complete and the
   winner decided. Mark the entry `failed` with reason `"API 500 on

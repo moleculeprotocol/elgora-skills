@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 """Guardian discovery + kanban tick for a Hermes-hosted Agora Guardian.
 
-Runs once per cron tick, BEFORE the LLM, with no tokens spent. It polls the
-chain via `agora-cli guardian:judgeable` (through the secrets wrapper), keeps a
-persistent kanban file so a fresh cron context can pick up where the last one
-left off, and prints exactly one line telling the agent what to do:
-
-    NO_WORK                     nothing ready          -> agent replies [SILENT]
-    BUSY:<id>                   evaluation in progress  -> agent replies [SILENT]
-    BLOCKER:<msg>               CLI / env failure       -> agent reports it
-    EVALUATE:<id>               fresh bounty ready       -> agent judges it
-    RETRY:<id>:<n>:<reason>     previous attempt failed  -> agent retries it
+Runs once per cron tick, BEFORE the LLM. It polls the chain via `agora-cli
+guardian:judgeable` (through the secrets wrapper), keeps a persistent kanban
+file so a fresh cron context can pick up where the last one left off, and emits
+one JSON line with `wakeAgent` plus `guardian_action`. Idle or busy ticks set
+`wakeAgent` to false; work and blockers wake the agent.
 
 The kanban is local bookkeeping, never the source of truth. The chain is. If the
 file is lost or corrupt it is rebuilt from `guardian:judgeable` on the next tick.
@@ -21,7 +16,6 @@ Copy to ~/.hermes/scripts/guardian-discover.py on the Hermes host. Stdlib only.
 import json
 import os
 import subprocess
-import sys
 import time
 from datetime import datetime, timezone
 
@@ -40,6 +34,10 @@ JUDGEABLE_TIMEOUT = 90       # seconds to wait on the CLI call
 
 class Blocker(Exception):
     """A CLI/env failure that should surface to the operator, not be swallowed."""
+
+
+def emit_guardian_action(action: str, wake_agent: bool) -> None:
+    print(json.dumps({"wakeAgent": wake_agent, "guardian_action": action}))
 
 
 def now_ts() -> int:
@@ -152,13 +150,13 @@ def main() -> None:
         ready = discover()
     except Blocker as exc:
         save_kanban(kb)
-        print(f"BLOCKER:{exc}")
+        emit_guardian_action(f"BLOCKER:{exc}", True)
         return
 
     # 4. Merge ready bounties in. New ids become todo; known ids keep the
     #    authoritative timeout. We never resurrect a done/failed entry here — a
-    #    bounty we already settled can linger in judgeable until its timeout
-    #    (e.g. no_valid_submission), and the kanban is what stops us re-judging.
+    #    bounty we settled can remain in judgeable until settlement reaches the
+    #    finalized read, and the kanban is what stops us re-judging meanwhile.
     for bid, timeout_at in ready.items():
         if bid not in kb:
             kb[bid] = new_entry(timeout_at, t)
@@ -170,7 +168,7 @@ def main() -> None:
     for bid, e in kb.items():
         if e["status"] == "doing":
             save_kanban(kb)
-            print(f"BUSY:{bid}")
+            emit_guardian_action(f"BUSY:{bid}", False)
             return
 
     # 6. Candidate pool = bounties the chain reports ready AND that we have not
@@ -187,7 +185,7 @@ def main() -> None:
 
     if not candidates:
         save_kanban(kb)
-        print("NO_WORK")
+        emit_guardian_action("NO_WORK", False)
         return
 
     # 7. Most urgent first: nearest settlement_timeout_at wins.
@@ -200,14 +198,14 @@ def main() -> None:
         kb[bid]["retry_count"] = retry_count + 1
         save_kanban(kb)
         reason = kb[bid].get("failure_reason") or ""
-        print(f"RETRY:{bid}:{retry_count + 1}:{reason}")
+        emit_guardian_action(f"RETRY:{bid}:{retry_count + 1}:{reason}", True)
     else:
         save_kanban(kb)
-        print(f"EVALUATE:{bid}")
+        emit_guardian_action(f"EVALUATE:{bid}", True)
 
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as exc:  # never let the tick die silently
-        print(f"BLOCKER:discover script crashed: {exc}", file=sys.stdout)
+        emit_guardian_action(f"BLOCKER:discover script crashed: {exc}", True)
