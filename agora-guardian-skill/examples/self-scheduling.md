@@ -96,7 +96,9 @@ The scheduler is the runner's choice. Some options, all expressing the same
   *cycle logic* behind a stable command on your `PATH` and pass only the bounty
   id into any sub-prompt — never a secret path, key, or host path. (A prompt that
   contains a `.../secrets/...` path can be rejected by a prompt scanner, which
-  would silently skip the run.)
+  would silently skip the run.) A fully worked version of this — script-backed
+  cron, on-disk kanban, secrets wrapper, and the prompt — is in
+  [self-scheduling-hermes.md](self-scheduling-hermes.md).
 
 Whatever you choose, keep it to **one** scheduler. Do not have a scheduled job
 create another scheduled job at runtime — that second scheduler is exactly the

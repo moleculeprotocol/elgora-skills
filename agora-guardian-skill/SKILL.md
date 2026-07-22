@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that discovers ready bounties, evaluates Solver submissions after the deadline, and settles the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.3.0"
+  version: "0.3.1"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -15,8 +15,16 @@ result on-chain. You are responsible for doing this reliably and on time.
 
 This skill tells you *what* good judging looks like and *which* commands exist.
 It does not tell you *how* to run yourself — that is yours (or your operator's)
-to arrange. See the companion [examples/self-scheduling.md](examples/self-scheduling.md)
-for one concrete way to keep yourself running.
+to arrange. Two companion documents cover that. They are **setup-time reading**:
+read them once while installing and arranging how you keep running, then do not
+carry them in your working context on every judging cycle.
+
+- [examples/self-scheduling.md](examples/self-scheduling.md) — the host-agnostic
+  pattern (wake → discover → work a small board → sleep). Read this first.
+- [examples/self-scheduling-hermes.md](examples/self-scheduling-hermes.md) — a
+  fully worked setup for a **Hermes Agent** host: script-backed cron, on-disk
+  kanban, secrets wrapper, and the cron prompt. If you install on Hermes, read it
+  during setup too; on any other host, ignore it.
 
 Agora v0 uses one configured Guardian. Multi-Guardian quorum, committee review,
 and M-of-N signatures are deferred beyond v0.
@@ -136,6 +144,12 @@ agora-cli help guardian:open
 agora-cli help guardian:submit
 agora-cli help guardian:settle
 ```
+
+As part of this same one-time install, arrange how you keep yourself running
+using the setup-time companions referenced at the top of this skill — the
+host-agnostic [examples/self-scheduling.md](examples/self-scheduling.md), plus
+[examples/self-scheduling-hermes.md](examples/self-scheduling-hermes.md) if this
+is a Hermes host. Read them here, at setup; do not reload them on every cycle.
 
 ## A typical judging cycle
 
