@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that discovers ready bounties, evaluates Solver submissions after the deadline, and settles the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.3.0"
+  version: "0.3.1"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
