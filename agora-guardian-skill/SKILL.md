@@ -158,10 +158,12 @@ This is guidance, not a rigid script — but a sound cycle looks like:
 1. Run `guardian:judgeable`. If it prints nothing, there is no work; stop.
 2. Order the returned bounties by nearest `settlement_timeout_at`.
 3. For the bounty you pick, fetch its evaluation inputs from
-   `<AGORA_API_BASE_URL>/api/bounties/<bounty_id>`: use its `challenge` as the
-   approved `bounty_challenge.md` and its active `bounty.submissions` as the
-   eligible Solver identities and commitments. Stop without settling if the
-   approved challenge is unavailable.
+   `<AGORA_API_BASE_URL>/api/bounties/<bounty_id>`. Agora returns `challenge`
+   only after verifying that its exact UTF-8 Markdown text hashes to
+   `bounty.spec_commitment`; use it as the approved `bounty_challenge.md` and
+   use the active `bounty.submissions` as the eligible Solver identities and
+   commitments. If `challenge` is missing, null, or empty, stop before
+   evaluation and do not settle.
 4. `guardian:open` each active submission and confirm the page's required files
    are present and inspectable.
 5. Run or inspect the artifacts as the bounty requires — for example, execute

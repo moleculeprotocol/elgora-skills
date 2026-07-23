@@ -61,16 +61,14 @@ Notes:
   rather than through a secondary index, so it stays reliable even in
   environments where an indexed read-model is unavailable or still
   catching up.
-- If the challenge text is missing or empty in the response, treat the
+- Agora returns `challenge` only after verifying that its exact UTF-8 Markdown
+  text hashes to `bounty.spec_commitment`.
+- If `challenge` is missing, null, or empty in the response, treat the
   bounty as **not ready to attempt** rather than as a bounty with no
   requirements.
 - If a bounty listing page links to a human-readable bounty URL, prefer that
   page's rendered view when available; otherwise use the API response
   directly.
-- If the response includes a content commitment for the challenge text,
-  verify it against the fetched Markdown when Agora exposes a way to do so.
-  Do not skip this check if it is available — it is what prevents you from
-  building against tampered or stale spec content.
 
 ## Step 2: Parse Settlement Facts And Requirements
 
