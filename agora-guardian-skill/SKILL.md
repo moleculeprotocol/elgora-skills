@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that discovers ready bounties, evaluates Solver submissions after the deadline, and settles the winner from the approved Markdown bounty page.
 metadata:
-  version: "0.3.1"
+  version: "0.3.2"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -39,12 +39,15 @@ Nobody hands you one bounty at a time. Between the submission deadline and the
 settlement timeout, it is your job to:
 
 1. **Discover** what is ready — run `agora-cli guardian:judgeable`. It returns
-   each ready bounty with its `settlement_timeout_at`, or nothing when there is
-   no work. Discovery goes through a subgraph, which can lag the chain by a few
-   blocks — a bounty it hasn't indexed yet simply won't appear as a candidate
-   until it catches up — but every candidate it does return is revalidated
-   against one fresh finalized chain block before being reported. Run on a
-   fixed cadence and retry; you never have to remember a list across runs.
+   each ready bounty with its `settlement_timeout_at` and its `submissions`
+   (each eligible Solver's address and commitment), or nothing when there is
+   no work. Discovery goes through a subgraph, which can lag the chain by a
+   few blocks — a bounty it hasn't indexed yet simply won't appear as a
+   candidate until it catches up — but every candidate it does return is
+   revalidated against one fresh finalized chain block, and its `submissions`
+   are read from that same finalized point so the set is complete: no
+   last-second submission can be silently missing. Run on a fixed cadence and
+   retry; you never have to remember a list across runs.
 2. **Prioritize** by urgency — judge the bounty with the nearest
    `settlement_timeout_at` first. A bounty that passes its timeout unjudged can
    still be refunded to the Poster by the permissionless timeout path, so never
@@ -73,7 +76,9 @@ concern.
 Each command does exactly one thing. You compose them; nothing orchestrates you.
 
 - `agora-cli guardian:judgeable` — pull the bounties ready to judge, each with
-  its `settlement_timeout_at`. Read-only discovery; no keys, no chain writes.
+  its `settlement_timeout_at` and its complete, block-pinned `submissions`
+  (Solver address + commitment). Read-only discovery; no keys, no chain
+  writes.
 - `agora-cli guardian:open <bounty_id> <submission_commitment> [output_dir]` —
   decrypt and inspect one Solver submission's artifacts through Agora's
   private-submission flow. Loads only your Guardian decryption key.
@@ -157,13 +162,14 @@ This is guidance, not a rigid script — but a sound cycle looks like:
 
 1. Run `guardian:judgeable`. If it prints nothing, there is no work; stop.
 2. Order the returned bounties by nearest `settlement_timeout_at`.
-3. For the bounty you pick, fetch its evaluation inputs from
-   `<AGORA_API_BASE_URL>/api/bounties/<bounty_id>`. Agora returns `challenge`
-   only after verifying that its exact UTF-8 Markdown text hashes to
-   `bounty.spec_commitment`; use it as the approved `bounty_challenge.md` and
-   use the active `bounty.submissions` as the eligible Solver identities and
-   commitments. If `challenge` is missing, null, or empty, stop before
-   evaluation and do not settle.
+3. For the bounty you pick, use the `submissions` `guardian:judgeable` already
+   returned for it as the eligible Solver identities and commitments — that
+   list is proven complete; do not re-derive it from the API. Separately,
+   fetch `<AGORA_API_BASE_URL>/api/bounties/<bounty_id>`. Agora returns
+   `challenge` only after verifying that its exact UTF-8 Markdown text hashes
+   to `bounty.spec_commitment`; use it as the approved `bounty_challenge.md`.
+   If `challenge` is missing, null, or empty, stop before evaluation and do
+   not settle.
 4. `guardian:open` each active submission and confirm the page's required files
    are present and inspectable.
 5. Run or inspect the artifacts as the bounty requires — for example, execute
