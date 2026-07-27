@@ -15,8 +15,8 @@ Everything here still obeys the skill's invariants:
 - **One scheduler only.** Hermes cron is the single scheduler. The discovery
   script is a pre-LLM hook of that one job, not a second scheduler. Do not have
   it (or anything) register another recurring job at runtime.
-- **One active judging cycle at a time**, held across cycles, so the single
-  settlement signer never sends two transactions at once.
+- **One active judging cycle at a time**, held across cycles, so work is not
+  duplicated and one Guardian does not publish conflicting reports.
 - **Secrets never enter a prompt, job definition, or log.** Only the numeric
   bounty id crosses into per-bounty work.
 
@@ -47,7 +47,7 @@ The wrapper is a plain bash script at an absolute path that:
 1. Sources nvm from its absolute path (`$NVM_DIR/nvm.sh`).
 2. Selects Node 24 (the skill requires `>=24 <25`) via `nvm use 24 --silent`.
 3. Loads non-secret env vars from an absolute dotenv file (`agora.env`).
-4. Loads only the secret required by `guardian:open` or `guardian:settle`.
+4. Loads the decryption secret only for `guardian:open`.
 5. `exec "$@"` — hands off to the `agora-cli` command it was given.
 
 ```bash
@@ -57,7 +57,6 @@ set -euo pipefail
 
 ENV_FILE="/home/<user>/.hermes/secrets/agora-guardian/agora.env"
 KEYS_FILE="/home/<user>/.hermes/secrets/agora-guardian/x25519_keys.json"
-WALLET_FILE="/home/<user>/.hermes/secrets/agora-guardian/evm_private.hex"
 NVM_DIR="/home/<user>/.nvm"
 
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && nvm use 24 --silent 2>/dev/null
@@ -69,18 +68,13 @@ case "${1:-} ${2:-}" in
     export AGORA_GUARDIAN_PRIVATE_KEYS_JSON
     AGORA_GUARDIAN_PRIVATE_KEYS_JSON=$(cat "$KEYS_FILE")
     ;;
-  "agora-cli guardian:settle")
-    export AGORA_GUARDIAN_SETTLEMENT_SIGNER_PRIVATE_KEY
-    AGORA_GUARDIAN_SETTLEMENT_SIGNER_PRIVATE_KEY=$(cat "$WALLET_FILE")
-    ;;
 esac
 
 exec "$@"
 ```
 
-The wrapper loads the decryption key only for `guardian:open` and the settlement
-key only for `guardian:settle`. Other commands receive neither. The keys never
-touch a prompt, job definition, or log.
+The wrapper loads the decryption key only for `guardian:open`. Other commands
+do not receive it. The key never touches a prompt, job definition, or log.
 
 ### The `secrets/` path scanner — use a symlink
 
@@ -116,25 +110,24 @@ print(repr(_scan_cron_prompt(YOUR_PROMPT)))  # a non-empty string means BLOCKED
 |---|---|---|
 | `agora.env` | Non-secret env vars (`KEY=VALUE` dotenv, no private keys) | `600` |
 | `x25519_keys.json` | JSON array `[{ key_id, suite, private_key }]` — your Guardian HPKE decryption key(s) from the skill's one-time key setup | `600` |
-| `evm_private.hex` | `0x`-prefixed 64-char hex EVM settlement key | `600` |
 
 `agora.env` must define at least the vars the guardian commands read on this
 deployment:
 
 ```
 AGORA_SUBGRAPH_ENDPOINT=...          # guardian:judgeable discovery
-AGORA_RPC_URL=...                    # finalized-chain revalidation + settle
+AGORA_RPC_URL=...                    # finalized-chain revalidation
 AGORA_CHAIN_ID=...
 AGORA_HUB_ADDRESS=0x...
 AGORA_API_BASE_URL=...               # guardian:open / guardian:submit
-AGORA_GUARDIAN_SETTLEMENT_SIGNER=0x...          # your signer's PUBLIC address
+AGORA_GUARDIAN_SETTLEMENT_SIGNER=0x...          # configured Safe address
 AGORA_GUARDIAN_RECIPIENTS_COMMITMENT=0x...
 ```
 
-Keep the two private keys out of `agora.env` — they belong in the two key files,
-loaded by the wrapper only. The public `AGORA_GUARDIAN_SETTLEMENT_SIGNER`
-address goes in `agora.env` because `guardian:judgeable` uses it to filter for
-bounties assigned to *your* signer.
+Keep the private decryption key out of `agora.env`; it belongs in
+`x25519_keys.json` and is loaded by the wrapper only. The public
+`AGORA_GUARDIAN_SETTLEMENT_SIGNER` Safe address goes in `agora.env` because
+`guardian:judgeable` uses it to filter for bounties assigned to that Safe.
 
 ---
 
@@ -175,7 +168,7 @@ keyed by bounty id so the discovery script can read and rewrite it atomically.
 ```
 [appears in judgeable]                         -> todo
 [agent picks it up]                            -> doing
-[submit + settle succeed]                      -> done
+[report publication succeeds]                  -> done
 [any failure/blocker]                          -> failed   (retry up to MAX_RETRY=3)
 [retries exhausted or already done]            -> skipped, never handed back
 [terminal + 1h past settlement_timeout_at]     -> pruned from the file
@@ -194,9 +187,8 @@ without cleaning up after itself.
 
 If the file is deleted or corrupt, the discovery script rebuilds it from
 `guardian:judgeable` on the next tick (it starts from `{}` and re-adds every
-ready bounty as `todo`). A bounty is only truly `done` when the **chain** shows
-it settled — the `done` flag just stops *us* from re-judging while that
-settlement reaches the finalized-chain read.
+ready bounty as `todo`). `done` means only that this Guardian published its
+report; the chain remains the source of truth for final settlement.
 
 ---
 
@@ -238,14 +230,14 @@ tick* and *what we have not finished*. Two consequences fall out for free:
 - A bounty **settled elsewhere** simply stops appearing in `judgeable`, so it is
   never handed out again — no stale-flag guessing, no risk of wrongly marking a
   still-live bounty done from a transient subgraph blip.
-- A bounty we settled can remain in `judgeable` until settlement reaches the
-  finalized-chain read. Its `done` status stops re-judging during that window.
+- A bounty this Guardian already reported can remain in `judgeable` while the
+  proposal is pending. Its `done` status stops duplicate evaluation.
 
 ### One-at-a-time guarantee
 
 The `BUSY` guard means even if five bounties become ready at once, the agent
 evaluates them **one per ~2-minute cycle**, nearest timeout first. The queue
-drains safely with no parallel evaluation and no concurrent `guardian:settle`.
+drains safely with no parallel or duplicate evaluation.
 
 ---
 
@@ -284,8 +276,8 @@ secret, key, or host path. The prompt must:
 4. For `EVALUATE:<id>` or `RETRY:<id>:<n>:<reason>`:
    - mark the bounty `doing` in the kanban **first**;
    - run the full judging cycle from `SKILL.md` for **that id only**
-     (`guardian:open` → run/inspect → decide → `guardian:submit` →
-     `guardian:settle`), always going through the wrapper;
+     (`guardian:open` → run/inspect → decide → `guardian:submit`), always going
+     through the wrapper;
    - mark it `done` on success, or `failed` with the exact error **last**.
 
 The kanban writes are tiny inline Python one-liners run via the `terminal`
@@ -301,7 +293,7 @@ kb['<bounty_id>']['status'] = 'doing'
 kb['<bounty_id>']['started_at'] = datetime.now(timezone.utc).isoformat()
 json.dump(kb, open(f, 'w'), indent=2)
 
-# Mark done — AFTER a successful settle
+# Mark done — AFTER the report was published
 kb['<bounty_id>']['status'] = 'done'
 kb['<bounty_id>']['finished_at'] = datetime.now(timezone.utc).isoformat()
 json.dump(kb, open(f, 'w'), indent=2)
@@ -354,21 +346,19 @@ These are the sharp edges observed running this setup against Base Sepolia.
 
 - **Zero-submission bounties: skip `guardian:open`.** When the API returns
   `submission_count: 0` / empty `submissions[]`, the outcome is immediately
-  `no_valid_submission` — `submit` then `settle` it, don't open anything. (This
-  is the skill's "with zero submissions, do not call `guardian:open`.")
+  `no_valid_submission` — submit that report without opening anything. (This is
+  the skill's "with zero submissions, do not call `guardian:open`.")
 - **404 from `guardian:open` = operational blocker.** Agora could not return the
   submission content record; this does not prove the submission is invalid.
   Retry once. If it persists, mark the attempt failed, do not disqualify the
   submission, and do not settle; retry on a later cycle.
-- **Settled bounties can linger until finality.** The board's `done` status
-  prevents re-evaluation until settlement reaches the finalized-chain read.
-- **API 500 on `submit`/`settle`: retry without re-evaluating.** If the
-  upload/settlement step fails with a 500, evaluation is already complete and the
-  winner decided. Mark the entry `failed` with reason `"API 500 on
-  submit/settle"`; the report persists at
+- **Reported bounties can remain judgeable.** The board's `done` status prevents
+  duplicate evaluation while the proposal is pending.
+- **API 500 on `submit`: retry without re-evaluating.** If the upload fails with
+  a 500, evaluation is already complete and the winner decided. Mark the entry
+  `failed` with reason `"API 500 on submit"`; the report persists at
   `/tmp/guardian-open/<bounty_id>/evaluation_report.md`. On the retry cycle,
-  re-run only the failed `submit`/`settle` command against the saved report —
-  do not re-judge.
+  re-run only `guardian:submit` against the saved report; do not re-judge.
 - **Base Sepolia subgraph lag ~21 minutes.** A bounty past its
   `submission_deadline` on-chain may not surface in `guardian:judgeable` for
   ~21 min while the subgraph indexes. Continuous 2-minute polling picks it up
@@ -391,9 +381,8 @@ These are the sharp edges observed running this setup against Base Sepolia.
 - **Don't pass anything but the bounty id into per-bounty work.** No keys, no
   file paths, no timestamps — the id is the only variable a judging cycle needs.
 - **Don't rely on removed CLI verbs.** As of `@moleculeagora/cli` v3.0.0,
-  `guardian:upcoming`, `guardian:settle-awarded`, and
-  `guardian:settle-no-valid-submission` are gone. Use `guardian:judgeable` for
-  discovery, and `guardian:submit` then `guardian:settle` to publish and anchor.
+  use `guardian:judgeable` for discovery and `guardian:submit` to publish the
+  independent report. Settlement review happens later with `settlement:verify`.
 - **Don't test only interactively.** The cron environment is bare; always verify
   via a real cron run.
 - **Don't skip the kanban.** Without it a single crashed session blocks every
@@ -402,14 +391,12 @@ These are the sharp edges observed running this setup against Base Sepolia.
 
 ---
 
-## Autonomous settlement
+## Proposal review and Safe approval
 
-To settle without a human in the loop, the settlement key lives in
-`evm_private.hex` and is loaded into
-`AGORA_GUARDIAN_SETTLEMENT_SIGNER_PRIVATE_KEY` **by the wrapper only**, so it is
-present only inside the `guardian:settle` process. Verify the signer holds enough
-native gas on your chain before enabling unattended settlement, and never place
-the key in a prompt, the job definition, the cron environment, logs, or the
-kanban. If you would rather a human co-sign, drop the wallet file, pass
-`--guardian-address` to `guardian:settle`, and hand the printed unsigned
-transaction to an external wallet.
+Keep this outside the evaluation cron. The proposal builder supplies the
+two-report consensus commitment and proposed Safe transaction through the
+operator-approved channel. This Guardian runs `settlement:verify` with its own
+report and compares the exact `to`, `value`, and `data`. It approves only a
+byte-identical transaction through its Safe owner wallet. Never place the Safe
+owner key in the wrapper, prompt, job definition, environment, logs, or kanban.
+The cron does not discover proposals or execute the Safe.

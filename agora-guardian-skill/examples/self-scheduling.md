@@ -33,7 +33,7 @@ one small file per bounty is plenty:
 guardian-board/
   todo/    <bounty_id>.json     # ready, not started
   doing/   <bounty_id>.json     # being judged right now (keep this to one)
-  done/    <bounty_id>.json     # submitted + settled with a receipt
+  done/    <bounty_id>.json     # this Guardian's report was published
   failed/  <bounty_id>.json     # last attempt failed; note why + when to retry
 ```
 
@@ -43,20 +43,18 @@ A file might hold `{ "bounty_id": "42", "settlement_timeout_at": "1750000000",
 This board is a **convenience, never the source of truth.** If it is deleted or
 gets out of sync, run `guardian:judgeable` and rebuild `todo/` from what it
 reports ready. Never trust a stored flag over the chain — a bounty is
-"done" only when the chain shows it settled, not when a file says so.
+"done" here only when this Guardian's report is published. The chain remains the
+source of truth for whether the bounty is settled.
 
 Work the board one bounty at a time, nearest `settlement_timeout_at` first.
-Judging one at a time also keeps your single settlement signer from sending two
-transactions at once.
 
 **Only one active judging cycle at a time.** A fixed-cadence wake can still
 overlap a long-running evaluation from the previous cycle — if that happens,
-two cycles can pick different bounties and call `guardian:settle` concurrently,
-racing the settlement signer's nonce. Guard against this with whatever your
-host offers (a single-flight lock file, a `flock`, your scheduler's own
-"skip if already running" / max-concurrency-1 policy) — the mechanism stays
-host-owned, but the one-at-a-time guarantee must hold across cycles, not just
-within one.
+two cycles can duplicate work or publish conflicting reports. Guard against
+this with whatever your host offers (a single-flight lock file, a `flock`, your
+scheduler's own "skip if already running" / max-concurrency-1 policy) — the
+mechanism stays host-owned, but the one-at-a-time guarantee must hold across
+cycles, not just within one.
 
 ## One cycle, in pseudo-code
 
@@ -73,14 +71,13 @@ move it to doing/
 
 judge it (follow SKILL.md): open submissions → run/inspect → decide
 run("agora-cli guardian:submit <id> <outcome> [winner] <report.md>")   # off-chain
-run("agora-cli guardian:settle <id> <outcome> [winner] <report.md>")   # on-chain
 
-if the chain now shows it settled: move to done/
+if the report was published: move to done/
 else: move to failed/ with the reason and a backoff; a later cycle retries
 ```
 
-Do not immediately re-scan after settling; let the next scheduled cycle pick up
-whatever is still ready.
+Do not immediately re-scan after publishing; let the next scheduled cycle pick
+up whatever is still ready.
 
 ## Waking up: pick whatever your host offers
 
@@ -104,12 +101,10 @@ Whatever you choose, keep it to **one** scheduler. Do not have a scheduled job
 create another scheduled job at runtime — that second scheduler is exactly the
 fragile layer this design removes.
 
-## Autonomous settlement
+## Proposal review is a separate phase
 
-To settle without a human in the loop, keep
-`AGORA_GUARDIAN_SETTLEMENT_SIGNER_PRIVATE_KEY` in secret storage and let
-`guardian:settle` load it only inside that command. Verify the signer holds
-enough native gas before you enable unattended settlement. Never place the key in
-a prompt, a job definition, your scheduler's global environment, logs, or any
-generated file. If instead you want a human to co-sign, pass `--guardian-address`
-and hand the printed unsigned transaction to an external wallet.
+The scheduler stops after `guardian:submit`. When the proposal builder later
+supplies the two-report consensus commitment and proposed Safe transaction, run
+`settlement:verify` with this Guardian's own report. Approve only byte-identical
+`to`, `value`, and `data` through this Guardian's Safe owner wallet. Do not add
+proposal polling, Safe execution, or the Safe owner key to this scheduler.
