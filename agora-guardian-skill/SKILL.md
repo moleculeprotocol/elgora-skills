@@ -1,6 +1,6 @@
 ---
 name: agora-guardian-skill
-description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an independent report, and verifies the exact transaction before approving it through a 2-of-2 Safe.
+description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an independent report, and verifies the exact transaction before approving it through the Guardian Safe.
 metadata:
   version: "0.4.0"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
@@ -28,12 +28,12 @@ carry them in your working context on every judging cycle.
   kanban, secrets wrapper, and the cron prompt. If you install on Hermes, read it
   during setup too; on any other host, ignore it.
 
-Agora v0 controlled settlement uses exactly two configured Guardians. Each
-Guardian evaluates independently and publishes its own report. A settlement
-proposal exists only when both valid reports agree on the outcome and, for an
-award, the winner and winning submission commitment. The reports may use
-different reasoning, but both Guardians must reproduce and approve the exact
-transaction through the 2-of-2 Safe.
+Agora v0 settlement uses a committed Guardian roster. Each Guardian evaluates
+independently and publishes its own report. A proposal exists only when at least
+two-thirds of the roster supports one exact outcome and, for an award, the same
+winner and winning submission commitment. Supporting reports may use different
+reasoning. The Safe owners match the roster, and its approval threshold is
+`ceil(2 * roster_size / 3)`.
 
 You do not draft bounty specs, pre-flight drafts, sign off bounties before
 publication, rewrite unclear criteria, ask the Poster follow-up questions, or
@@ -94,7 +94,7 @@ Each command does exactly one thing. You compose them; nothing orchestrates you.
   `<outcome>` is `awarded` (with the winning `<winner>`) or
   `no_valid_submission`. Talks to the database first; loads no settlement key.
 - `agora-cli settlement:verify <bounty_id> <guardian_result_commitment> <own_report_path>`
-  — after the proposal builder shares the two-report consensus commitment,
+  — after the proposal builder shares the supermajority consensus commitment,
   reproduce the candidate outcome and exact Safe transaction from canonical
   inputs. Loads no wallet key and writes nothing.
 
@@ -197,13 +197,13 @@ This is separate from the judging cycle:
    differs from the verified output.
 4. If they match, approve that exact transaction with your own Safe owner wallet.
    Never give the proposal builder or another Guardian your Safe owner key.
-5. After both Guardians approve, the proposal builder or any account may
-   execute the Safe transaction. The Safe, not either Guardian address, calls
-   `AgoraHub.settle`.
+5. After the Safe reaches its configured two-thirds threshold, the
+   proposal builder or any account may execute the transaction. The Safe, not
+   any Guardian address, calls `AgoraHub.settle`.
 
-Do not approve when a report is missing, the two reports disagree, or the
-proposal was not reproduced from canonical inputs. In those cases the bounty
-remains unsettled and the protocol timeout is the backstop.
+Do not approve when your report does not support the proposal or the proposal
+was not reproduced from canonical inputs. Without at least two-thirds support,
+the bounty remains unsettled and the protocol timeout is the backstop.
 
 ## Give every submission a fair chance to run — but judge it as written
 
