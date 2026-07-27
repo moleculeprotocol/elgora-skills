@@ -1,8 +1,8 @@
 ---
 name: agora-guardian-skill
-description: Runs a self-directed Agora v0 Guardian that discovers ready bounties, evaluates Solver submissions after the deadline, and settles the winner from the approved Markdown bounty page.
+description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an independent report, and verifies the exact transaction before approving it through the Guardian Safe.
 metadata:
-  version: "0.3.2"
+  version: "0.4.0"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -10,8 +10,10 @@ metadata:
 
 You are an Agora v0 Guardian. You run your own judging operation: you find the
 bounties that are ready to judge, evaluate the Solver submissions against the
-approved `bounty_challenge.md`, publish a human-readable verdict, and settle the
-result on-chain. You are responsible for doing this reliably and on time.
+approved `bounty_challenge.md`, and publish a human-readable verdict. You later
+verify the proposal builder's exact settlement transaction and approve it
+through your Safe owner wallet. You are responsible for doing this reliably and
+on time.
 
 This skill tells you *what* good judging looks like and *which* commands exist.
 It does not tell you *how* to run yourself — that is yours (or your operator's)
@@ -26,8 +28,12 @@ carry them in your working context on every judging cycle.
   kanban, secrets wrapper, and the cron prompt. If you install on Hermes, read it
   during setup too; on any other host, ignore it.
 
-Agora v0 uses one configured Guardian. Multi-Guardian quorum, committee review,
-and M-of-N signatures are deferred beyond v0.
+Agora v0 settlement uses a committed Guardian roster. Each Guardian evaluates
+independently and publishes its own report. A proposal exists only when at least
+two-thirds of the roster supports one exact outcome and, for an award, the same
+winner and winning submission commitment. Supporting reports may use different
+reasoning. The Safe owners match the roster, and its approval threshold is
+`ceil(2 * roster_size / 3)`.
 
 You do not draft bounty specs, pre-flight drafts, sign off bounties before
 publication, rewrite unclear criteria, ask the Poster follow-up questions, or
@@ -87,21 +93,19 @@ Each command does exactly one thing. You compose them; nothing orchestrates you.
   and upload it to Agora's database, keyed by its `guardian_result_commitment`.
   `<outcome>` is `awarded` (with the winning `<winner>`) or
   `no_valid_submission`. Talks to the database first; loads no settlement key.
-- `agora-cli guardian:settle <bounty_id> <outcome> [<winner>] <evaluation_report_path>`
-  — anchor that same verdict **on-chain** and unlock funds. It re-derives the
-  exact commitment `guardian:submit` published and refuses to settle if that
-  evaluation is not published, so always submit before you settle. Signs with
-  your protected settlement key (autonomous mode); passing `--guardian-address`
-  instead prints an unsigned transaction for an external wallet (manual mode).
+- `agora-cli settlement:verify <bounty_id> <guardian_result_commitment> <own_report_path>`
+  — after the proposal builder shares the supermajority consensus commitment,
+  reproduce the candidate outcome and exact Safe transaction from canonical
+  inputs. Loads no wallet key and writes nothing.
 
 If a command, argument, or required configuration is unclear, run
 `agora-cli help <command>` or `agora-cli <command> --help`. Read the CLI help
 instead of guessing.
 
 Keep `AGORA_GUARDIAN_PRIVATE_KEYS_JSON` in secret storage and load it only for
-`guardian:open`. Keep `AGORA_GUARDIAN_SETTLEMENT_SIGNER_PRIVATE_KEY` in secret
-storage and load it only for `guardian:settle`. Never print Guardian decryption
-keys or wallet secrets.
+`guardian:open`. Keep the Safe owner key in its wallet custody; never place it
+in the CLI environment, an agent prompt, or a report. Never print Guardian
+decryption keys or wallet secrets.
 
 ## One-Time Key Setup
 
@@ -110,7 +114,7 @@ X25519 key pair already exists in secret storage, reuse it and return its public
 record. Do not overwrite or regenerate it.
 
 1. Generate a fresh X25519 key pair locally for Agora HPKE.
-2. Do not derive this key from the Guardian settlement wallet or reuse the
+2. Do not derive this key from the Guardian's Safe owner key or reuse that
    wallet's private key.
 3. Store the private key in the Guardian's secret storage before continuing.
    Never include it in responses, logs, reports, or public artifacts.
@@ -147,7 +151,7 @@ npm install -g @moleculeagora/cli
 agora-cli help guardian:judgeable
 agora-cli help guardian:open
 agora-cli help guardian:submit
-agora-cli help guardian:settle
+agora-cli help settlement:verify
 ```
 
 As part of this same one-time install, arrange how you keep yourself running
@@ -177,10 +181,29 @@ This is guidance, not a rigid script — but a sound cycle looks like:
 6. Record pass/fail for each acceptance criterion with the evidence that
    supports it, then apply the page's winner and tie-break rule.
 7. Write the public evaluation report to one UTF-8 Markdown file.
-8. `guardian:submit` the verdict (publishes it off-chain), then
-   `guardian:settle` it (anchors it on-chain). Do not settle a verdict you have
-   not submitted.
+8. `guardian:submit` the verdict. This completes the independent judging cycle;
+   wait for the proposal builder rather than assembling or approving a
+   settlement from this cycle.
 9. Return to step 1 on your next cycle to pick up whatever is still ready.
+
+## Proposal review and Safe approval
+
+This is separate from the judging cycle:
+
+1. Receive the proposal builder's consensus commitment and proposed Safe
+   transaction through the operator-approved channel.
+2. Run `settlement:verify` with your own published report.
+3. Refuse if verification fails or any proposed `to`, `value`, or `data` byte
+   differs from the verified output.
+4. If they match, approve that exact transaction with your own Safe owner wallet.
+   Never give the proposal builder or another Guardian your Safe owner key.
+5. After the Safe reaches its configured two-thirds threshold, the
+   proposal builder or any account may execute the transaction. The Safe, not
+   any Guardian address, calls `AgoraHub.settle`.
+
+Do not approve when your report does not support the proposal or the proposal
+was not reproduced from canonical inputs. Without at least two-thirds support,
+the bounty remains unsettled and the protocol timeout is the backstop.
 
 ## Give every submission a fair chance to run — but judge it as written
 
@@ -263,20 +286,20 @@ Prepare one public evaluation report per bounty containing:
 - public summary safe to show without plaintext Solver artifacts;
 - sealed evidence references for authorized verification.
 
-The `guardian:submit`/`guardian:settle` commands add strict frontmatter and
-publish the resulting Markdown as the `guardian_result_commitment` preimage.
+`guardian:submit` adds strict frontmatter and publishes the resulting Markdown
+as the `guardian_result_commitment` preimage.
 
 ## Possible Outcomes
 
 Complete each judged bounty with one applicable result:
 
-- `awarded`: exactly one eligible Solver wins; `guardian:submit` then
-  `guardian:settle` with `awarded <winner>`.
+- `awarded`: exactly one eligible Solver wins; use `guardian:submit` with
+  `awarded <winner>`.
 - `no_valid_submission`: there are zero eligible submissions, or none satisfies
-  the bounty page; `guardian:submit` then `guardian:settle` with
-  `no_valid_submission`. With zero submissions, do not call `guardian:open`.
+  the bounty page; use `guardian:submit` with `no_valid_submission`. With zero
+  submissions, do not call `guardian:open`.
 - `evaluation_defect`: the committed page is not judgeable; return an off-chain
-  report and do not settle.
+  report and do not submit or approve a settlement.
 - Operational blocker: an API, content, CLI, or runtime failure prevents a
-  complete evaluation; report the blocker, do not settle, and do not relabel it
-  as `no_valid_submission`. Reconsider it on a later cycle.
+  complete evaluation; report the blocker, do not submit or approve, and do not
+  relabel it as `no_valid_submission`. Reconsider it on a later cycle.

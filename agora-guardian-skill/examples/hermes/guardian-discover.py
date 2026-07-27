@@ -154,9 +154,9 @@ def main() -> None:
         return
 
     # 4. Merge ready bounties in. New ids become todo; known ids keep the
-    #    authoritative timeout. We never resurrect a done/failed entry here — a
-    #    bounty we settled can remain in judgeable until settlement reaches the
-    #    finalized read, and the kanban is what stops us re-judging meanwhile.
+    #    authoritative timeout. We never resurrect a done/failed entry here —
+    #    done means this Guardian already published its report, even if the
+    #    bounty stays judgeable until the Safe settles or the timeout passes.
     for bid, timeout_at in ready.items():
         if bid not in kb:
             kb[bid] = new_entry(timeout_at, t)
