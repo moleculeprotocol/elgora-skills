@@ -190,9 +190,11 @@ This is guidance, not a rigid script — but a sound cycle looks like:
 8. `guardian:submit` the verdict. This completes the independent judging cycle;
    wait for the proposal builder rather than assembling or approving a
    settlement from this cycle.
-9. Retain the exact published Markdown and its returned
-   `guardian_result_commitment` until the bounty is final. Use that same file
-   for proposal verification; do not reconstruct it from memory.
+9. Use the returned `guardian_result_commitment` to retrieve
+   `<AGORA_API_BASE_URL>/api/guardian-evaluations/<guardian_result_commitment>`
+   and save the response bytes unchanged. Retain that published file and its
+   commitment until the bounty is final. Use the published file — not the
+   authored `<evaluation_report_path>` — for `settlement:verify`.
 10. Return to step 1 on your next cycle to pick up whatever is still ready.
 
 ## Proposal review and Safe approval
@@ -201,8 +203,8 @@ This is separate from the judging cycle:
 
 1. Receive the proposal builder's consensus commitment and proposed Safe
    transaction through the operator-approved channel.
-2. Run `settlement:verify` with the exact report retained after
-   `guardian:submit`.
+2. Run `settlement:verify` with the published file retained in the judging
+   cycle.
 3. Refuse if verification fails or any proposed `to`, `value`, or `data` byte
    differs from the verified output.
 4. If they match, approve that exact transaction with your own roster-bound
