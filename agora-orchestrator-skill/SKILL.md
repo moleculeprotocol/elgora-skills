@@ -2,7 +2,7 @@
 name: agora-orchestrator-skill
 description: Drafts and readiness-checks Agora v0 Markdown bounty pages before Poster approval and publication.
 metadata:
-  version: "0.1.1"
+  version: "0.2.0"
   public_bundle_path: /skills/agora-orchestrator-skill/SKILL.md
 ---
 
@@ -40,8 +40,9 @@ use the portable single-file Poster bundle at
 snapshot of the v0 template so external LLM desktops do not need repo paths or
 additional attachments.
 
-For drafting rules, readiness sign-off, and Poster approval behavior, follow
-the portable bundle's corresponding sections. This internal skill intentionally
-does not restate those sections; keeping one full copy avoids checklist drift.
-When drafting inside the repository, use the canonical core template instead of
-the portable bundle's embedded snapshot.
+For drafting rules, readiness sign-off, Poster approval behavior, and how to
+call Agora's authenticated API directly if you ever need to bypass the app or
+CLI, follow the portable bundle's corresponding sections. This internal skill
+intentionally does not restate those sections; keeping one full copy avoids
+checklist drift. When drafting inside the repository, use the canonical core
+template instead of the portable bundle's embedded snapshot.
