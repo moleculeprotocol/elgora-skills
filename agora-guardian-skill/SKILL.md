@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an independent report, and verifies the exact transaction before approving it through the Guardian Safe.
 metadata:
-  version: "0.4.0"
+  version: "0.4.1"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -137,6 +137,12 @@ record. Do not overwrite or regenerate it.
 6. During rotation, retain old private keys until every bounty committed to
    those keys has reached a final state.
 
+Before joining a roster, use one stable Guardian ID and provide one separate
+Safe owner address that you control. Confirm that you can approve Safe
+transactions from that address before it is committed to the roster, and return
+only the public ID, recipient record, and owner address. How you provision or
+custody the wallet is outside this skill.
+
 This is initialization, not part of bounty evaluation. Never generate a new key
 per bounty or evaluation run.
 
@@ -184,7 +190,10 @@ This is guidance, not a rigid script — but a sound cycle looks like:
 8. `guardian:submit` the verdict. This completes the independent judging cycle;
    wait for the proposal builder rather than assembling or approving a
    settlement from this cycle.
-9. Return to step 1 on your next cycle to pick up whatever is still ready.
+9. Retain the exact published Markdown and its returned
+   `guardian_result_commitment` until the bounty is final. Use that same file
+   for proposal verification; do not reconstruct it from memory.
+10. Return to step 1 on your next cycle to pick up whatever is still ready.
 
 ## Proposal review and Safe approval
 
@@ -192,14 +201,22 @@ This is separate from the judging cycle:
 
 1. Receive the proposal builder's consensus commitment and proposed Safe
    transaction through the operator-approved channel.
-2. Run `settlement:verify` with your own published report.
+2. Run `settlement:verify` with the exact report retained after
+   `guardian:submit`.
 3. Refuse if verification fails or any proposed `to`, `value`, or `data` byte
    differs from the verified output.
-4. If they match, approve that exact transaction with your own Safe owner wallet.
-   Never give the proposal builder or another Guardian your Safe owner key.
+4. If they match, approve that exact transaction with your own roster-bound
+   Safe owner wallet. Never give the proposal builder or another Guardian your
+   Safe owner key.
 5. After the Safe reaches its configured two-thirds threshold, the
    proposal builder or any account may execute the transaction. The Safe, not
    any Guardian address, calls `AgoraHub.settle`.
+
+Signing readiness is part of your Guardian responsibility. If you cannot approve
+through the committed owner address, report an operational blocker and stop;
+do not substitute another wallet or claim that a message is a Safe approval.
+You do not build or replace the Safe transaction, collect other Guardians'
+approvals, or own its execution.
 
 Do not approve when your report does not support the proposal or the proposal
 was not reproduced from canonical inputs. Without at least two-thirds support,

@@ -104,7 +104,8 @@ fragile layer this design removes.
 ## Proposal review is a separate phase
 
 The scheduler stops after `guardian:submit`. When the proposal builder later
-supplies the two-report consensus commitment and proposed Safe transaction, run
-`settlement:verify` with this Guardian's own report. Approve only byte-identical
-`to`, `value`, and `data` through this Guardian's Safe owner wallet. Do not add
-proposal polling, Safe execution, or the Safe owner key to this scheduler.
+supplies the supermajority consensus commitment and proposed Safe transaction,
+run `settlement:verify` with this Guardian's own report. Approve only
+byte-identical `to`, `value`, and `data` through this Guardian's Safe owner
+wallet. Do not add proposal polling, Safe execution, or the Safe owner key to
+this scheduler.

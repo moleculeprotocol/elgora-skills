@@ -394,7 +394,7 @@ These are the sharp edges observed running this setup against Base Sepolia.
 ## Proposal review and Safe approval
 
 Keep this outside the evaluation cron. The proposal builder supplies the
-two-report consensus commitment and proposed Safe transaction through the
+supermajority consensus commitment and proposed Safe transaction through the
 operator-approved channel. This Guardian runs `settlement:verify` with its own
 report and compares the exact `to`, `value`, and `data`. It approves only a
 byte-identical transaction through its Safe owner wallet. Never place the Safe
