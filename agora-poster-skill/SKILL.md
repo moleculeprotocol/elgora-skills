@@ -229,39 +229,11 @@ is the v0 bounty spec that Agora stores and hashes.
 
 ## Calling Agora's Authenticated API Directly
 
-Publication normally happens through Agora's own app or CLI, which handle the
-rest of this for you — read this only if you (or your operator) are calling
-Agora's publication API yourselves, without either of those.
-
-Agora's mutating publication route requires a per-request approval: proof,
-from the Poster's own wallet key, that they approved the exact bytes being
-published, right now. Nothing is issued to you by Agora — this is generated
-locally from a key the Poster already controls, never something Agora hands
-out or asks you to relay.
-
-The approval is one EIP-712 signature over
-`{endpointId, bodyHash, blockNumber, blockHash}`, sent as a single header:
-
-```
-Authorization: Agora-Approval base64(address~signature~blockNumber~blockHash)
-```
-
-To build it:
-
-1. Read a recent block (`blockNumber`, `blockHash`) from the target chain.
-2. `bodyHash = keccak256(the exact bytes of the approved bounty_challenge.md)`.
-3. `endpointId = keccak256(the request's URL path)`, i.e.
-   `/api/bounty-challenge-specs/prepare-publication`.
-4. Sign the EIP-712 typed data — domain
-   `{name: "Agora", version: "1", chainId, verifyingContract: <hub address>}`,
-   type `ApiRequestApproval{endpointId, bodyHash, blockNumber, blockHash}` —
-   with the Poster's wallet.
-5. Base64-encode `address~signature~blockNumber~blockHash` and send it as the
-   header above.
-
-If you have the Agora repo checked out, `@agora/core/auth` exports every step
-(`buildApiRequestApprovalTypedData`, `endpointIdFor`,
-`encodeApiRequestApprovalHeader`).
+Publication normally happens through Agora's own app or CLI, which handle
+this for you. If you (or your operator) call the publication API directly
+instead, see `@moleculeagora/cli`'s README ("Authentication" section) for the
+header format and how to build it. Nothing there is issued to you by Agora —
+it's generated locally from the Poster's own wallet key.
 
 This public bundle is a release snapshot of the Agora v0 bounty template. If a
 new Agora release updates the v0 profile, use the newest bundle exposed by the

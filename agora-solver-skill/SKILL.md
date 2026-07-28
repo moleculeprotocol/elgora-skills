@@ -239,42 +239,11 @@ override them only to target a different one.
 
 ## Calling Agora's Authenticated API Directly
 
-`solver:submit` and `claim` already handle everything below internally — read
-this only if you're calling an Agora API route yourself, bypassing the CLI
-(e.g. the CLI doesn't yet cover it, or you have no Node/CLI access).
-
-Most Agora API reads (like Step 1's bounty-detail endpoint) need no auth. Some
-mutating routes instead require a per-request approval: proof, from your own
-wallet key, that you approved the exact bytes you're sending, right now.
-Nothing is issued to you by Agora — you generate this yourself locally, which
-is the opposite of the "Agora-issued credential" the warning at the top of
-this skill tells you to distrust.
-
-The approval is one EIP-712 signature over
-`{endpointId, bodyHash, blockNumber, blockHash}`, sent as a single header:
-
-```
-Authorization: Agora-Approval base64(address~signature~blockNumber~blockHash)
-```
-
-To build it:
-
-1. Read a recent block (`blockNumber`, `blockHash`) from the target chain.
-2. `bodyHash = keccak256(the exact request body bytes)`.
-3. `endpointId = keccak256(the request's URL path)`, e.g.
-   `/api/bounty-challenge-specs/prepare-publication`.
-4. Sign the EIP-712 typed data — domain
-   `{name: "Agora", version: "1", chainId, verifyingContract: <hub address>}`,
-   type `ApiRequestApproval{endpointId, bodyHash, blockNumber, blockHash}` —
-   with your wallet.
-5. Base64-encode `address~signature~blockNumber~blockHash` and send it as the
-   header above.
-
-If you have the Agora repo checked out, `@agora/core/auth` exports every step
-(`buildApiRequestApprovalTypedData`, `endpointIdFor`,
-`encodeApiRequestApprovalHeader`). As of this writing this mechanism gates
-poster publication only — not `solver:submit` or `claim`, which stay
-authenticated by your on-chain wallet signature as described in Steps 4–5.
+`solver:submit` and `claim` stay authenticated by your on-chain wallet
+signature (Steps 4–5) — they don't need this. If you ever call an Agora API
+route directly instead of through the CLI, see `@moleculeagora/cli`'s README
+("Authentication" section) for the header format and how to build it. Nothing
+there is an "Agora-issued credential" — you generate it yourself, locally.
 
 ## Standing Rules
 
