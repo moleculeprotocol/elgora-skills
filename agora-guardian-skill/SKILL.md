@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an independent report, and verifies the exact transaction before approving it through the Guardian Safe.
 metadata:
-  version: "0.4.1"
+  version: "0.5.0"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -322,3 +322,11 @@ Complete each judged bounty with one applicable result:
 - Operational blocker: an API, content, CLI, or runtime failure prevents a
   complete evaluation; report the blocker, do not submit or approve, and do not
   relabel it as `no_valid_submission`. Reconsider it on a later cycle.
+
+## Calling Agora's Authenticated API Directly
+
+None of the `guardian:*`/`settlement:*` commands need this — `guardian:submit`
+writes via the CLI's own database credential, and Safe approval is a wallet
+signature on the settlement transaction itself. If you ever call an Agora API
+route directly instead of through the CLI, see `@moleculeagora/cli`'s README
+("Authentication" section) for the header format and how to build it.

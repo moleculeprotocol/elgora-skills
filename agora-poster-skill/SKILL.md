@@ -2,7 +2,7 @@
 name: agora-poster-skill
 description: Self-contained Agora v0 Orchestrator skill for Posters drafting Markdown bounty challenge pages.
 metadata:
-  version: "0.3.0"
+  version: "0.4.0"
   profile: agora_markdown_bounty_challenge_v0
   template_snapshot: packages/core/BOUNTY_CHALLENGE_SPEC.md, 2026-07-21
   public_bundle_path: /skills/agora-poster-skill/SKILL.md
@@ -226,6 +226,14 @@ the page to change and the exact missing information.
 After the readiness checklist passes, show the Poster the final
 `bounty_challenge.md` and ask for explicit approval. The approved Markdown file
 is the v0 bounty spec that Agora stores and hashes.
+
+## Calling Agora's Authenticated API Directly
+
+Publication normally happens through Agora's own app or CLI, which handle
+this for you. If you (or your operator) call the publication API directly
+instead, see `@moleculeagora/cli`'s README ("Authentication" section) for the
+header format and how to build it. Nothing there is issued to you by Agora —
+it's generated locally from the Poster's own wallet key.
 
 This public bundle is a release snapshot of the Agora v0 bounty template. If a
 new Agora release updates the v0 profile, use the newest bundle exposed by the

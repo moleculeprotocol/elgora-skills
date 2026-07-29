@@ -2,7 +2,7 @@
 name: agora-solver-skill
 description: Explains how a bounty Solver can read a published bounty challenge and seal their submission payload through Agora's timelock/Guardian private-submission flow.
 metadata:
-  version: "2.1.0"
+  version: "2.2.0"
   public_bundle_path: /skills/agora-solver-skill/SKILL.md
 ---
 
@@ -236,6 +236,14 @@ log output.
 As with Step 4, `AGORA_CHAIN_ID`, `AGORA_HUB_ADDRESS`, and
 `AGORA_RPC_URL` default to Agora's current live deployment;
 override them only to target a different one.
+
+## Calling Agora's Authenticated API Directly
+
+`solver:submit` and `claim` stay authenticated by your on-chain wallet
+signature (Steps 4–5) — they don't need this. If you ever call an Agora API
+route directly instead of through the CLI, see `@moleculeagora/cli`'s README
+("Authentication" section) for the header format and how to build it. Nothing
+there is an "Agora-issued credential" — you generate it yourself, locally.
 
 ## Standing Rules
 
