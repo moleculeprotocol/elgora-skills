@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an independent report, and verifies the exact transaction before approving it through the Guardian Safe.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -94,9 +94,9 @@ Each command does exactly one thing. You compose them; nothing orchestrates you.
   `<outcome>` is `awarded` (with the winning `<winner>`) or
   `no_valid_submission`. Talks to the database first; loads no settlement key.
 - `agora-cli settlement:verify <bounty_id> <guardian_result_commitment> <own_report_path>`
-  — after the proposal builder shares the supermajority consensus commitment,
-  reproduce the candidate outcome and exact Safe transaction from canonical
-  inputs. Loads no wallet key and writes nothing.
+  — after the proposal builder shares the registered transaction and consensus
+  commitment, reproduce its exact outcome and bytes from canonical inputs.
+  Loads no wallet key and writes nothing.
 
 If a command, argument, or required configuration is unclear, run
 `agora-cli help <command>` or `agora-cli <command> --help`. Read the CLI help
@@ -201,8 +201,8 @@ This is guidance, not a rigid script — but a sound cycle looks like:
 
 This is separate from the judging cycle:
 
-1. Receive the proposal builder's consensus commitment and proposed Safe
-   transaction through the operator-approved channel.
+1. Receive the proposal builder's consensus commitment, `safe_tx_hash`, nonce,
+   and registered Safe transaction through the operator-approved channel.
 2. Run `settlement:verify` with the published file retained in the judging
    cycle.
 3. Refuse if verification fails or any proposed `to`, `value`, or `data` byte
@@ -210,9 +210,9 @@ This is separate from the judging cycle:
 4. If they match, approve that exact transaction with your own roster-bound
    Safe owner wallet. Never give the proposal builder or another Guardian your
    Safe owner key.
-5. After the Safe reaches its configured two-thirds threshold, the
-   proposal builder or any account may execute the transaction. The Safe, not
-   any Guardian address, calls `AgoraHub.settle`.
+5. After the Safe reaches its configured two-thirds threshold, any funded
+   relayer may execute. The Safe, not any Guardian address, calls
+   `AgoraHub.settle`.
 
 Signing readiness is part of your Guardian responsibility. If you cannot approve
 through the committed owner address, report an operational blocker and stop;
