@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an independent report, and verifies the exact transaction before approving it through the Guardian Safe.
 metadata:
-  version: "0.6.0"
+  version: "0.6.1"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
