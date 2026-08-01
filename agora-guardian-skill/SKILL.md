@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an independent report, and verifies the exact transaction before approving it through the Guardian Safe.
 metadata:
-  version: "0.6.1"
+  version: "0.6.2"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -207,6 +207,9 @@ This is separate from the judging cycle:
    cycle.
 3. Refuse if verification fails or any proposed `to`, `value`, or `data` byte
    differs from the verified output.
+   Failed verification blocks approval of that proposal. Do not retry it with
+   a different report or commitment; if you cannot identify your own published
+   commitment, report an operational blocker and stop.
 4. If they match, approve that exact transaction with your own roster-bound
    Safe owner wallet. Never give the proposal builder or another Guardian your
    Safe owner key.
