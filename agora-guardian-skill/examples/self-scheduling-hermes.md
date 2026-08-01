@@ -394,12 +394,14 @@ These are the sharp edges observed running this setup against Base Sepolia.
 ## Proposal review and Safe approval
 
 Keep this outside the evaluation cron. The proposal builder supplies the
-supermajority consensus commitment and proposed Safe transaction through the
-operator-approved channel. After a successful `guardian:submit`, retain the
-canonical published report retrieved by its returned commitment; the authored
-input remains only a submission or retry input. This Guardian runs
+consensus commitment, `safe_tx_hash`, nonce, and registered Safe transaction
+through the operator-approved channel. After a successful `guardian:submit`,
+retain the canonical published report retrieved by its returned commitment;
+the authored input remains only a submission or retry input. This Guardian runs
 `settlement:verify` with the retained published file and compares the exact
-`to`, `value`, and `data`. It approves only a byte-identical transaction through
-its Safe owner wallet. Never place the Safe owner key in the wrapper, prompt,
-job definition, environment, logs, or kanban. The cron does not discover
-proposals or execute the Safe.
+`to`, `value`, and `data`. If that file or its returned commitment is missing,
+stop; never adopt, substitute, or relabel another report as this Guardian's
+own. It approves only a byte-identical transaction through its Safe owner
+wallet. Never place the Safe owner key in the wrapper, prompt, job definition,
+environment, logs, or kanban. The cron does not discover proposals or execute
+the Safe.

@@ -106,8 +106,9 @@ fragile layer this design removes.
 After `guardian:submit`, retrieve and retain the canonical published report
 using its returned commitment; do not retain the authored input as the
 verification file. The scheduler then stops. When the proposal builder later
-supplies the supermajority consensus commitment and proposed Safe transaction,
-run `settlement:verify` with the retained published file. Approve only
-byte-identical `to`, `value`, and `data` through this Guardian's Safe owner
-wallet. Do not add proposal polling, Safe execution, or the Safe owner key to
-this scheduler.
+supplies the consensus commitment, `safe_tx_hash`, nonce, and registered Safe
+transaction, run `settlement:verify` with the retained published file. If that
+file or its returned commitment is missing, stop; never adopt, substitute, or
+relabel another report as this Guardian's own. Approve only byte-identical
+`to`, `value`, and `data` through this Guardian's Safe owner wallet. Do not add
+proposal polling, Safe execution, or the Safe owner key to this scheduler.

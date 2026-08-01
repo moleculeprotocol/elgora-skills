@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an independent report, and verifies the exact transaction before approving it through the Guardian Safe.
 metadata:
-  version: "0.6.0"
+  version: "0.6.1"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -205,6 +205,10 @@ This is separate from the judging cycle:
    and registered Safe transaction through the operator-approved channel.
 2. Run `settlement:verify` with the published file retained in the judging
    cycle.
+   If that file or its returned commitment is missing, report an operational
+   blocker and stop. Do not search for or download a replacement during
+   proposal review, and never adopt, substitute, or relabel another report as
+   your own — even when it supports the same outcome.
 3. Refuse if verification fails or any proposed `to`, `value`, or `data` byte
    differs from the verified output.
 4. If they match, approve that exact transaction with your own roster-bound
