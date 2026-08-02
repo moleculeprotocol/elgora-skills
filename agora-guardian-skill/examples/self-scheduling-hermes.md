@@ -47,7 +47,8 @@ The wrapper is a plain bash script at an absolute path that:
 1. Sources nvm from its absolute path (`$NVM_DIR/nvm.sh`).
 2. Selects Node 24 (the skill requires `>=24 <25`) via `nvm use 24 --silent`.
 3. Loads non-secret env vars from an absolute dotenv file (`agora.env`).
-4. Loads the decryption secret only for `guardian:open`.
+4. Loads the decryption secret only for `guardian:open`, and the Safe API key
+   plus Guardian-owned signer only for `guardian:submit`.
 5. `exec "$@"` — hands off to the `agora-cli` command it was given.
 
 ```bash
@@ -57,6 +58,8 @@ set -euo pipefail
 
 ENV_FILE="/home/<user>/.hermes/secrets/agora-guardian/agora.env"
 KEYS_FILE="/home/<user>/.hermes/secrets/agora-guardian/x25519_keys.json"
+SAFE_API_KEY_FILE="/home/<user>/.hermes/secrets/agora-guardian/safe_api_key"
+SAFE_OWNER_KEY_FILE="/home/<user>/.hermes/secrets/agora-guardian/safe_owner_private_key"
 NVM_DIR="/home/<user>/.nvm"
 
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && nvm use 24 --silent 2>/dev/null
@@ -68,13 +71,18 @@ case "${1:-} ${2:-}" in
     export AGORA_GUARDIAN_PRIVATE_KEYS_JSON
     AGORA_GUARDIAN_PRIVATE_KEYS_JSON=$(cat "$KEYS_FILE")
     ;;
+  "agora-cli guardian:submit")
+    export AGORA_SAFE_API_KEY AGORA_GUARDIAN_SAFE_OWNER_PRIVATE_KEY
+    AGORA_SAFE_API_KEY=$(cat "$SAFE_API_KEY_FILE")
+    AGORA_GUARDIAN_SAFE_OWNER_PRIVATE_KEY=$(cat "$SAFE_OWNER_KEY_FILE")
+    ;;
 esac
 
 exec "$@"
 ```
 
-The wrapper loads the decryption key only for `guardian:open`. Other commands
-do not receive it. The key never touches a prompt, job definition, or log.
+The wrapper loads each secret only for the command that needs it. No secret
+touches a prompt, job definition, general environment, board, or log.
 
 ### The `secrets/` path scanner — use a symlink
 
@@ -110,6 +118,8 @@ print(repr(_scan_cron_prompt(YOUR_PROMPT)))  # a non-empty string means BLOCKED
 |---|---|---|
 | `agora.env` | Non-secret env vars (`KEY=VALUE` dotenv, no private keys) | `600` |
 | `x25519_keys.json` | JSON array `[{ key_id, suite, private_key }]` — your Guardian HPKE decryption key(s) from the skill's one-time key setup | `600` |
+| `safe_api_key` | Safe Transaction Service API key used to publish report receipts | `600` |
+| `safe_owner_private_key` | This Guardian's Safe owner key, injected only into `guardian:submit` | `600` |
 
 `agora.env` must define at least the vars the guardian commands read on this
 deployment:
@@ -124,8 +134,8 @@ AGORA_GUARDIAN_SETTLEMENT_SIGNER=0x...          # configured Safe address
 AGORA_GUARDIAN_RECIPIENTS_COMMITMENT=0x...
 ```
 
-Keep the private decryption key out of `agora.env`; it belongs in
-`x25519_keys.json` and is loaded by the wrapper only. The public
+Keep every secret out of `agora.env`; each belongs in its dedicated file and is
+loaded by the wrapper only for the command that needs it. The public
 `AGORA_GUARDIAN_SETTLEMENT_SIGNER` Safe address goes in `agora.env` because
 `guardian:judgeable` uses it to filter for bounties assigned to that Safe.
 
@@ -168,7 +178,7 @@ keyed by bounty id so the discovery script can read and rewrite it atomically.
 ```
 [appears in judgeable]                         -> todo
 [agent picks it up]                            -> doing
-[report publication succeeds]                  -> done
+[report + required receipt publication succeeds] -> done
 [any failure/blocker]                          -> failed   (retry up to MAX_RETRY=3)
 [retries exhausted or already done]            -> skipped, never handed back
 [terminal + 1h past settlement_timeout_at]     -> pruned from the file
@@ -188,7 +198,8 @@ without cleaning up after itself.
 If the file is deleted or corrupt, the discovery script rebuilds it from
 `guardian:judgeable` on the next tick (it starts from `{}` and re-adds every
 ready bounty as `todo`). `done` means only that this Guardian published its
-report; the chain remains the source of truth for final settlement.
+report and required managed-chain receipt; the chain remains the source of
+truth for final settlement.
 
 ---
 
@@ -293,7 +304,7 @@ kb['<bounty_id>']['status'] = 'doing'
 kb['<bounty_id>']['started_at'] = datetime.now(timezone.utc).isoformat()
 json.dump(kb, open(f, 'w'), indent=2)
 
-# Mark done — AFTER the report was published
+# Mark done — AFTER the report and required receipt were published
 kb['<bounty_id>']['status'] = 'done'
 kb['<bounty_id>']['finished_at'] = datetime.now(timezone.utc).isoformat()
 json.dump(kb, open(f, 'w'), indent=2)
@@ -396,10 +407,12 @@ These are the sharp edges observed running this setup against Base Sepolia.
 Keep this outside the evaluation cron. The proposal builder supplies the
 consensus commitment, `safe_tx_hash`, nonce, and registered Safe transaction
 through the operator-approved channel. After a successful `guardian:submit`,
-retain the canonical published report retrieved by its returned commitment;
+retain the canonical published report and Safe message receipt returned by the
+command;
 the authored input remains only a submission or retry input. This Guardian runs
 `settlement:verify` with the retained published file and compares the exact
 `to`, `value`, and `data`. It approves only a byte-identical transaction through
-its Safe owner wallet. Never place the Safe owner key in the wrapper, prompt,
-job definition, environment, logs, or kanban. The cron does not discover
-proposals or execute the Safe.
+its Safe owner wallet. The wrapper may process-inject the owner key only for
+`guardian:submit`; never place it in a prompt, job definition, general
+environment, logs, or kanban. The cron does not discover proposals or execute
+the Safe.

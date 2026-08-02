@@ -1,8 +1,8 @@
 ---
 name: agora-guardian-skill
-description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an independent report, and verifies the exact transaction before approving it through the Guardian Safe.
+description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, authenticates and publishes an independent report, and verifies the exact transaction before approving it through the Guardian Safe.
 metadata:
-  version: "0.6.2"
+  version: "0.6.3"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -92,7 +92,10 @@ Each command does exactly one thing. You compose them; nothing orchestrates you.
   — publish your verdict **off-chain**: render the canonical evaluation Markdown
   and upload it to Agora's database, keyed by its `guardian_result_commitment`.
   `<outcome>` is `awarded` (with the winning `<winner>`) or
-  `no_valid_submission`. Talks to the database first; loads no settlement key.
+  `no_valid_submission`. On managed chains, configure your own Safe service and
+  owner signer so the same command also publishes a native Safe message receipt
+  for that exact report. This authenticates your report only; it creates zero
+  settlement approvals.
 - `agora-cli settlement:verify <bounty_id> <guardian_result_commitment> <own_report_path>`
   — after the proposal builder shares the registered transaction and consensus
   commitment, reproduce its exact outcome and bytes from canonical inputs.
@@ -103,9 +106,11 @@ If a command, argument, or required configuration is unclear, run
 instead of guessing.
 
 Keep `AGORA_GUARDIAN_PRIVATE_KEYS_JSON` in secret storage and load it only for
-`guardian:open`. Keep the Safe owner key in its wallet custody; never place it
-in the CLI environment, an agent prompt, or a report. Never print Guardian
-decryption keys or wallet secrets.
+`guardian:open`. Keep Safe owner signing capability in your own custody and
+expose it only to the command that needs it, through your host's secret handoff.
+Never give it to Agora operations or place it in an agent prompt, report,
+general environment, log, or local work board. Never print Guardian decryption
+keys or wallet secrets.
 
 ## One-Time Key Setup
 
@@ -187,9 +192,11 @@ This is guidance, not a rigid script — but a sound cycle looks like:
 6. Record pass/fail for each acceptance criterion with the evidence that
    supports it, then apply the page's winner and tie-break rule.
 7. Write the public evaluation report to one UTF-8 Markdown file.
-8. `guardian:submit` the verdict. This completes the independent judging cycle;
-   wait for the proposal builder rather than assembling or approving a
-   settlement from this cycle.
+8. `guardian:submit` the verdict. On a managed chain intended for unattended
+   discovery, require its returned `guardian_report_receipt`; absence is an
+   operational blocker. The receipt authenticates only your report and is not a
+   Safe transaction approval. Wait for the proposal builder rather than
+   assembling or approving a settlement from this cycle.
 9. Use the returned `guardian_result_commitment` to retrieve
    `<AGORA_API_BASE_URL>/api/guardian-evaluations/<guardian_result_commitment>`
    and save the response bytes unchanged. Retain that published file and its

@@ -33,7 +33,7 @@ one small file per bounty is plenty:
 guardian-board/
   todo/    <bounty_id>.json     # ready, not started
   doing/   <bounty_id>.json     # being judged right now (keep this to one)
-  done/    <bounty_id>.json     # this Guardian's report was published
+  done/    <bounty_id>.json     # this Guardian's report + required receipt were published
   failed/  <bounty_id>.json     # last attempt failed; note why + when to retry
 ```
 
@@ -70,9 +70,9 @@ pick the todo/ bounty with the smallest settlement_timeout_at
 move it to doing/
 
 judge it (follow SKILL.md): open submissions → run/inspect → decide
-run("agora-cli guardian:submit <id> <outcome> [winner] <report.md>")   # off-chain
+run("agora-cli guardian:submit <id> <outcome> [winner] <report.md>")   # report + receipt
 
-if the report was published: move to done/
+if the report and required managed-chain receipt were published: move to done/
 else: move to failed/ with the reason and a backoff; a later cycle retries
 ```
 
@@ -110,4 +110,5 @@ supplies the consensus commitment, `safe_tx_hash`, nonce, and registered Safe
 transaction, run `settlement:verify` with the retained published file. Approve
 only byte-identical `to`, `value`, and `data` through this Guardian's Safe owner
 wallet. Do not add proposal polling, Safe execution, or the Safe owner key to
-this scheduler.
+prompts, the board, logs, or a general environment. Only `guardian:submit` may
+receive Guardian-owned signing capability through a process-local handoff.
