@@ -27,6 +27,15 @@ class GuardianDiscoverTests(unittest.TestCase):
         self.addCleanup(self.temp_dir.cleanup)
         self.kanban_path = Path(self.temp_dir.name) / "guardian-kanban.json"
 
+    def test_default_kanban_uses_dedicated_state_directory(self) -> None:
+        self.assertEqual(
+            Path(GUARDIAN_DISCOVER.KANBAN),
+            Path.home()
+            / ".hermes"
+            / "agora-guardian-state"
+            / "guardian-kanban.json",
+        )
+
     def run_tick(self, board: dict, ready: dict[str, int], now: int) -> tuple[dict, dict]:
         self.kanban_path.write_text(json.dumps(board), encoding="utf-8")
         output = io.StringIO()

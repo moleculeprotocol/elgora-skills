@@ -24,7 +24,9 @@ HOME = os.path.expanduser("~")
 # Reference the SYMLINK, never the real path under secrets/. A prompt or script
 # containing a ".../secrets/..." path is rejected by the Hermes prompt scanner.
 WRAPPER = os.path.join(HOME, ".hermes", "agora-guardian-wrapper.sh")
-KANBAN = os.path.join(HOME, ".hermes", "guardian-kanban.json")
+KANBAN = os.path.join(
+    HOME, ".hermes", "agora-guardian-state", "guardian-kanban.json"
+)
 
 MAX_RETRY = 3            # attempts after the first failure before we give up
 WATCHDOG_SECS = 15 * 60  # a bounty stuck in "doing" longer than this is unstuck

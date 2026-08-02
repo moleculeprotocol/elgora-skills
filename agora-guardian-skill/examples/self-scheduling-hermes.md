@@ -153,9 +153,16 @@ Without persistent state:
   one at a time);
 - a transient failure silently drops a bounty with no retry.
 
-A single JSON file at `~/.hermes/guardian-kanban.json` solves all three. It is
+A single JSON file at
+`~/.hermes/agora-guardian-state/guardian-kanban.json` solves all three. It is
 the blueprint's `todo / doing / done / failed` board, collapsed into one file
 keyed by bounty id so the discovery script can read and rewrite it atomically.
+
+The `agora-guardian-state` directory is the sharing unit when Hermes runs its
+pre-check on the host and the Guardian's terminal tools in a container. Mount
+that directory read/write into the same relative location in both contexts.
+Do not bind only `guardian-kanban.json`: the atomic save replaces the file's
+inode, which would leave either context reading stale state.
 
 ### Schema
 
@@ -301,7 +308,7 @@ toolset (they touch only the local file, never the wrapper or a secret):
 # Mark doing — BEFORE evaluation starts
 import json, os
 from datetime import datetime, timezone
-f = os.path.expanduser('~/.hermes/guardian-kanban.json')
+f = os.path.expanduser('~/.hermes/agora-guardian-state/guardian-kanban.json')
 kb = json.load(open(f))
 kb['<bounty_id>']['status'] = 'doing'
 kb['<bounty_id>']['started_at'] = datetime.now(timezone.utc).isoformat()
