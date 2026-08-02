@@ -46,7 +46,8 @@ The wrapper is a plain bash script at an absolute path that:
 
 1. Sources nvm from its absolute path (`$NVM_DIR/nvm.sh`).
 2. Selects Node 24 (the skill requires `>=24 <25`) via `nvm use 24 --silent`.
-3. Loads non-secret env vars from an absolute dotenv file (`agora.env`).
+3. Loads non-secret env vars, including the committed Guardian ID, from an
+   absolute dotenv file (`agora.env`).
 4. Loads the decryption secret only for `guardian:open`, and the Safe API key
    plus Guardian-owned signer only for `guardian:submit`.
 5. `exec "$@"` — hands off to the `agora-cli` command it was given.
@@ -130,6 +131,7 @@ AGORA_RPC_URL=...                    # finalized-chain revalidation
 AGORA_CHAIN_ID=...
 AGORA_HUB_ADDRESS=0x...
 AGORA_API_BASE_URL=...               # guardian:open / guardian:submit
+AGORA_GUARDIAN_ID=...                # this Guardian's committed recipient key_id
 AGORA_GUARDIAN_SETTLEMENT_SIGNER=0x...          # configured Safe address
 AGORA_GUARDIAN_RECIPIENTS_COMMITMENT=0x...
 ```
