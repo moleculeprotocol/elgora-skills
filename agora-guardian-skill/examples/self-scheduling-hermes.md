@@ -181,7 +181,7 @@ keyed by bounty id so the discovery script can read and rewrite it atomically.
 [report + required receipt publication succeeds] -> done
 [any failure/blocker]                          -> failed   (retry up to MAX_RETRY=3)
 [retries exhausted or already done]            -> skipped, never handed back
-[terminal + 1h past settlement_timeout_at]     -> pruned from the file
+[terminal + absent from discovery + 1h past timeout] -> pruned from the file
 ```
 
 ### Crash recovery via watchdog
@@ -212,18 +212,21 @@ The full script is committed alongside this doc at
 
 It runs on every tick **before** the LLM and, in order:
 
-1. Loads the kanban; runs the 15-minute watchdog; prunes terminal entries more
-   than 1h past their timeout.
+1. Loads the kanban and runs the 15-minute watchdog.
 2. Calls `guardian:judgeable` **through the wrapper** (so it inherits PATH, nvm,
    and env). `guardian:judgeable` prints one JSON-array line of
    `{ bounty_id, settlement_timeout_at }`, or **nothing** when there is no work.
-3. Merges ready bounties into the board as `todo` (new ids) and refreshes the
+3. Prunes terminal entries more than 1h past their timeout only after they are
+   absent from that authoritative discovery. A completed report stays retained
+   while its bounty remains judgeable, preventing duplicate publication while
+   Safe settlement is pending.
+4. Merges ready bounties into the board as `todo` (new ids) and refreshes the
    authoritative timeout on known ids — without resurrecting anything already
    `done`/`failed`.
-4. Enforces one-at-a-time: if any entry is `doing`, emits `BUSY` and stops.
-5. Builds the candidate pool as **ready ∩ not-finished** and picks the most
+5. Enforces one-at-a-time: if any entry is `doing`, emits `BUSY` and stops.
+6. Builds the candidate pool as **ready ∩ not-finished** and picks the most
    urgent (nearest `settlement_timeout_at`).
-6. Emits one JSON line with `wakeAgent` and `guardian_action`:
+7. Emits one JSON line with `wakeAgent` and `guardian_action`:
 
 | Guardian action | Meaning | `wakeAgent` |
 |---|---|---|

@@ -28,7 +28,7 @@ KANBAN = os.path.join(HOME, ".hermes", "guardian-kanban.json")
 
 MAX_RETRY = 3            # attempts after the first failure before we give up
 WATCHDOG_SECS = 15 * 60  # a bounty stuck in "doing" longer than this is unstuck
-PRUNE_AFTER_SECS = 60 * 60   # drop terminal entries this long past their timeout
+PRUNE_AFTER_SECS = 60 * 60   # retain terminal entries until no longer judgeable
 JUDGEABLE_TIMEOUT = 90       # seconds to wait on the CLI call
 
 
@@ -138,20 +138,27 @@ def main() -> None:
             entry["failure_reason"] = "watchdog: stuck in doing >15m"
             entry["finished_at"] = iso(t)
 
-    # 2. Prune terminal entries well past their settlement window.
-    for bid in list(kb):
-        e = kb[bid]
-        timeout_at = e.get("settlement_timeout_at")
-        if e["status"] in ("done", "failed") and timeout_at and t > timeout_at + PRUNE_AFTER_SECS:
-            del kb[bid]
-
-    # 3. Discover from the chain. A blocker is reported, not hidden.
+    # 2. Discover from the chain. A blocker is reported, not hidden.
     try:
         ready = discover()
     except Blocker as exc:
         save_kanban(kb)
         emit_guardian_action(f"BLOCKER:{exc}", True)
         return
+
+    # 3. Prune old terminal entries only after the authoritative discovery no
+    #    longer returns them. A done bounty can remain judgeable while its Safe
+    #    settlement is pending; dropping it earlier would publish it again.
+    for bid in list(kb):
+        e = kb[bid]
+        timeout_at = e.get("settlement_timeout_at")
+        if (
+            bid not in ready
+            and e["status"] in ("done", "failed")
+            and timeout_at
+            and t > timeout_at + PRUNE_AFTER_SECS
+        ):
+            del kb[bid]
 
     # 4. Merge ready bounties in. New ids become todo; known ids keep the
     #    authoritative timeout. We never resurrect a done/failed entry here —
