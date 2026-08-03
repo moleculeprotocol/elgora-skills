@@ -420,26 +420,24 @@ These are the sharp edges observed running this setup against Base Sepolia.
 ## Proposal review and Safe confirmation
 
 Keep this outside the evaluation cron. After a successful `guardian:submit`,
-retain the canonical published report and Safe message receipt returned by the
-command; the authored input remains only a submission or retry input.
+retain the returned report commitment and Safe message receipt in the run
+evidence; the authored input remains only a submission or retry input.
 
 Create a separate recurring confirmation job under the same Hermes scheduler.
-Configure one stable directory containing the unchanged canonical reports this
-Guardian published. On every confirmation cycle, invoke the wrapper with that
-directory only:
+On every confirmation cycle, invoke the wrapper with no per-bounty input:
 
 ```sh
-agora-cli guardian:confirm-settlement <own_reports_dir>
+agora-cli guardian:confirm-settlement
 ```
 
-The command discovers the current proposal, finds this Guardian's exact report
-by its commitment, reproduces the settlement, rechecks the current Safe nonce
-and transaction hash, signs with this Guardian's roster-bound owner, submits
-one native confirmation, and verifies it by read-back. With no current or
-supported proposal it exits cleanly, so no per-bounty prompt or job mutation is
-needed. Repeating a successful run is safe. If the retained report is missing
-or verification fails, stop and report the blocker; never substitute another
-report. The wrapper may process-inject the owner key only for
-`guardian:submit` and `guardian:confirm-settlement`; never place it in a prompt,
-job definition, general environment, logs, or kanban. Neither job proposes,
-relays, or executes the Safe transaction.
+The command discovers the current proposal and this Guardian's authenticated
+Safe-owner report receipt, retrieves the exact published report by its
+commitment, reproduces the settlement, rechecks the current Safe nonce and
+transaction hash, signs with this Guardian's roster-bound owner, submits one
+native confirmation, and verifies it by read-back. With no current or supported
+proposal it exits cleanly, so no per-bounty prompt or job mutation is needed.
+Repeating a successful run is safe. If verification fails, stop and report the
+blocker; never substitute another report. The wrapper may process-inject the
+owner key only for `guardian:submit` and `guardian:confirm-settlement`; never
+place it in a prompt, job definition, general environment, logs, or kanban.
+Neither job proposes, relays, or executes the Safe transaction.
