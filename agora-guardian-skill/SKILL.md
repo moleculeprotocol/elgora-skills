@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an authenticated independent report, and independently verifies and confirms the exact settlement through the Guardian Safe.
 metadata:
-  version: "0.7.0"
+  version: "0.8.0"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -99,11 +99,12 @@ Each command does exactly one thing. You compose them; nothing orchestrates you.
 - `agora-cli settlement:verify <bounty_id> <guardian_result_commitment> <own_report_path>`
   — reproduce a registered transaction's exact outcome and bytes from canonical
   inputs before signing. Loads no wallet key and writes nothing.
-- `agora-cli guardian:confirm-settlement <bounty_id> <guardian_result_commitment> <own_report_path>`
-  — run the same independent verification, require the one current registered
-  Safe transaction to match, and submit only your native Safe owner
-  confirmation. Repeating it after success is safe. It never proposes,
-  executes, relays, or holds another Guardian's key.
+- `agora-cli guardian:confirm-settlement <own_reports_dir>` — inspect the one
+  current registered Safe transaction, locate this Guardian's exact retained
+  report under the configured directory, run the same independent verification,
+  and submit only your native Safe owner confirmation. Repeating it after
+  success is safe. It never proposes, executes, relays, or holds another
+  Guardian's key.
 
 If a command, argument, or required configuration is unclear, run
 `agora-cli help <command>` or `agora-cli <command> --help`. Read the CLI help
@@ -204,21 +205,24 @@ This is guidance, not a rigid script — but a sound cycle looks like:
    assembling or approving a settlement from this cycle.
 9. Use the returned `guardian_result_commitment` to retrieve
    `<AGORA_API_BASE_URL>/api/guardian-evaluations/<guardian_result_commitment>`
-   and save the response bytes unchanged. Retain that published file and its
-   commitment until the bounty is final. Use the published file — not the
-   authored `<evaluation_report_path>` — for `settlement:verify` or
-   `guardian:confirm-settlement`.
+   and save the response bytes unchanged under your configured retained-report
+   directory. Retain that published file and its commitment until the bounty is
+   final. Use the published file — not the authored
+   `<evaluation_report_path>` — for `settlement:verify`; the recurring
+   confirmation command finds the exact published file by its commitment.
 10. Return to step 1 on your next cycle to pick up whatever is still ready.
 
 ## Proposal review and Safe confirmation
 
 This is separate from the judging cycle:
 
-1. For the current registered proposal, identify its bounty id and consensus
-   commitment, then select this Guardian's matching retained published report.
-2. Run `guardian:confirm-settlement` with those exact inputs. The command first
-   performs the same read-only verification as `settlement:verify`, then checks
-   the current Safe nonce and transaction hash before signing.
+1. On a fixed cadence, run `guardian:confirm-settlement` with your stable
+   retained-report directory. The command identifies the current registered
+   proposal, binds it to this Guardian's roster entry, and finds the exact
+   retained published report by its commitment.
+2. The command performs the same read-only verification as
+   `settlement:verify`, then rechecks the current Safe nonce and transaction
+   hash immediately before signing.
 3. Refuse if verification fails or any registered `to`, `value`, or `data` byte
    differs from the independently reproduced output.
    Failed verification blocks confirmation of that proposal. Do not retry it

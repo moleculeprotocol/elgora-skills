@@ -110,11 +110,13 @@ executes settlement.
 
 Use the same host scheduler for a separate recurring confirmation pass. When a
 current registered proposal includes this Guardian's retained report, run
-`guardian:confirm-settlement <bounty_id> <guardian_result_commitment>
-<canonical_report_path>`. That command independently reproduces the settlement,
-requires the current Safe transaction to match, and submits only this
-Guardian's native confirmation. A repeated successful pass is idempotent. Do
-not put the Safe owner key in prompts, the board, logs, or a general environment;
-inject it only into `guardian:submit` and `guardian:confirm-settlement` through
-the host's process-local secret handoff. The confirmation pass never proposes,
-executes, or relays.
+`guardian:confirm-settlement <own_reports_dir>`. The directory is stable across
+runs and contains the unchanged canonical reports this Guardian published; no
+per-bounty input is assembled or supplied. The command discovers the current
+proposal, finds the exact report by its commitment, independently reproduces
+the settlement, requires the current Safe transaction to match, and submits
+only this Guardian's native confirmation. A repeated successful pass is
+idempotent. Do not put the Safe owner key in prompts, the board, logs, or a
+general environment; inject it only into `guardian:submit` and
+`guardian:confirm-settlement` through the host's process-local secret handoff.
+The confirmation pass never proposes, executes, or relays.

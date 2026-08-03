@@ -424,20 +424,22 @@ retain the canonical published report and Safe message receipt returned by the
 command; the authored input remains only a submission or retry input.
 
 Create a separate recurring confirmation job under the same Hermes scheduler.
-When the current registered proposal includes this Guardian's retained report,
-invoke the wrapper with:
+Configure one stable directory containing the unchanged canonical reports this
+Guardian published. On every confirmation cycle, invoke the wrapper with that
+directory only:
 
 ```sh
-agora-cli guardian:confirm-settlement \
-  <bounty_id> <guardian_result_commitment> <canonical_report_path>
+agora-cli guardian:confirm-settlement <own_reports_dir>
 ```
 
-The command reproduces the exact settlement, checks the current Safe nonce and
-transaction hash, signs with this Guardian's roster-bound owner, submits one
-native confirmation, and verifies it by read-back. Repeating a successful run
-is safe. If the retained report is missing or verification fails, stop and
-report the blocker; never substitute another report. The wrapper may
-process-inject the owner key only for `guardian:submit` and
-`guardian:confirm-settlement`; never place it in a prompt, job definition,
-general environment, logs, or kanban. Neither job proposes, relays, or executes
-the Safe transaction.
+The command discovers the current proposal, finds this Guardian's exact report
+by its commitment, reproduces the settlement, rechecks the current Safe nonce
+and transaction hash, signs with this Guardian's roster-bound owner, submits
+one native confirmation, and verifies it by read-back. With no current or
+supported proposal it exits cleanly, so no per-bounty prompt or job mutation is
+needed. Repeating a successful run is safe. If the retained report is missing
+or verification fails, stop and report the blocker; never substitute another
+report. The wrapper may process-inject the owner key only for
+`guardian:submit` and `guardian:confirm-settlement`; never place it in a prompt,
+job definition, general environment, logs, or kanban. Neither job proposes,
+relays, or executes the Safe transaction.
