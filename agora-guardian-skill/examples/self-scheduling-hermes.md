@@ -18,7 +18,7 @@ Everything here still obeys the skill's invariants:
 - **One active judging cycle at a time**, held across cycles, so work is not
   duplicated and one Guardian does not publish conflicting reports.
 - **Secrets never enter a prompt, job definition, or log.** Only the numeric
-  bounty id crosses into per-bounty work.
+  bounty id crosses into per-bounty evaluation work.
 
 Hermes gives you two primitives that map cleanly onto the blueprint:
 
@@ -49,7 +49,8 @@ The wrapper is a plain bash script at an absolute path that:
 3. Loads non-secret env vars, including the committed Guardian ID, from an
    absolute dotenv file (`agora.env`).
 4. Loads the decryption secret only for `guardian:open`, and the Safe API key
-   plus Guardian-owned signer only for `guardian:submit`.
+   plus Guardian-owned signer only for `guardian:submit` and
+   `guardian:confirm-settlement`.
 5. `exec "$@"` — hands off to the `agora-cli` command it was given.
 
 ```bash
@@ -72,7 +73,7 @@ case "${1:-} ${2:-}" in
     export AGORA_GUARDIAN_PRIVATE_KEYS_JSON
     AGORA_GUARDIAN_PRIVATE_KEYS_JSON=$(cat "$KEYS_FILE")
     ;;
-  "agora-cli guardian:submit")
+  "agora-cli guardian:submit"|"agora-cli guardian:confirm-settlement")
     export AGORA_SAFE_API_KEY AGORA_GUARDIAN_SAFE_OWNER_PRIVATE_KEY
     AGORA_SAFE_API_KEY=$(cat "$SAFE_API_KEY_FILE")
     AGORA_GUARDIAN_SAFE_OWNER_PRIVATE_KEY=$(cat "$SAFE_OWNER_KEY_FILE")
@@ -119,8 +120,8 @@ print(repr(_scan_cron_prompt(YOUR_PROMPT)))  # a non-empty string means BLOCKED
 |---|---|---|
 | `agora.env` | Non-secret env vars (`KEY=VALUE` dotenv, no private keys) | `600` |
 | `x25519_keys.json` | JSON array `[{ key_id, suite, private_key }]` — your Guardian HPKE decryption key(s) from the skill's one-time key setup | `600` |
-| `safe_api_key` | Safe Transaction Service API key used to publish report receipts | `600` |
-| `safe_owner_private_key` | This Guardian's Safe owner key, injected only into `guardian:submit` | `600` |
+| `safe_api_key` | Safe Transaction Service API key used for report receipts and native confirmations | `600` |
+| `safe_owner_private_key` | This Guardian's Safe owner key, injected only into `guardian:submit` and `guardian:confirm-settlement` | `600` |
 
 `agora.env` must define at least the vars the guardian commands read on this
 deployment:
@@ -130,7 +131,7 @@ AGORA_SUBGRAPH_ENDPOINT=...          # guardian:judgeable discovery
 AGORA_RPC_URL=...                    # finalized-chain revalidation
 AGORA_CHAIN_ID=...
 AGORA_HUB_ADDRESS=0x...
-AGORA_API_BASE_URL=...               # guardian:open / guardian:submit
+AGORA_API_BASE_URL=...               # Guardian content reads and writes
 AGORA_GUARDIAN_ID=...                # this Guardian's committed recipient key_id
 AGORA_GUARDIAN_SETTLEMENT_SIGNER=0x...          # configured Safe address
 AGORA_GUARDIAN_RECIPIENTS_COMMITMENT=0x...
@@ -401,11 +402,13 @@ These are the sharp edges observed running this setup against Base Sepolia.
 - **Don't put a `secrets/` path in any cron prompt or script.** Reference the
   `~/.hermes/agora-guardian-wrapper.sh` symlink instead, or the scanner silently
   kills the run.
-- **Don't pass anything but the bounty id into per-bounty work.** No keys, no
-  file paths, no timestamps — the id is the only variable a judging cycle needs.
+- **Don't pass anything but the bounty id into per-bounty evaluation work.** No
+  keys, no file paths, no timestamps — the id is the only variable a judging
+  cycle needs.
 - **Don't rely on removed CLI verbs.** As of `@moleculeagora/cli` v3.0.0,
   use `guardian:judgeable` for discovery and `guardian:submit` to publish the
-  independent report. Settlement review happens later with `settlement:verify`.
+  independent report. Settlement confirmation happens later with
+  `guardian:confirm-settlement`.
 - **Don't test only interactively.** The cron environment is bare; always verify
   via a real cron run.
 - **Don't skip the kanban.** Without it a single crashed session blocks every
@@ -414,17 +417,27 @@ These are the sharp edges observed running this setup against Base Sepolia.
 
 ---
 
-## Proposal review and Safe approval
+## Proposal review and Safe confirmation
 
-Keep this outside the evaluation cron. The proposal builder supplies the
-consensus commitment, `safe_tx_hash`, nonce, and registered Safe transaction
-through the operator-approved channel. After a successful `guardian:submit`,
+Keep this outside the evaluation cron. After a successful `guardian:submit`,
 retain the canonical published report and Safe message receipt returned by the
-command;
-the authored input remains only a submission or retry input. This Guardian runs
-`settlement:verify` with the retained published file and compares the exact
-`to`, `value`, and `data`. It approves only a byte-identical transaction through
-its Safe owner wallet. The wrapper may process-inject the owner key only for
-`guardian:submit`; never place it in a prompt, job definition, general
-environment, logs, or kanban. The cron does not discover proposals or execute
-the Safe.
+command; the authored input remains only a submission or retry input.
+
+Create a separate recurring confirmation job under the same Hermes scheduler.
+When the current registered proposal includes this Guardian's retained report,
+invoke the wrapper with:
+
+```sh
+agora-cli guardian:confirm-settlement \
+  <bounty_id> <guardian_result_commitment> <canonical_report_path>
+```
+
+The command reproduces the exact settlement, checks the current Safe nonce and
+transaction hash, signs with this Guardian's roster-bound owner, submits one
+native confirmation, and verifies it by read-back. Repeating a successful run
+is safe. If the retained report is missing or verification fails, stop and
+report the blocker; never substitute another report. The wrapper may
+process-inject the owner key only for `guardian:submit` and
+`guardian:confirm-settlement`; never place it in a prompt, job definition,
+general environment, logs, or kanban. Neither job proposes, relays, or executes
+the Safe transaction.

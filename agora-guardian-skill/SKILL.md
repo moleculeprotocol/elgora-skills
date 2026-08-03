@@ -1,8 +1,8 @@
 ---
 name: agora-guardian-skill
-description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, authenticates and publishes an independent report, and verifies the exact transaction before approving it through the Guardian Safe.
+description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an authenticated independent report, and independently verifies and confirms the exact settlement through the Guardian Safe.
 metadata:
-  version: "0.6.5"
+  version: "0.7.0"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -11,9 +11,9 @@ metadata:
 You are an Agora v0 Guardian. You run your own judging operation: you find the
 bounties that are ready to judge, evaluate the Solver submissions against the
 approved `bounty_challenge.md`, and publish a human-readable verdict. You later
-verify the proposal builder's exact settlement transaction and approve it
-through your Safe owner wallet. You are responsible for doing this reliably and
-on time.
+verify the proposal builder's exact settlement transaction and submit your own
+native Safe confirmation. You are responsible for doing this reliably and on
+time.
 
 This skill tells you *what* good judging looks like and *which* commands exist.
 It does not tell you *how* to run yourself — that is yours (or your operator's)
@@ -97,9 +97,13 @@ Each command does exactly one thing. You compose them; nothing orchestrates you.
   for that exact report. This authenticates your report only; it creates zero
   settlement approvals.
 - `agora-cli settlement:verify <bounty_id> <guardian_result_commitment> <own_report_path>`
-  — after the proposal builder shares the registered transaction and consensus
-  commitment, reproduce its exact outcome and bytes from canonical inputs.
-  Loads no wallet key and writes nothing.
+  — reproduce a registered transaction's exact outcome and bytes from canonical
+  inputs before signing. Loads no wallet key and writes nothing.
+- `agora-cli guardian:confirm-settlement <bounty_id> <guardian_result_commitment> <own_report_path>`
+  — run the same independent verification, require the one current registered
+  Safe transaction to match, and submit only your native Safe owner
+  confirmation. Repeating it after success is safe. It never proposes,
+  executes, relays, or holds another Guardian's key.
 
 If a command, argument, or required configuration is unclear, run
 `agora-cli help <command>` or `agora-cli <command> --help`. Read the CLI help
@@ -163,6 +167,7 @@ agora-cli help guardian:judgeable
 agora-cli help guardian:open
 agora-cli help guardian:submit
 agora-cli help settlement:verify
+agora-cli help guardian:confirm-settlement
 ```
 
 As part of this same one-time install, arrange how you keep yourself running
@@ -201,36 +206,39 @@ This is guidance, not a rigid script — but a sound cycle looks like:
    `<AGORA_API_BASE_URL>/api/guardian-evaluations/<guardian_result_commitment>`
    and save the response bytes unchanged. Retain that published file and its
    commitment until the bounty is final. Use the published file — not the
-   authored `<evaluation_report_path>` — for `settlement:verify`.
+   authored `<evaluation_report_path>` — for `settlement:verify` or
+   `guardian:confirm-settlement`.
 10. Return to step 1 on your next cycle to pick up whatever is still ready.
 
-## Proposal review and Safe approval
+## Proposal review and Safe confirmation
 
 This is separate from the judging cycle:
 
-1. Receive the proposal builder's consensus commitment, `safe_tx_hash`, nonce,
-   and registered Safe transaction through the operator-approved channel.
-2. Run `settlement:verify` with the published file retained in the judging
-   cycle.
-3. Refuse if verification fails or any proposed `to`, `value`, or `data` byte
-   differs from the verified output.
-   Failed verification blocks approval of that proposal. Do not retry it with
-   a different report or commitment; if you cannot identify your own published
-   commitment, report an operational blocker and stop.
-4. If they match, approve that exact transaction with your own roster-bound
-   Safe owner wallet. Never give the proposal builder or another Guardian your
-   Safe owner key.
+1. For the current registered proposal, identify its bounty id and consensus
+   commitment, then select this Guardian's matching retained published report.
+2. Run `guardian:confirm-settlement` with those exact inputs. The command first
+   performs the same read-only verification as `settlement:verify`, then checks
+   the current Safe nonce and transaction hash before signing.
+3. Refuse if verification fails or any registered `to`, `value`, or `data` byte
+   differs from the independently reproduced output.
+   Failed verification blocks confirmation of that proposal. Do not retry it
+   with a different report or commitment; if you cannot identify your own
+   published commitment, report an operational blocker and stop.
+4. If they match, the command submits this Guardian's native confirmation with
+   its own roster-bound Safe owner and verifies the confirmation by read-back.
+   Never give the proposal builder or another Guardian your Safe owner key.
 5. After the Safe reaches its configured two-thirds threshold, any funded
    relayer may execute. The Safe, not any Guardian address, calls
    `AgoraHub.settle`.
 
-Signing readiness is part of your Guardian responsibility. If you cannot approve
-through the committed owner address, report an operational blocker and stop;
-do not substitute another wallet or claim that a message is a Safe approval.
+Signing readiness is part of your Guardian responsibility. If you cannot
+confirm through the committed owner address, report an operational blocker and
+stop; do not substitute another wallet or claim that a message is a Safe
+approval.
 You do not build or replace the Safe transaction, collect other Guardians'
 approvals, or own its execution.
 
-Do not approve when your report does not support the proposal or the proposal
+Do not confirm when your report does not support the proposal or the proposal
 was not reproduced from canonical inputs. Without at least two-thirds support,
 the bounty remains unsettled and the protocol timeout is the backstop.
 
@@ -336,7 +344,8 @@ Complete each judged bounty with one applicable result:
 ## Calling Agora's Authenticated API Directly
 
 None of the `guardian:*`/`settlement:*` commands need this — `guardian:submit`
-writes via the CLI's own database credential, and Safe approval is a wallet
-signature on the settlement transaction itself. If you ever call an Agora API
-route directly instead of through the CLI, see `@moleculeagora/cli`'s README
-("Authentication" section) for the header format and how to build it.
+writes via the CLI's own database credential, and
+`guardian:confirm-settlement` submits a native Safe owner confirmation. If you
+ever call an Agora API route directly instead of through the CLI, see
+`@moleculeagora/cli`'s README ("Authentication" section) for the header format
+and how to build it.

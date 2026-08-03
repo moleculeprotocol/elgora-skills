@@ -105,10 +105,16 @@ fragile layer this design removes.
 
 After `guardian:submit`, retrieve and retain the canonical published report
 using its returned commitment; do not retain the authored input as the
-verification file. The scheduler then stops. When the proposal builder later
-supplies the consensus commitment, `safe_tx_hash`, nonce, and registered Safe
-transaction, run `settlement:verify` with the retained published file. Approve
-only byte-identical `to`, `value`, and `data` through this Guardian's Safe owner
-wallet. Do not add proposal polling, Safe execution, or the Safe owner key to
-prompts, the board, logs, or a general environment. Only `guardian:submit` may
-receive Guardian-owned signing capability through a process-local handoff.
+verification file. The evaluation cycle then stops; it never proposes or
+executes settlement.
+
+Use the same host scheduler for a separate recurring confirmation pass. When a
+current registered proposal includes this Guardian's retained report, run
+`guardian:confirm-settlement <bounty_id> <guardian_result_commitment>
+<canonical_report_path>`. That command independently reproduces the settlement,
+requires the current Safe transaction to match, and submits only this
+Guardian's native confirmation. A repeated successful pass is idempotent. Do
+not put the Safe owner key in prompts, the board, logs, or a general environment;
+inject it only into `guardian:submit` and `guardian:confirm-settlement` through
+the host's process-local secret handoff. The confirmation pass never proposes,
+executes, or relays.
