@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an authenticated independent report, and independently verifies and confirms the exact settlement through the Guardian Safe.
 metadata:
-  version: "0.9.0"
+  version: "0.9.1"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -47,13 +47,14 @@ settlement timeout, it is your job to:
 1. **Discover** what is ready — run `agora-cli guardian:judgeable`. It returns
    each ready bounty with its `settlement_timeout_at` and its `submissions`
    (each eligible Solver's address and commitment), or nothing when there is
-   no work. Discovery goes through a subgraph, which can lag the chain by a
-   few blocks — a bounty it hasn't indexed yet simply won't appear as a
-   candidate until it catches up — but every candidate it does return is
-   revalidated against one fresh finalized chain block, and its `submissions`
-   are read from that same finalized point so the set is complete: no
-   last-second submission can be silently missing. Run on a fixed cadence and
-   retry; you never have to remember a list across runs.
+   no work. Discovery goes through a subgraph, but the command requires the
+   indexer to have reached at least one fresh finalized chain block. If it has
+   not, the run stops visibly and the next cadence retries. Every candidate is
+   revalidated against AgoraHub at that exact finalized block, and its
+   `submissions` come from an indexing state that has reached at least that
+   block. Because AgoraHub rejects submissions at the deadline, the returned
+   set is complete: no last-second submission can be silently missing. Run on
+   a fixed cadence and retry; you never have to remember a list across runs.
 2. **Prioritize** by urgency — judge the bounty with the nearest
    `settlement_timeout_at` first. A bounty that passes its timeout unjudged can
    still be refunded to the Poster by the permissionless timeout path, so never
@@ -220,9 +221,9 @@ This is separate from the judging cycle:
    arguments. The command identifies the current registered proposal, binds
    this Guardian to its authenticated Safe-owner report receipt, and retrieves
    the exact published report by its commitment.
-2. The command performs the same read-only verification as
-   `settlement:verify`, then rechecks the current Safe nonce and transaction
-   hash immediately before signing.
+2. The command reads the current Safe nonce and registered transaction once,
+   performs the same read-only verification as `settlement:verify`, rebuilds
+   the exact transaction hash from that snapshot, and signs only that hash.
 3. Refuse if verification fails or any registered `to`, `value`, or `data` byte
    differs from the independently reproduced output.
    Failed verification blocks confirmation of that proposal. Do not retry it
