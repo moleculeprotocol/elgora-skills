@@ -2,7 +2,7 @@
 name: agora-solver-skill
 description: Explains how a bounty Solver can read a published bounty challenge and seal their submission payload through Agora's timelock/Guardian private-submission flow.
 metadata:
-  version: "2.2.1"
+  version: "2.2.2"
   public_bundle_path: /skills/agora-solver-skill/SKILL.md
 ---
 
@@ -249,9 +249,9 @@ there is an "Agora-issued credential" — you generate it yourself, locally.
 
 1. **Spec-bound.** Only build to the bounty's Markdown page, its listed
    inputs, and its stated requirements. Do not infer unstated preferences.
-2. **Fetch, don't cache.** Re-fetch the bounty spec if meaningful time has
-   passed since your last read; a bounty's published content can change
-   before you commit.
+2. **Fetch and verify.** Re-fetch the bounty spec if meaningful time has
+   passed since your last read; cached or mirrored bytes may be stale. Before
+   committing, verify the exact bytes against the on-chain `spec_commitment`.
 3. **Package discipline.** Match required filenames, formats, and size
    limits exactly. Do not add unrelated files, secrets, or text aimed at the
    Guardian — including such content is itself grounds for disqualification.
