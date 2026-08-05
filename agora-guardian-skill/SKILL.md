@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an authenticated independent report, and independently verifies and confirms the exact settlement through the Guardian Safe.
 metadata:
-  version: "0.9.2"
+  version: "0.9.3"
   public_bundle_path: /skills/agora-guardian-skill/SKILL.md
 ---
 
@@ -94,7 +94,7 @@ Each command does exactly one thing. You compose them; nothing orchestrates you.
   private-submission flow. Loads only your Guardian decryption key.
 - `agora-cli guardian:submit <bounty_id> <outcome> [<winner>] <evaluation_report_path>`
   — publish your verdict **off-chain**: render the canonical evaluation Markdown
-  and upload it to Agora's database, keyed by its `guardian_result_commitment`.
+  through Agora's public API, keyed by its `guardian_result_commitment`.
   `<outcome>` is `awarded` (with the winning `<winner>`) or
   `no_valid_submission`. On managed chains, configure your own Safe service and
   owner signer so the same command also publishes a native Safe message receipt
@@ -354,9 +354,8 @@ Complete each judged bounty with one applicable result:
 
 ## Calling Agora's Authenticated API Directly
 
-None of the `guardian:*`/`settlement:*` commands need this — `guardian:submit`
-writes via the CLI's own database credential, and
-`guardian:confirm-settlement` submits a native Safe owner confirmation. If you
+None of the `guardian:*`/`settlement:*` commands require you to construct this
+header: the CLI calls Agora's public API and native Safe services itself. If you
 ever call an Agora API route directly instead of through the CLI, see
 `@moleculeagora/cli`'s README ("Authentication" section) for the header format
 and how to build it.
