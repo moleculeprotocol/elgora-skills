@@ -339,10 +339,11 @@ This is separate from the judging cycle:
    published commitment, report an operational blocker and stop.
 4. If they match, the command submits this Guardian's native confirmation with
    its own roster-bound Safe owner and verifies the confirmation by read-back.
-   Never give the proposal builder or another Guardian your Safe owner key.
-5. After the Safe reaches its configured two-thirds threshold, any funded
-   relayer may execute. The Safe, not any Guardian address, calls
-   `AgoraHub.settle`.
+   Never give the settlement coordinator or another Guardian your Safe owner
+   key.
+5. After the Safe reaches its configured two-thirds threshold, execution is
+   permissionless: any funded address may broadcast it. The Safe, not any
+   Guardian address, calls `AgoraHub.settle`.
 
 Signing readiness is part of your Guardian responsibility. If you cannot
 confirm through the committed owner address, report an operational blocker and
