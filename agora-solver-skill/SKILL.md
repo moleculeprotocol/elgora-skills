@@ -2,8 +2,7 @@
 name: agora-solver-skill
 description: Explains how a bounty Solver can read a published bounty challenge and seal their submission payload through Agora's timelock/Guardian private-submission flow.
 metadata:
-  version: "2.2.2"
-  public_bundle_path: /skills/agora-solver-skill/SKILL.md
+  version: "2.3.1"
 ---
 
 > **Status: v0.** Agora authenticates Posters before publication, but does not
@@ -11,7 +10,8 @@ metadata:
 > Anyone who can reach Agora's public API can currently request a signed upload
 > URL. Nothing in this flow ever asks you for an Agora-issued credential or one
 > of Agora's own operator secrets; if something does, stop and check the newest
-> bundle at the public bundle path above before proceeding.
+> [public Solver bundle](https://agora-v0.vercel.app/skills/agora-solver-skill/SKILL.md)
+> before proceeding.
 
 # Agora Solver Skill
 
@@ -48,7 +48,7 @@ outside this skill.
 Agora exposes a bounty detail endpoint on its public API:
 
 ```
-GET {agora_app_base_url}/api/bounties/{bounty_id}
+GET https://agora-v0.vercel.app/api/bounties/{bounty_id}
 ```
 
 The response contains the on-chain bounty facts (reward, deadline, status,
@@ -145,8 +145,11 @@ verdict on your acceptance criteria.
 
 Agora v0 has no separate "encrypt" step — sealing happens as part of
 submitting, through Agora's Solver command-line tool, `agora-cli`. Install it
-from Agora's current distribution channel (consult Agora's documentation for
-the exact method — this skill does not assume any one package registry).
+from npm:
+
+```sh
+npm install --global @moleculeagora/cli
+```
 
 Put your submission files in one flat local directory (no subdirectories —
 one file per required artifact), then run:
@@ -200,9 +203,9 @@ commitment before sealing anything.
 Everything else (`AGORA_CHAIN_ID`, `AGORA_HUB_ADDRESS`,
 `AGORA_RPC_URL`, `AGORA_API_BASE_URL`,
 `AGORA_TIMELOCK_REVEAL_DELAY_SECONDS`) already defaults to Agora's current
-live deployment; only set one of these yourself if you are deliberately
-targeting a different deployment (run `agora-cli solver:submit --help` to see the
-full list and current defaults). There is no `AGORA_GUARDIAN_RECIPIENTS_COMMITMENT`
+live Base Sepolia deployment. This public bundle supports that deployment;
+leave the defaults together and run `agora-cli solver:submit --help` to inspect
+them. There is no `AGORA_GUARDIAN_RECIPIENTS_COMMITMENT`
 to set for `submit` — it reads each bounty's own commitment straight off that
 bounty's `BountyCreated` event on chain.
 
@@ -234,16 +237,17 @@ transaction. Treat that key as a secret and never include it in an artifact or
 log output.
 
 As with Step 4, `AGORA_CHAIN_ID`, `AGORA_HUB_ADDRESS`, and
-`AGORA_RPC_URL` default to Agora's current live deployment;
-override them only to target a different one.
+`AGORA_RPC_URL` default to Agora's current live Base Sepolia deployment. Keep
+that default profile together.
 
 ## Calling Agora's Authenticated API Directly
 
 `solver:submit` and `claim` stay authenticated by your on-chain wallet
 signature (Steps 4–5) — they don't need this. If you ever call an Agora API
 route directly instead of through the CLI, see `@moleculeagora/cli`'s README
-("Authentication" section) for the header format and how to build it. Nothing
-there is an "Agora-issued credential" — you generate it yourself, locally.
+[Authentication guide](https://www.npmjs.com/package/@moleculeagora/cli#authentication)
+for the header format and how to build it. Nothing there is an "Agora-issued
+credential" — you generate it yourself, locally.
 
 ## Standing Rules
 
@@ -266,5 +270,5 @@ there is an "Agora-issued credential" — you generate it yourself, locally.
    in this flow is meant to give you one.
 
 This public bundle is a release snapshot of the Agora v0 Solver skill. If a
-newer bundle is available at the public bundle path above, prefer it over a
-cached or copied version of this file.
+newer [public Solver bundle](https://agora-v0.vercel.app/skills/agora-solver-skill/SKILL.md)
+is available, prefer it over a cached or copied version of this file.

@@ -1,14 +1,12 @@
 ---
 name: agora-poster-skill
-description: Self-contained Agora v0 Orchestrator skill for Posters drafting Markdown bounty challenge pages.
+description: Self-contained Agora v0 skill for Posters drafting Markdown bounty challenge pages.
 metadata:
-  version: "0.4.0"
+  version: "0.6.2"
   profile: agora_markdown_bounty_challenge_v0
-  template_snapshot: packages/core/BOUNTY_CHALLENGE_SPEC.md, 2026-07-21
-  public_bundle_path: /skills/agora-poster-skill/SKILL.md
 ---
 
-# Agora Orchestrator Skill
+# Agora Poster Drafting Skill
 
 You help a Poster turn a scientific goal into a publishable Agora v0
 `bounty_challenge.md`.
@@ -227,14 +225,50 @@ After the readiness checklist passes, show the Poster the final
 `bounty_challenge.md` and ask for explicit approval. The approved Markdown file
 is the v0 bounty spec that Agora stores and hashes.
 
+## Publication Handoff
+
+The Poster can publish the approved file through Agora's web app, or from a
+machine where the Poster controls its wallet key:
+
+```sh
+npm install --global @moleculeagora/cli
+agora-cli help poster:publish-fund
+agora-cli poster:publish-fund bounty_challenge.md
+```
+
+This public bundle supports Agora's live Base Sepolia deployment. Set its public
+configuration as one coherent block before running the command:
+
+```sh
+export AGORA_API_BASE_URL=https://agora-v0.vercel.app
+export AGORA_CHAIN_ID=84532
+export AGORA_HUB_ADDRESS=0x15bfaa9170a6edbe3b18ab75202e27f2e3b72e49
+export AGORA_RPC_URL=https://sepolia.base.org
+export AGORA_ESCROW_TOKEN_ADDRESS=0x036cbd53842c5426634e7929541ec2318f3dcf7e
+```
+
+Do not mix this block with values from another deployment. Then use the host's
+secret manager or process-level secret injection to expose
+`AGORA_POSTER_PRIVATE_KEY` only to the publication process. Never type the key
+as an inline shell assignment or put it in the bounty file, an agent prompt,
+shell history, logs, or source control. Use the web app when the Poster does not
+have a safe way to inject a process secret. Publication is a separate, explicit
+Poster action: drafting approval alone does not publish or fund a bounty.
+
 ## Calling Agora's Authenticated API Directly
 
 Publication normally happens through Agora's own app or CLI, which handle
 this for you. If you (or your operator) call the publication API directly
-instead, see `@moleculeagora/cli`'s README ("Authentication" section) for the
-header format and how to build it. Nothing there is issued to you by Agora —
-it's generated locally from the Poster's own wallet key.
+instead, see the
+[`@moleculeagora/cli` Authentication guide](https://www.npmjs.com/package/@moleculeagora/cli#authentication)
+for the header format and how to build it. Nothing there is issued to you by
+Agora — it is generated locally from the Poster's own wallet key.
 
 This public bundle is a release snapshot of the Agora v0 bounty template. If a
-new Agora release updates the v0 profile, use the newest bundle exposed by the
-Agora web app at the public bundle path above.
+new Agora release updates the v0 profile, use the
+[latest public Poster bundle](https://agora-v0.vercel.app/skills/agora-poster-skill/SKILL.md).
+A ready-to-edit page ships beside it as
+[`bounty_challenge.md`](examples/bounty_challenge.md).
+Its `4102444800` deadline is a long-lived example sentinel, not a recommended
+publication deadline. Replace it with the Poster's approved future Unix time,
+and replace every other example value, before approval or publication.

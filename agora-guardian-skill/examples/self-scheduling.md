@@ -20,9 +20,6 @@ board → sleep.** Two properties matter regardless of the tool you use to wake:
 reporting anything it revalidates each candidate against fresh finalized
 AgoraHub state. So a missed or crashed cycle is still self-healing in practice:
 the next wake re-runs discovery and picks up the same ready bounties.
-<!-- A proposal to move the chain read from every discovery poll to once, right
-     before judging starts on a chosen bounty, is tracked in
-     https://github.com/moleculeprotocol/agora-v0/issues/123 -->
 
 ## A local board (kanban)
 

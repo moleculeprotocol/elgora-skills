@@ -2,8 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an authenticated independent report, and independently verifies and confirms the exact settlement through the Guardian Safe.
 metadata:
-  version: "0.9.3"
-  public_bundle_path: /skills/agora-guardian-skill/SKILL.md
+  version: "0.11.1"
 ---
 
 # Agora Guardian
@@ -114,6 +113,26 @@ If a command, argument, or required configuration is unclear, run
 `agora-cli help <command>` or `agora-cli <command> --help`. Read the CLI help
 instead of guessing.
 
+This public bundle supports Agora's live Base Sepolia deployment. Configure its
+public values together, alongside the `AGORA_GUARDIAN_ID` assigned to this
+Guardian's committed recipient key:
+
+```dotenv
+AGORA_API_BASE_URL=https://agora-v0.vercel.app
+AGORA_CHAIN_ID=84532
+AGORA_HUB_ADDRESS=0x15bfaa9170a6edbe3b18ab75202e27f2e3b72e49
+AGORA_RPC_URL=https://sepolia.base.org
+AGORA_SUBGRAPH_ENDPOINT=https://api.goldsky.com/api/public/project_cmqz9ta0fx8bu01xt0om3fo75/subgraphs/agora-agorahub/dev/gn
+AGORA_GUARDIAN_SETTLEMENT_SIGNER=0x63762f9a7505ce91af7bbc20a63b1b23f99d566b
+AGORA_GUARDIAN_RECIPIENTS_COMMITMENT=0x9940d0e4365bb41ab7558a59de91ad53cfa5041bbfdbbbb2e94482d84a89bef7
+AGORA_GUARDIAN_ID=<guardian_key_id>
+```
+
+Treat this as one deployment profile: do not mix it with values from another
+deployment. If onboarding provides different deployment facts, stop and obtain
+the matching supported bundle. Public deployment values are not credentials;
+you still supply only your own Guardian identity and secrets.
+
 Keep `AGORA_GUARDIAN_PRIVATE_KEYS_JSON` in secret storage and load it only for
 `guardian:open`. Keep Safe owner signing capability in your own custody and
 expose it only to the command that needs it, through your host's secret handoff.
@@ -132,7 +151,20 @@ record. Do not overwrite or regenerate it.
    wallet's private key.
 3. Store the private key in the Guardian's secret storage before continuing.
    Never include it in responses, logs, reports, or public artifacts.
-4. Return only this public JSON shape:
+   `AGORA_GUARDIAN_PRIVATE_KEYS_JSON`, loaded only for `guardian:open`, uses
+   this private shape:
+
+   ```json
+   [
+     {
+       "key_id": "<stable_key_id>",
+       "suite": "hpke-dhkem-x25519-hkdf-sha256+hkdf-sha256+aes-256-gcm@1",
+       "private_key": "<32-byte X25519 private key as unpadded base64url>"
+     }
+   ]
+   ```
+
+4. Return only this public JSON shape to the roster operator:
 
    ```json
    [
@@ -151,11 +183,81 @@ record. Do not overwrite or regenerate it.
 6. During rotation, retain old private keys until every bounty committed to
    those keys has reached a final state.
 
+Node 24's standard library can perform that one-time setup without another
+package. Create the private-key directory first, choose a stable ID, and point
+the output path at secret storage. The script refuses to overwrite an existing
+file, verifies a two-party X25519 agreement and authenticated-encryption
+roundtrip, writes only the private record to the mode-`600` file, and prints
+only the public record:
+
+```sh
+export AGORA_GUARDIAN_ID="<stable_key_id>"
+export AGORA_GUARDIAN_PRIVATE_KEYS_FILE="<new_secret_file_path>"
+node --input-type=module <<'NODE'
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  diffieHellman,
+  generateKeyPairSync,
+  randomBytes,
+} from "node:crypto";
+import { writeFileSync } from "node:fs";
+
+const keyId = process.env.AGORA_GUARDIAN_ID;
+const privatePath = process.env.AGORA_GUARDIAN_PRIVATE_KEYS_FILE;
+if (!keyId || !privatePath) throw new Error("key id and private path required");
+
+const guardian = generateKeyPairSync("x25519");
+const probe = generateKeyPairSync("x25519");
+const shared = diffieHellman({
+  privateKey: guardian.privateKey,
+  publicKey: probe.publicKey,
+});
+const reverse = diffieHellman({
+  privateKey: probe.privateKey,
+  publicKey: guardian.publicKey,
+});
+if (!shared.equals(reverse)) throw new Error("X25519 roundtrip failed");
+
+const key = createHash("sha256").update(shared).digest();
+const iv = randomBytes(12);
+const cipher = createCipheriv("aes-256-gcm", key, iv);
+const sealed = Buffer.concat([cipher.update("agora-key-check"), cipher.final()]);
+const decipher = createDecipheriv("aes-256-gcm", key, iv);
+decipher.setAuthTag(cipher.getAuthTag());
+const opened = Buffer.concat([decipher.update(sealed), decipher.final()]);
+if (opened.toString() !== "agora-key-check") {
+  throw new Error("authenticated-encryption roundtrip failed");
+}
+
+const publicJwk = guardian.publicKey.export({ format: "jwk" });
+const privateJwk = guardian.privateKey.export({ format: "jwk" });
+if (!publicJwk.x || !privateJwk.d) throw new Error("X25519 export failed");
+const suite =
+  "hpke-dhkem-x25519-hkdf-sha256+hkdf-sha256+aes-256-gcm@1";
+writeFileSync(
+  privatePath,
+  `${JSON.stringify([{ key_id: keyId, suite, private_key: privateJwk.d }], null, 2)}\n`,
+  { mode: 0o600, flag: "wx" },
+);
+console.log(
+  JSON.stringify([{ key_id: keyId, suite, public_key: publicJwk.x }], null, 2),
+);
+NODE
+```
+
 Before joining a roster, use one stable Guardian ID and provide one separate
 Safe owner address that you control. Confirm that you can approve Safe
 transactions from that address before it is committed to the roster, and return
 only the public ID, recipient record, and owner address. How you provision or
 custody the wallet is outside this skill.
+
+Roster admission is deliberately operator-provisioned; there is no public
+self-registration command or repository document to consult. Your onboarding
+packet is complete only after the operator confirms that the public recipient
+record and Safe owner address are committed for future bounties. Never accept an
+onboarding packet that asks you to disclose either private key.
 
 This is initialization, not part of bounty evaluation. Never generate a new key
 per bounty or evaluation run.
@@ -191,7 +293,7 @@ This is guidance, not a rigid script — but a sound cycle looks like:
    returned for it as the eligible Solver identities and commitments — that
    list is proven complete and ordered by its canonical on-chain block/log
    position; do not re-derive either fact from the API. Separately,
-   fetch `<AGORA_API_BASE_URL>/api/bounties/<bounty_id>`. Agora returns
+   fetch `https://agora-v0.vercel.app/api/bounties/<bounty_id>`. Agora returns
    `challenge` only after verifying that its exact UTF-8 Markdown text hashes
    to `bounty.spec_commitment`; use it as the approved `bounty_challenge.md`.
    If `challenge` is missing, null, or empty, stop before evaluation and do
@@ -213,7 +315,7 @@ This is guidance, not a rigid script — but a sound cycle looks like:
 9. Retain the returned `guardian_result_commitment` and
    `guardian_report_receipt` in your run evidence until the bounty is final.
    For a manual `settlement:verify`, retrieve the exact published bytes from
-   `<AGORA_API_BASE_URL>/api/guardian-evaluations/<guardian_result_commitment>`;
+   `https://agora-v0.vercel.app/api/guardian-evaluations/<guardian_result_commitment>`;
    do not use the authored `<evaluation_report_path>` as the published report.
    The recurring confirmation command retrieves and verifies the published
    bytes itself.
@@ -357,5 +459,9 @@ Complete each judged bounty with one applicable result:
 None of the `guardian:*`/`settlement:*` commands require you to construct this
 header: the CLI calls Agora's public API and native Safe services itself. If you
 ever call an Agora API route directly instead of through the CLI, see
-`@moleculeagora/cli`'s README ("Authentication" section) for the header format
-and how to build it.
+the [`@moleculeagora/cli` Authentication guide](https://www.npmjs.com/package/@moleculeagora/cli#authentication)
+for the header format and how to build it.
+
+Use the
+[latest public Guardian bundle](https://agora-v0.vercel.app/skills/agora-guardian-skill/SKILL.md)
+instead of a cached copy when a newer version is available.

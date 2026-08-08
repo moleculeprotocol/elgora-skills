@@ -105,14 +105,9 @@ ln -sf ~/.hermes/secrets/agora-guardian/run-agora.sh \
        ~/.hermes/agora-guardian-wrapper.sh
 ```
 
-Verify a prompt is not being blocked before you rely on it:
-
-```python
-import sys
-sys.path.insert(0, '/home/<user>/.hermes/venv/lib/python3.12/site-packages')
-from tools.cronjob_tools import _scan_cron_prompt
-print(repr(_scan_cron_prompt(YOUR_PROMPT)))  # a non-empty string means BLOCKED
-```
+Verify the final prompt through Hermes's supported cron create/update and manual
+run flow before enabling delivery. Do not import private Hermes modules or pin a
+host-internal Python path; those are not stable interfaces.
 
 ### Secret files the wrapper reads
 
@@ -123,24 +118,28 @@ print(repr(_scan_cron_prompt(YOUR_PROMPT)))  # a non-empty string means BLOCKED
 | `safe_api_key` | Safe Transaction Service API key used for report receipts and native confirmations | `600` |
 | `safe_owner_private_key` | This Guardian's Safe owner key, injected only into `guardian:submit` and `guardian:confirm-settlement` | `600` |
 
-`agora.env` must define at least the vars the guardian commands read on this
-deployment:
+For Agora's supported live Base Sepolia deployment, copy this complete public
+profile into `agora.env` and fill in this Guardian's roster identity:
 
-```
-AGORA_SUBGRAPH_ENDPOINT=...          # guardian:judgeable discovery
-AGORA_RPC_URL=...                    # finalized-chain revalidation
-AGORA_CHAIN_ID=...
-AGORA_HUB_ADDRESS=0x...
-AGORA_API_BASE_URL=...               # Guardian content reads and writes
-AGORA_GUARDIAN_ID=...                # this Guardian's committed recipient key_id
-AGORA_GUARDIAN_SETTLEMENT_SIGNER=0x...          # configured Safe address
-AGORA_GUARDIAN_RECIPIENTS_COMMITMENT=0x...
+```dotenv
+AGORA_API_BASE_URL=https://agora-v0.vercel.app
+AGORA_CHAIN_ID=84532
+AGORA_HUB_ADDRESS=0x15bfaa9170a6edbe3b18ab75202e27f2e3b72e49
+AGORA_RPC_URL=https://sepolia.base.org
+AGORA_SUBGRAPH_ENDPOINT=https://api.goldsky.com/api/public/project_cmqz9ta0fx8bu01xt0om3fo75/subgraphs/agora-agorahub/dev/gn
+AGORA_GUARDIAN_SETTLEMENT_SIGNER=0x63762f9a7505ce91af7bbc20a63b1b23f99d566b
+AGORA_GUARDIAN_RECIPIENTS_COMMITMENT=0x9940d0e4365bb41ab7558a59de91ad53cfa5041bbfdbbbb2e94482d84a89bef7
+AGORA_GUARDIAN_ID=... # this Guardian's committed recipient key_id
 ```
 
 Keep every secret out of `agora.env`; each belongs in its dedicated file and is
-loaded by the wrapper only for the command that needs it. The public
-`AGORA_GUARDIAN_SETTLEMENT_SIGNER` Safe address goes in `agora.env` because
-`guardian:judgeable` uses it to filter for bounties assigned to that Safe.
+loaded by the wrapper only for the command that needs it. Treat the public
+values above as one profile and do not replace them independently. If the
+roster operator supplies different deployment facts or rotates the committed
+recipient set, start the matching new complete profile for future bounties.
+Keep the old profile, runtime, Safe owner key, and recipient private keys active
+until every bounty that snapshotted that configuration has settled or timed
+out.
 
 ---
 
@@ -299,9 +298,13 @@ secret, key, or host path. The prompt must:
 3. For `BLOCKER:<msg>` → report the message and stop; do not settle anything.
 4. For `EVALUATE:<id>` or `RETRY:<id>:<n>:<reason>`:
    - mark the bounty `doing` in the kanban **first**;
-   - run the full judging cycle from `SKILL.md` for **that id only**
-     (`guardian:open` → run/inspect → decide → `guardian:submit`), always going
-     through the wrapper;
+   - for a fresh evaluation, run the full judging cycle for **that id only**
+     (`guardian:open` → run/inspect → decide), and write the report to
+     `~/.hermes/agora-guardian-state/reports/<id>.md` before
+     `guardian:submit`, always going through the wrapper;
+   - for a retry whose exact failure reason starts with `publish:`, reuse that
+     retained report and retry only `guardian:submit`; for any other failure,
+     rerun the full cycle rather than assuming the prior verdict is complete;
    - mark it `done` on success, or `failed` with the exact error **last**.
 
 The kanban writes are tiny inline Python one-liners run via the `terminal`
@@ -322,8 +325,9 @@ kb['<bounty_id>']['status'] = 'done'
 kb['<bounty_id>']['finished_at'] = datetime.now(timezone.utc).isoformat()
 json.dump(kb, open(f, 'w'), indent=2)
 
-# Mark failed — on ANY blocker/error (retry_count is bumped by the discovery
-# script when it next emits RETRY, so this one-liner does not touch it)
+# Mark failed — on ANY blocker/error. Prefix a post-evaluation publication
+# failure with "publish:" so the next cycle can safely reuse the retained
+# report. retry_count is bumped by the discovery script on the next RETRY.
 kb['<bounty_id>']['status'] = 'failed'
 kb['<bounty_id>']['finished_at'] = datetime.now(timezone.utc).isoformat()
 kb['<bounty_id>']['failure_reason'] = '<exact error>'
@@ -378,19 +382,15 @@ These are the sharp edges observed running this setup against Base Sepolia.
   submission, and do not settle; retry on a later cycle.
 - **Reported bounties can remain judgeable.** The board's `done` status prevents
   duplicate evaluation while the proposal is pending.
-- **API 500 on `submit`: retry without re-evaluating.** If the upload fails with
-  a 500, evaluation is already complete and the winner decided. Mark the entry
-  `failed` with reason `"API 500 on submit"`; the report persists at
-  `/tmp/guardian-open/<bounty_id>/evaluation_report.md`. On the retry cycle,
-  re-run only `guardian:submit` against the saved report; do not re-judge.
-- **Base Sepolia subgraph lag ~21 minutes.** A bounty past its
-  `submission_deadline` on-chain may not surface in `guardian:judgeable` for
-  ~21 min while the subgraph indexes. Continuous 2-minute polling picks it up
-  within one tick of becoming visible, so no extra margin is needed.
-- **`cronjob(action='run')` says "Already being fired" for paused jobs.**
-  `claim_job_for_fire()` returns `False` for any paused job, which surfaces as
-  this misleading string — it is not a real lock. Workaround: `resume → run →
-  re-pause`.
+- **A transient `guardian:submit` failure need not repeat judging.** The verdict
+  is complete before publication begins. Retain the report under the persistent
+  state directory, mark the failure reason `publish: <exact error>`, and retry
+  only `guardian:submit` against those same bytes. If the report is missing or
+  its provenance is uncertain, rerun the full judging cycle.
+- **Indexer lag is expected.** A bounty past its `submission_deadline` on-chain
+  may not surface immediately in `guardian:judgeable`. Continuous polling picks
+  it up after the subgraph reaches the required finalized block; do not encode a
+  historical lag measurement as a timing guarantee.
 
 ---
 
@@ -405,8 +405,8 @@ These are the sharp edges observed running this setup against Base Sepolia.
 - **Don't pass anything but the bounty id into per-bounty evaluation work.** No
   keys, no file paths, no timestamps — the id is the only variable a judging
   cycle needs.
-- **Don't rely on removed CLI verbs.** As of `@moleculeagora/cli` v3.0.0,
-  use `guardian:judgeable` for discovery and `guardian:submit` to publish the
+- **Don't rely on removed CLI verbs.** Use `guardian:judgeable` for discovery
+  and `guardian:submit` to publish the
   independent report. Settlement confirmation happens later with
   `guardian:confirm-settlement`.
 - **Don't test only interactively.** The cron environment is bare; always verify
