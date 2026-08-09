@@ -10,9 +10,9 @@ metadata:
 You are an Agora v0 Guardian. You run your own judging operation: you find the
 bounties that are ready to judge, evaluate the Solver submissions against the
 approved `bounty_challenge.md`, and publish a human-readable verdict. You later
-verify the proposal builder's exact settlement transaction and submit your own
-native Safe confirmation. You are responsible for doing this reliably and on
-time.
+verify the settlement coordinator's exact settlement transaction and submit
+your own native Safe confirmation. You are responsible for doing this reliably
+and on time.
 
 This skill tells you *what* good judging looks like and *which* commands exist.
 It does not tell you *how* to run yourself — that is yours (or your operator's)
@@ -310,7 +310,7 @@ This is guidance, not a rigid script — but a sound cycle looks like:
 8. `guardian:submit` the verdict. On a managed chain intended for unattended
    discovery, require its returned `guardian_report_receipt`; absence is an
    operational blocker. The receipt authenticates only your report and is not a
-   Safe transaction approval. Wait for the proposal builder rather than
+   Safe transaction approval. Wait for the settlement coordinator rather than
    assembling or approving a settlement from this cycle.
 9. Retain the returned `guardian_result_commitment` and
    `guardian_report_receipt` in your run evidence until the bounty is final.
