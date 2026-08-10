@@ -152,10 +152,11 @@ npm install --global @moleculeagora/cli
 ```
 
 Put your submission files in one flat local directory (no subdirectories —
-one file per required artifact), then run:
+one file per required artifact). Keep the Solver wallet key in process secret
+storage as `AGORA_SOLVER_PRIVATE_KEY`, then run:
 
 ```
-agora-cli solver:submit --solver-address <solver_address> <bounty_id> <artifact_dir>
+agora-cli solver:submit <bounty_id> <artifact_dir>
 ```
 
 What this does, so you can reason about failure modes:
@@ -180,21 +181,18 @@ What this does, so you can reason about failure modes:
 4. Timelock-encrypts the wrapped key material to a point in time derived
    from the bounty's `submission_deadline`, so that nobody — including the
    Guardian — can open the envelope before the deadline is reached.
-5. Uploads the sealed ciphertext to Agora's object storage via a short-lived
-   signed URL obtained from Agora's public API, then prints one
-   `submit.transaction_prepared` JSON record containing the canonical
-   `chain_id`, `to`, `value`, and `data` for your wallet to sign and broadcast.
-   The connected wallet must be the same `<solver_address>` supplied to the
-   command. Confirm the wallet transaction succeeds before treating the
+5. Signs the exact upload-URL request with the Solver wallet, uploads the sealed
+   ciphertext through the returned short-lived URL, then signs the exact
+   preparation request. Each approval is sessionless and bound to the route,
+   body, deployment, and a recent block.
+6. Builds `AgoraHub.submit` calldata locally and broadcasts it from that same
+   Solver wallet. Confirm the transaction succeeds before treating the
    submission as recorded. Nothing in this path ever asks for or needs an Agora
    database credential, storage credential, or any other operator secret.
 
-The recommended flow supplies only the public Solver address. Keep the
-prepared transaction fields unchanged when handing them to the wallet. For a
-local manual test, omit `--solver-address` and set
-`AGORA_SOLVER_PRIVATE_KEY`; the CLI then signs and sends the same transaction
-it would otherwise print. Never print, log, or include that private key in any
-submitted artifact.
+`--solver-address` cannot complete these authenticated API writes and is not a
+supported fallback. Never print, log, or include `AGORA_SOLVER_PRIVATE_KEY` in
+any submitted artifact.
 
 Do not supply Guardian recipient keys yourself. The CLI obtains the bounty's
 published recipient set and verifies it against that bounty's on-chain
@@ -242,8 +240,8 @@ that default profile together.
 
 ## Calling Agora's Authenticated API Directly
 
-`solver:submit` and `claim` stay authenticated by your on-chain wallet
-signature (Steps 4–5) — they don't need this. If you ever call an Agora API
+`solver:submit` builds the required per-request approvals for you, while claim
+is authenticated by its on-chain wallet transaction. If you call an Agora API
 route directly instead of through the CLI, see `@moleculeagora/cli`'s README
 [Authentication guide](https://www.npmjs.com/package/@moleculeagora/cli#authentication)
 for the header format and how to build it. Nothing there is an "Agora-issued
