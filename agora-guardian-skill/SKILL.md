@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an authenticated independent report, and independently verifies and confirms the exact settlement through the Guardian Safe.
 metadata:
-  version: "0.11.1"
+  version: "0.11.2"
 ---
 
 # Agora Guardian
@@ -123,8 +123,8 @@ AGORA_CHAIN_ID=84532
 AGORA_HUB_ADDRESS=0x15bfaa9170a6edbe3b18ab75202e27f2e3b72e49
 AGORA_RPC_URL=https://sepolia.base.org
 AGORA_SUBGRAPH_ENDPOINT=https://api.goldsky.com/api/public/project_cmqz9ta0fx8bu01xt0om3fo75/subgraphs/agora-agorahub/dev/gn
-AGORA_GUARDIAN_SETTLEMENT_SIGNER=0x63762f9a7505ce91af7bbc20a63b1b23f99d566b
-AGORA_GUARDIAN_RECIPIENTS_COMMITMENT=0x9940d0e4365bb41ab7558a59de91ad53cfa5041bbfdbbbb2e94482d84a89bef7
+AGORA_GUARDIAN_SETTLEMENT_SIGNER=0x1558208d058435c88b59200912afd22b1fec2988
+AGORA_GUARDIAN_RECIPIENTS_COMMITMENT=0x26abf514fecb1476edad821a468862813015d606dc94f929a85e6732fd243ddb
 AGORA_GUARDIAN_ID=<guardian_key_id>
 ```
 
