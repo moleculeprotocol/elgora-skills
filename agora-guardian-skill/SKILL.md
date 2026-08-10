@@ -90,7 +90,9 @@ Each command does exactly one thing. You compose them; nothing orchestrates you.
   discovery; no keys, no chain writes.
 - `agora-cli guardian:open <bounty_id> <submission_commitment> [output_dir]` —
   decrypt and inspect one Solver submission's artifacts through Agora's
-  private-submission flow. Loads only your Guardian decryption key.
+  private-submission flow. Loads your Guardian decryption key. Note:
+  `guardian:confirm-settlement` also loads this key now, for a different
+  reason — see below.
 - `agora-cli guardian:submit <bounty_id> <outcome> [<winner>] <evaluation_report_path>`
   — publish your verdict **off-chain**: render the canonical evaluation Markdown
   through Agora's public API, keyed by its `guardian_result_commitment`.
@@ -106,8 +108,16 @@ Each command does exactly one thing. You compose them; nothing orchestrates you.
   Safe transaction, authenticate this Guardian's report through its native
   Safe-owner receipt, retrieve the exact published report bytes, run the same
   independent verification, and submit only your native Safe owner
-  confirmation. Repeating it after success is safe. It never proposes,
-  executes, relays, or holds another Guardian's key.
+  confirmation. For an **awarded** position, it first opens the winning
+  submission with your own Guardian decryption key, wraps its AES key for
+  the deployment's winning-solution delivery key, and submits it for
+  storage so the funding Poster can retrieve it once settlement finalizes.
+  If that step fails for any reason, it submits no confirmation for that
+  transaction; the on-chain timeout remains the Poster's refund backstop, so
+  do not treat this as a bug to route around. This is why the command now
+  also needs your Guardian decryption key(s), not just your Safe owner key.
+  Repeating it after success is safe. It never proposes, executes, relays,
+  or holds another Guardian's key.
 
 If a command, argument, or required configuration is unclear, run
 `agora-cli help <command>` or `agora-cli <command> --help`. Read the CLI help
@@ -134,11 +144,13 @@ the matching supported bundle. Public deployment values are not credentials;
 you still supply only your own Guardian identity and secrets.
 
 Keep `AGORA_GUARDIAN_PRIVATE_KEYS_JSON` in secret storage and load it only for
-`guardian:open`. Keep Safe owner signing capability in your own custody and
-expose it only to the command that needs it, through your host's secret handoff.
-Never give it to Agora operations or place it in an agent prompt, report,
-general environment, log, or local work board. Never print Guardian decryption
-keys or wallet secrets.
+the commands that need it — `guardian:open`, and `guardian:confirm-settlement`
+for an awarded position (to prepare winning-solution delivery before
+confirming; see above). Keep Safe owner signing capability in your own
+custody and expose it only to the command that needs it, through your host's
+secret handoff. Never give either secret to Agora operations or place it in
+an agent prompt, report, general environment, log, or local work board. Never
+print Guardian decryption keys or wallet secrets.
 
 ## One-Time Key Setup
 
@@ -151,8 +163,9 @@ record. Do not overwrite or regenerate it.
    wallet's private key.
 3. Store the private key in the Guardian's secret storage before continuing.
    Never include it in responses, logs, reports, or public artifacts.
-   `AGORA_GUARDIAN_PRIVATE_KEYS_JSON`, loaded only for `guardian:open`, uses
-   this private shape:
+   `AGORA_GUARDIAN_PRIVATE_KEYS_JSON`, loaded for `guardian:open` and for
+   `guardian:confirm-settlement` on an awarded position, uses this private
+   shape:
 
    ```json
    [
