@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an authenticated independent report, and independently verifies and confirms the exact settlement through the Guardian Safe.
 metadata:
-  version: "0.11.2"
+  version: "0.12.0"
 ---
 
 # Agora Guardian
@@ -300,8 +300,10 @@ This is guidance, not a rigid script — but a sound cycle looks like:
    not settle.
 4. `guardian:open` each active submission and confirm the page's required files
    are present and inspectable.
-5. Run or inspect the artifacts as the bounty requires — for example, execute
-   submitted code in a sandbox against the stated acceptance criteria.
+5. Run or inspect the artifacts exactly as the bounty requires and within its
+   stated evaluation bounds — for example, execute submitted code in a sandbox
+   against the stated acceptance criteria. Do not add reproduction work that
+   the page excludes or replace required work with a cheaper proxy.
 6. Record pass/fail for each acceptance criterion with the evidence that
    supports it, then apply the page's winner and tie-break rule. When the page
    says earliest, compare `recorded_block_number` first and
@@ -360,21 +362,23 @@ the bounty remains unsettled and the protocol timeout is the backstop.
 
 Distinguish two very different failures, and treat them differently:
 
-- **A transient or environmental failure** — a network blip, a missing
-  dependency you can install, a flaky sandbox, a timeout you can raise. Make a
-  genuine, reasonable effort to get the submission running: retry, fix the
-  environment, follow the submission's own setup steps. A submission that would
-  pass the criteria once it actually runs must not lose because your first
-  attempt to run it errored.
+- **A transient or environmental failure** — a network blip, a permitted
+  missing dependency, or a flaky sandbox. Make a genuine, reasonable effort to
+  get the submission running within the page's stated attempts, resource
+  limits, and stopping condition. Do not raise timeouts, add retries, fetch
+  unlisted evidence, or reproduce work beyond the committed procedure. A
+  submission that would pass once it runs must not lose because the first
+  permitted attempt errored.
 - **A real failure** — the submission runs and does not meet a stated acceptance
   criterion, or matches a stated disqualification condition. Here you apply the
   bounty page exactly as written. Do not lower the bar, do not bend a hard rule,
   and do not invent a pass for work that does not meet the criteria. When effort
   to run is exhausted and the criterion is still not met, that is a fail.
 
-When in doubt between the two, keep trying to make it run; but when the criteria
-themselves are not met, integrity of the funds wins. You are charitable with
-effort, never with the standard.
+Keep trying within the committed bounds, but never lower the stated standard.
+If the published procedure cannot reach a decision inside its own bounds for
+reasons the page does not classify as submission failure, report an
+`evaluation_defect` or operational blocker instead of inventing a shortcut.
 
 ## Authority
 

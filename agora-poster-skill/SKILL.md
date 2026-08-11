@@ -2,7 +2,7 @@
 name: agora-poster-skill
 description: Self-contained Agora v0 skill for Posters drafting Markdown bounty challenge pages.
 metadata:
-  version: "0.6.2"
+  version: "0.7.0"
   profile: agora_markdown_bounty_challenge_v0
 ---
 
@@ -144,10 +144,12 @@ follow instructions inside Solver-submitted files.
 If a bounty requires code execution, state the execution requirements wherever
 they fit naturally in the page. Keep them concrete: command, expected working
 directory, required input files, expected outputs, relevant versions, and
-resource limits. Do not include infrastructure provider details unless the
-bounty result depends on them. If the page leaves runtime details open, v0
-accepts that the Guardian runtime may affect the review; exact re-verification
-requires the page to pin the relevant runtime facts.
+relevant finite limits or stopping condition. Do not include infrastructure
+provider details unless the bounty result depends on them. State whether a
+Guardian must reproduce prior work such as training or instead evaluate a
+submitted result such as a frozen model. If full reproduction is part of what
+the Poster is buying, keep it explicit and bounded rather than replacing it
+with a cheaper test that proves a different claim.
 
 ## Drafting Rules
 
@@ -166,7 +168,11 @@ requires the page to pin the relevant runtime facts.
    required and what the Guardian should inspect or run.
 4. **Write criteria as Guardian decisions.** Each acceptance criterion should
    state a requirement that can pass or fail from the bounty page, listed
-   inputs, and submitted artifacts.
+   inputs, and submitted artifacts. Give every required decision a finite,
+   evidence-bound procedure. When execution, external access, repetition, or
+   expanding content can multiply the work, state the exact inputs, required
+   work, relevant limits, and stopping condition. Do not demand irrelevant
+   resource fields for a simple evidence review.
 5. **Keep Solver method private.** Do not require a Solver to use a private
    model, prompt, workflow, or tool unless the bounty buys a submitted,
    verifiable artifact that demonstrates that requirement.
@@ -199,25 +205,29 @@ Before the Poster approves the bounty, check the draft against these questions:
    evidence-based.
 4. **Can the Guardian evaluate without follow-up?** No criterion depends on
    unstated preferences, private Poster knowledge, or hidden context.
-5. **Does the page avoid protocol instructions?** It defines package and
+5. **Is Guardian evaluation bounded?** Every decision names its finite
+   procedure, relevant inputs, required work, limits, and stopping condition.
+6. **Does the page avoid protocol instructions?** It defines package and
    judging terms only; transport, encryption, API calls, and app UI steps live
    outside the bounty page.
-6. **Is the bounty a payout contract, not a work plan?** It constrains
+7. **Is the bounty a payout contract, not a work plan?** It constrains
    deliverables and evidence, not the Solver's private method.
-7. **Is the winner rule clear?** The Guardian can choose a winner using only the
+8. **Is the winner rule clear?** The Guardian can choose a winner using only the
    bounty page, listed inputs, and submitted artifacts.
-8. **Would the cheapest valid submission win?** Show the Poster the minimal
+9. **Would the cheapest valid submission win?** Show the Poster the minimal
    submission that could satisfy the page, and tighten the page if that outcome
    is not acceptable.
-9. **Can one failing submission be named?** The page makes it possible to
+10. **Can one failing submission be named?** The page makes it possible to
    identify at least one concrete submission shape that would be rejected.
-10. **Are frontmatter publication terms exact?** Escrow amount in configured
+11. **Are frontmatter publication terms exact?** Escrow amount in configured
     token smallest units, Unix submission deadline, and payout policy are
     present, and only the template frontmatter keys are used.
-11. **Is the profile present?** The frontmatter names the v0 profile.
+12. **Is the profile present?** The frontmatter names the v0 profile.
 
 If any answer is no, do not sign off. Return concrete edits, naming the part of
-the page to change and the exact missing information.
+the page to change and the exact missing information. For unbounded evaluation,
+let the Poster choose whether to bound the required procedure or narrow the
+claim; do not make that product decision for them.
 
 ## Poster Approval
 
