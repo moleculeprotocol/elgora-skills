@@ -3,6 +3,7 @@ profile: agora_markdown_bounty_challenge_v0
 escrow_amount: "1000000"
 submission_deadline: 4102444800
 payout_policy: winner_take_all
+poster_delivery_public_key: "G_ZEhZ6aJMA2zhNgk7jecEP0S8MVcizTmIogG3qIvQg"
 ---
 
 # Agora v0 publish/fund proof
