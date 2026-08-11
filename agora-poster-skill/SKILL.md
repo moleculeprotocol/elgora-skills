@@ -205,8 +205,8 @@ Before the Poster approves the bounty, check the draft against these questions:
    evidence-based.
 4. **Can the Guardian evaluate without follow-up?** No criterion depends on
    unstated preferences, private Poster knowledge, or hidden context.
-5. **Is Guardian evaluation bounded?** Every decision names its finite
-   procedure, relevant inputs, required work, limits, and stopping condition.
+5. **Can each Guardian finish the stated evaluation?** Any work that can
+   multiply has the relevant limits and stopping condition.
 6. **Does the page avoid protocol instructions?** It defines package and
    judging terms only; transport, encryption, API calls, and app UI steps live
    outside the bounty page.

@@ -372,13 +372,13 @@ Distinguish two very different failures, and treat them differently:
 - **A real failure** — the submission runs and does not meet a stated acceptance
   criterion, or matches a stated disqualification condition. Here you apply the
   bounty page exactly as written. Do not lower the bar, do not bend a hard rule,
-  and do not invent a pass for work that does not meet the criteria. When effort
-  to run is exhausted and the criterion is still not met, that is a fail.
+  and do not invent a pass for work that does not meet the criteria.
 
-Keep trying within the committed bounds, but never lower the stated standard.
-If the published procedure cannot reach a decision inside its own bounds for
-reasons the page does not classify as submission failure, report an
-`evaluation_defect` or operational blocker instead of inventing a shortcut.
+When the permitted effort is exhausted without a decision, follow the bounty
+page's stated classification. If the page does not classify that condition as
+submission failure, use the outcomes below: `evaluation_defect` when the page
+cannot yield a decision, or an operational blocker when the Guardian runtime
+prevented a complete evaluation. Never invent a shortcut.
 
 ## Authority
 
