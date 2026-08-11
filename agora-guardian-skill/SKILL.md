@@ -110,8 +110,9 @@ Each command does exactly one thing. You compose them; nothing orchestrates you.
   independent verification, and submit only your native Safe owner
   confirmation. For an **awarded** position, it first opens the winning
   submission with your own Guardian decryption key, wraps its AES key for
-  the deployment's winning-solution delivery key, and submits it for
-  storage so the funding Poster can retrieve it once settlement finalizes.
+  the deployment's winning-solution delivery key, signs the wrapped-key-only
+  preparation request with your Safe owner key, and submits it for storage so
+  the funding Poster can retrieve it once settlement finalizes.
   If that step fails for any reason, it submits no confirmation for that
   transaction; the on-chain timeout remains the Poster's refund backstop, so
   do not treat this as a bug to route around. This is why the command now
