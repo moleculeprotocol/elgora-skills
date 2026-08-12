@@ -2,7 +2,7 @@
 name: agora-poster-skill
 description: Self-contained Agora v0 skill for Posters drafting Markdown bounty challenge pages.
 metadata:
-  version: "0.7.0"
+  version: "0.6.2"
   profile: agora_markdown_bounty_challenge_v0
 ---
 
@@ -84,7 +84,6 @@ profile: agora_markdown_bounty_challenge_v0
 escrow_amount: "{escrow_amount}"
 submission_deadline: {submission_deadline}
 payout_policy: winner_take_all
-poster_delivery_public_key: "{poster_delivery_public_key}"
 ---
 
 # {Bounty Title}
@@ -186,10 +185,6 @@ requires the page to pin the relevant runtime facts.
    frontmatter keys shown in the template.
 10. **Keep the profile machine-readable.** The frontmatter `profile` must be
    `agora_markdown_bounty_challenge_v0`.
-11. **Publish a delivery key.** `poster_delivery_public_key` must be a
-   well-formed X25519 public key — see Delivery Key Custody below for how to
-   get one. It is immutable once the bounty is published, so get it right
-   before approval.
 
 ## Readiness Sign-Off
 
@@ -220,10 +215,6 @@ Before the Poster approves the bounty, check the draft against these questions:
     token smallest units, Unix submission deadline, and payout policy are
     present, and only the template frontmatter keys are used.
 11. **Is the profile present?** The frontmatter names the v0 profile.
-12. **Is a delivery key present, and does the Poster understand its custody
-    obligation?** `poster_delivery_public_key` is set, and the Poster has
-    read Delivery Key Custody below before approving — especially the
-    unrecoverable-loss sentence.
 
 If any answer is no, do not sign off. Return concrete edits, naming the part of
 the page to change and the exact missing information.
@@ -233,49 +224,6 @@ the page to change and the exact missing information.
 After the readiness checklist passes, show the Poster the final
 `bounty_challenge.md` and ask for explicit approval. The approved Markdown file
 is the v0 bounty spec that Agora stores and hashes.
-
-## Delivery Key Custody
-
-Once a Guardian settles the bounty, the winning submission is decrypted only
-for the funding Poster. This works by wrapping the winning key directly to
-`poster_delivery_public_key` — the value published in this page's own
-frontmatter, immutable from the moment the bounty is created. **How the
-Poster keeps the matching private half is entirely outside Agora's scope: we
-never hold it, never escrow it, and never offer to recover it.** State the
-failure mode plainly before the Poster approves: **lose the private key,
-lose the ability to open the winning solution.** Neither Agora nor the
-Guardians can recover it.
-
-Two supported paths:
-
-**Path A — derive it from your wallet (default, for EOA-funded bounties).**
-One fixed, domain-separated signature with the same wallet that funds the
-bounty is stretched into an X25519 keypair. Nothing is stored anywhere;
-signing the same message with the same wallet always re-derives the same
-key, on any device. This is what Agora's web app does automatically (a
-"Derive delivery key from wallet" action next to the bounty page editor),
-and what `poster:publish-fund` does automatically from
-`AGORA_POSTER_PRIVATE_KEY` if the frontmatter does not already carry a key.
-Nothing further to do — retrieval later re-derives the same way.
-
-**Path B — bring your own key.** Required if the bounty is funded from a
-Safe or other smart-contract wallet, since it has no private key to sign a
-derivation from; also available to anyone who simply prefers an explicit
-key. Generate an X25519 keypair yourself, put the public half in
-`poster_delivery_public_key`, and keep the private half. Recommended
-storage, in order of preference:
-
-- your OS keychain (macOS Keychain, GNOME Keyring, Windows Credential
-  Manager);
-- an existing password/secret manager, if you already run one;
-- a file with `chmod 400`, outside any repo or synced folder.
-
-Never put the private half in the bounty page, an agent prompt, shell
-history, logs, or source control — the same rule as `AGORA_POSTER_PRIVATE_KEY`
-below. To redeem later with a Path B key, use
-`agora-cli poster:open-solution <bounty_id>` with
-`AGORA_POSTER_DELIVERY_PRIVATE_KEY` set to your stored private key (the web
-app's automatic redemption only re-derives Path A keys).
 
 ## Publication Handoff
 
@@ -322,7 +270,5 @@ new Agora release updates the v0 profile, use the
 A ready-to-edit page ships beside it as
 [`bounty_challenge.md`](examples/bounty_challenge.md).
 Its `4102444800` deadline is a long-lived example sentinel, not a recommended
-publication deadline, and its `poster_delivery_public_key` is a throwaway
-example key with no known private half. Replace both, and every other
-example value, before approval or publication — see Delivery Key Custody
-above for how to get a real one.
+publication deadline. Replace it with the Poster's approved future Unix time,
+and replace every other example value, before approval or publication.

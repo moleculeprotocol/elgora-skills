@@ -102,9 +102,9 @@ Each command does exactly one thing. You compose them; nothing orchestrates you.
   for that exact report. This authenticates your report only; it creates zero
   settlement approvals. For an `awarded` outcome, with both your Guardian
   decryption key(s) and Safe owner key configured, it also opens the
-  submission and wraps its key directly for the funding Poster's own
-  published delivery key — best-effort; a failure only warns and never fails
-  the verdict.
+  submission and wraps its key directly for this deployment's own published
+  delivery key (fetched from `GET /api/deployment/delivery-key`) —
+  best-effort; a failure only warns and never fails the verdict.
 - `agora-cli settlement:verify <bounty_id> <guardian_result_commitment> <own_report_path>`
   — reproduce a registered transaction's exact outcome and bytes from canonical
   inputs before signing. Loads no wallet key and writes nothing.
