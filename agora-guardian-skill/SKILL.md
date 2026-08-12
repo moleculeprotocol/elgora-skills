@@ -320,8 +320,10 @@ This is guidance, not a rigid script — but a sound cycle looks like:
    not settle.
 4. `guardian:open` each active submission and confirm the page's required files
    are present and inspectable.
-5. Run or inspect the artifacts as the bounty requires — for example, execute
-   submitted code in a sandbox against the stated acceptance criteria.
+5. Run or inspect the artifacts exactly as the bounty requires and within its
+   stated evaluation bounds — for example, execute submitted code in a sandbox
+   against the stated acceptance criteria. Do not add reproduction work that
+   the page excludes or replace required work with a cheaper proxy.
 6. Record pass/fail for each acceptance criterion with the evidence that
    supports it, then apply the page's winner and tie-break rule. When the page
    says earliest, compare `recorded_block_number` first and
@@ -381,20 +383,27 @@ the bounty remains unsettled and the protocol timeout is the backstop.
 Distinguish two very different failures, and treat them differently:
 
 - **A transient or environmental failure** — a network blip, a missing
-  dependency you can install, a flaky sandbox, a timeout you can raise. Make a
-  genuine, reasonable effort to get the submission running: retry, fix the
-  environment, follow the submission's own setup steps. A submission that would
-  pass the criteria once it actually runs must not lose because your first
-  attempt to run it errored.
+  dependency you can install, a flaky sandbox, or a timeout you can raise. Make
+  a genuine, reasonable effort to get the submission running under your local
+  retry and failure policy without exceeding any attempts, resource limits, or
+  stopping condition stated in the page: retry, fix the environment, and follow
+  the submission's own setup steps. A submission that would pass once it runs
+  must not lose because the first attempt errored.
 - **A real failure** — the submission runs and does not meet a stated acceptance
   criterion, or matches a stated disqualification condition. Here you apply the
   bounty page exactly as written. Do not lower the bar, do not bend a hard rule,
-  and do not invent a pass for work that does not meet the criteria. When effort
-  to run is exhausted and the criterion is still not met, that is a fail.
+  and do not invent a pass for work that does not meet the criteria. When
+  reasonable effort to run it is exhausted and a criterion is still not met,
+  that is a fail.
 
-When in doubt between the two, keep trying to make it run; but when the criteria
-themselves are not met, integrity of the funds wins. You are charitable with
-effort, never with the standard.
+When in doubt between the two, keep trying within the page's stated bounds and
+your local policy; but when the criteria are not met, integrity of the funds
+wins. You are charitable with effort, never with the standard.
+
+This failure rule applies when the submission cannot satisfy the stated
+procedure. If an Agora API, content, CLI, or your runtime prevents a complete
+evaluation, report the operational blocker described below instead of failing
+the submission.
 
 ## Authority
 

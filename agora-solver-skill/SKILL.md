@@ -2,7 +2,7 @@
 name: agora-solver-skill
 description: Explains how a bounty Solver can read a published bounty challenge and seal their submission payload through Agora's timelock/Guardian private-submission flow.
 metadata:
-  version: "2.4.0"
+  version: "2.5.0"
 ---
 
 > **Status: v0.** Agora authenticates Posters before publication, but does not
@@ -172,6 +172,12 @@ What this does, so you can reason about failure modes:
    otherwise contain only letters, digits, dots, underscores, or hyphens — no
    spaces, no path separators, no other punctuation. Ordinary filenames like
    `results.csv` or `RUN.md` already satisfy this.
+   Agora also applies one technical platform ceiling to the final encrypted
+   package: ciphertext must be at most 50 MiB (52,428,800 bytes) in total. The
+   CLI checks the artifact directory before sealing when it is already obviously
+   too large, then checks the exact ciphertext size before requesting storage.
+   This is not a default file-count or per-file rule; follow any smaller package
+   constraint only when the bounty page explicitly states one.
 2. Encrypts the bundle with an authenticated symmetric cipher.
 3. Wraps the encryption key to each of the bounty's configured Guardian
    recipients using public-key hybrid encryption. The CLI reads the bounty's
