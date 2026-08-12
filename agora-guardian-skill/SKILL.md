@@ -362,23 +362,28 @@ the bounty remains unsettled and the protocol timeout is the backstop.
 
 Distinguish two very different failures, and treat them differently:
 
-- **A transient or environmental failure** — a network blip, a permitted
-  missing dependency, or a flaky sandbox. Make a genuine, reasonable effort to
-  get the submission running within the page's stated attempts, resource
-  limits, and stopping condition. Do not raise timeouts, add retries, fetch
-  unlisted evidence, or reproduce work beyond the committed procedure. A
-  submission that would pass once it runs must not lose because the first
-  permitted attempt errored.
+- **A transient or environmental failure** — a network blip, a missing
+  dependency you can install, a flaky sandbox, or a timeout you can raise. Make
+  a genuine, reasonable effort to get the submission running under your local
+  retry and failure policy without exceeding any attempts, resource limits, or
+  stopping condition stated in the page: retry, fix the environment, and follow
+  the submission's own setup steps. A submission that would pass once it runs
+  must not lose because the first attempt errored.
 - **A real failure** — the submission runs and does not meet a stated acceptance
   criterion, or matches a stated disqualification condition. Here you apply the
   bounty page exactly as written. Do not lower the bar, do not bend a hard rule,
-  and do not invent a pass for work that does not meet the criteria.
+  and do not invent a pass for work that does not meet the criteria. When
+  reasonable effort to run it is exhausted and a criterion is still not met,
+  that is a fail.
 
-When the permitted effort is exhausted without a decision, follow the bounty
-page's stated classification. If the page does not classify that condition as
-submission failure, use the outcomes below: `evaluation_defect` when the page
-cannot yield a decision, or an operational blocker when the Guardian runtime
-prevented a complete evaluation. Never invent a shortcut.
+When in doubt between the two, keep trying within the page's stated bounds and
+your local policy; but when the criteria are not met, integrity of the funds
+wins. You are charitable with effort, never with the standard.
+
+This failure rule applies when the submission cannot satisfy the stated
+procedure. If an Agora API, content, CLI, or your runtime prevents a complete
+evaluation, report the operational blocker described below instead of failing
+the submission.
 
 ## Authority
 

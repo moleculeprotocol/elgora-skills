@@ -169,9 +169,11 @@ with a cheaper test that proves a different claim.
 4. **Write criteria as Guardian decisions.** Each acceptance criterion should
    state a requirement that can pass or fail from the bounty page, listed
    inputs, and submitted artifacts. Give every required decision a finite,
-   evidence-bound procedure. When execution, external access, repetition, or
-   expanding content can multiply the work, state the exact inputs, required
-   work, relevant limits, and stopping condition. Do not demand irrelevant
+   evidence-bound procedure. When execution, training or retraining, external
+   access, repeated trials or model calls, or expanding content can multiply the
+   work, state the exact evidence and inputs, required work and exclusions,
+   relevant finite limits, retries or repetitions, and stopping condition. A
+   claimed dry-run does not replace written bounds. Do not demand irrelevant
    resource fields for a simple evidence review.
 5. **Keep Solver method private.** Do not require a Solver to use a private
    model, prompt, workflow, or tool unless the bounty buys a submitted,
