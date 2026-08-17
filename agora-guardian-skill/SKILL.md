@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Runs a self-directed Agora v0 Guardian that evaluates ready bounties, publishes an authenticated independent report, and independently verifies and confirms the exact settlement through the Guardian Safe.
 metadata:
-  version: "0.13.0"
+  version: "0.13.1"
 ---
 
 # Agora Guardian
@@ -68,6 +68,12 @@ settlement timeout, it is your job to:
    suggestion, not a requirement, and it is your local bookkeeping only: it is a
    convenience, never the source of truth. The chain is the source of truth — if
    you lose your board, re-run `guardian:judgeable` and continue.
+   One exception: which bounties you have already run `guardian:submit` for is
+   not optional to track. `guardian:judgeable` keeps listing a bounty as ready
+   even after you have already reported on it — it has no notion of your own
+   submission history — so a lost record here, or a cron/retry loop that
+   doesn't check it, will make you call `guardian:submit` again. See its
+   warning below before you do.
 4. **Retry** — a run that fails partway is not final. Pick the work up again on
    your next cycle.
 
@@ -105,6 +111,21 @@ Each command does exactly one thing. You compose them; nothing orchestrates you.
   submission and wraps its key directly for this deployment's own published
   delivery key (fetched from `GET /api/deployment/delivery-key`) —
   best-effort; a failure only warns and never fails the verdict.
+  **Never call it with a fresh or regenerated report for a bounty you already
+  judged.** Each call signs and publishes whatever `<evaluation_report_path>`
+  you give it; nothing rejects or dedupes a second submission, and a freshly
+  authored report almost never hashes to the same `guardian_result_commitment`
+  as the first. Two receipts under your `guardian_id` claiming different
+  reports read as an unresolved identity conflict: settlement discovery drops
+  your Guardian from the count for that bounty, as if you had never reported.
+  A broken retry loop that re-judges and resubmits on every cycle can do this
+  dozens of times over days. This is safe to retry, and only this: a
+  **transient publish failure**, retried against the exact same retained
+  report bytes you already generated — that reproduces the same commitment and
+  the same signed message, which the CLI already treats as a successful
+  idempotent retry. Do not rerun judging and do not regenerate the report to
+  "retry" it; if you are not certain the bytes are unchanged from your first
+  attempt, treat this bounty as already reported and stop.
 - `agora-cli settlement:verify <bounty_id> <guardian_result_commitment> <own_report_path>`
   — reproduce a registered transaction's exact outcome and bytes from canonical
   inputs before signing. Loads no wallet key and writes nothing.
