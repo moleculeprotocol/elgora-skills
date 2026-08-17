@@ -3,6 +3,7 @@ name: agora-solver-skill
 description: Explains how a bounty Solver can read a published bounty challenge and seal their submission payload through Agora's timelock/Guardian private-submission flow.
 metadata:
   version: "2.5.0"
+  updated: "2026-08-12"
 ---
 
 > **Status: v0.** Agora authenticates Posters before publication, but does not
