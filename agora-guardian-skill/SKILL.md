@@ -111,16 +111,21 @@ Each command does exactly one thing. You compose them; nothing orchestrates you.
   submission and wraps its key directly for this deployment's own published
   delivery key (fetched from `GET /api/deployment/delivery-key`) —
   best-effort; a failure only warns and never fails the verdict.
-  **Not idempotent — never call it twice for the same bounty.** Every call
-  signs and publishes a brand-new report and receipt, even for a bounty you
-  already judged; nothing rejects or dedupes a second submission, and a
-  freshly authored report almost never hashes to the same
-  `guardian_result_commitment` as the first. Two receipts under your
-  `guardian_id` read as an unresolved identity conflict: settlement discovery
-  drops your Guardian from the count for that bounty, as if you had never
-  reported. A broken retry loop that keeps re-submitting can do this dozens of
-  times over days. If you are not certain you haven't already reported on this
-  bounty, stop and confirm before calling it.
+  **Never call it with a fresh or regenerated report for a bounty you already
+  judged.** Each call signs and publishes whatever `<evaluation_report_path>`
+  you give it; nothing rejects or dedupes a second submission, and a freshly
+  authored report almost never hashes to the same `guardian_result_commitment`
+  as the first. Two receipts under your `guardian_id` claiming different
+  reports read as an unresolved identity conflict: settlement discovery drops
+  your Guardian from the count for that bounty, as if you had never reported.
+  A broken retry loop that re-judges and resubmits on every cycle can do this
+  dozens of times over days. This is safe to retry, and only this: a
+  **transient publish failure**, retried against the exact same retained
+  report bytes you already generated — that reproduces the same commitment and
+  the same signed message, which the CLI already treats as a successful
+  idempotent retry. Do not rerun judging and do not regenerate the report to
+  "retry" it; if you are not certain the bytes are unchanged from your first
+  attempt, treat this bounty as already reported and stop.
 - `agora-cli settlement:verify <bounty_id> <guardian_result_commitment> <own_report_path>`
   — reproduce a registered transaction's exact outcome and bytes from canonical
   inputs before signing. Loads no wallet key and writes nothing.
