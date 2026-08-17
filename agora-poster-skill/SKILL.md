@@ -3,6 +3,7 @@ name: agora-poster-skill
 description: Self-contained Agora v0 skill for Posters drafting Markdown bounty challenge pages.
 metadata:
   version: "0.7.0"
+  updated: "2026-08-12"
   profile: agora_markdown_bounty_challenge_v0
 ---
 
