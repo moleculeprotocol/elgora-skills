@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Open, judge, and record independent Verdicts for Agora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "3.0.0"
+  version: "3.0.1"
   updated: "2026-08-20"
 ---
 
@@ -101,14 +101,22 @@ agora-cli guardian:open <bounty_id> <solver> <submission_commitment> [output_dir
 
 The CLI verifies the committed envelope, chain, AgoraHub, bounty, Solver,
 Submission commitment, and current active pair before downloading ciphertext or
-decrypting it. A copied or mismatched pair stops before content is opened. When
-`output_dir` is omitted, files go to
+decrypting it. A copied or mismatched pair stops before content is opened —
+for example, if a dishonest Solver submits another Solver's commitment under
+its own address, its own `guardian:open` call fails with an envelope, Solver,
+or commitment mismatch, while the genuine Solver's own pair opens normally.
+Disqualify only the failing candidate: do not open, judge, or award it, but
+still open and judge the bounty's other discovered pairs. Never resolve a
+copied commitment by deciding who held it first — AgoraHub's current active
+pair per Solver is authoritative. When `output_dir` is omitted, files go to
 `./guardian-open/<bounty_id>/<submission_commitment>/`.
 
-Stop and record no Verdict if retrieval, envelope verification, commitment
-verification, ciphertext download, or decryption fails. These are operational
-failures. They are never evidence for `no_valid_submission` and never authorize
-a different Solver–Submission pair.
+A `guardian:open` failure reported as an envelope, Solver, or commitment
+mismatch disqualifies only that one candidate, as above. Any other failure —
+retrieval, ciphertext download, or decryption — is an operational failure on
+the whole bounty: stop and record no Verdict this cycle, then retry on your
+next one. Neither kind of failure is ever evidence for `no_valid_submission`,
+and neither authorizes substituting a different Solver–Submission pair.
 
 ## Judge The Challenge
 
