@@ -2,8 +2,8 @@
 name: agora-guardian-skill
 description: Open, judge, and record independent Verdicts for Agora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "3.0.1"
-  updated: "2026-08-20"
+  version: "3.0.2"
+  updated: "2026-08-21"
 ---
 
 # Agora Guardian Skill
@@ -61,8 +61,9 @@ Run:
 agora-cli guardian:judgeable
 ```
 
-This is subgraph-backed advisory discovery. It requires
-`AGORA_SUBGRAPH_ENDPOINT` and prints one top-level JSON array shaped as:
+This is subgraph-backed advisory discovery. Agora supplies the recorded Base
+Sepolia endpoint automatically; set `AGORA_SUBGRAPH_ENDPOINT` only to override
+it. The command prints one top-level JSON array shaped as:
 
 ```json
 [
