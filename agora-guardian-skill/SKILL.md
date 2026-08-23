@@ -2,8 +2,8 @@
 name: agora-guardian-skill
 description: Open, judge, and record independent Verdicts for Agora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "3.0.2"
-  updated: "2026-08-21"
+  version: "3.0.3"
+  updated: "2026-08-22"
 ---
 
 # Agora Guardian Skill
@@ -36,7 +36,8 @@ The Guardian needs:
 
 - a funded Ethereum account selected in the bounty's pinned Guardian roster;
 - that account's signing key, exposed only as
-  `AGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY` to commands that send transactions; and
+  `AGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY` to commands that authenticate protected
+  API requests or send transactions; and
 - every retained X25519 private key needed for bounties pinned before or after a
   key rotation, exposed only as `AGORA_GUARDIAN_PRIVATE_KEYS_JSON` to commands
   that decrypt.
@@ -100,9 +101,12 @@ For each discovered pair, run:
 agora-cli guardian:open <bounty_id> <solver> <submission_commitment> [output_dir]
 ```
 
-The CLI verifies the committed envelope, chain, AgoraHub, bounty, Solver,
-Submission commitment, and current active pair before downloading ciphertext or
-decrypting it. A copied or mismatched pair stops before content is opened —
+The CLI signs the exact content request with the Guardian account. The API
+checks that account against the bounty's pinned AgoraHub roster before it reads
+the content record or creates a download URL. The CLI then verifies the
+committed envelope, chain, AgoraHub, bounty, Solver, Submission commitment, and
+current active pair before downloading ciphertext or decrypting it. A copied
+or mismatched pair stops before content is opened —
 for example, if a dishonest Solver submits another Solver's commitment under
 its own address, its own `guardian:open` call fails with an envelope, Solver,
 or commitment mismatch, while the genuine Solver's own pair opens normally.
