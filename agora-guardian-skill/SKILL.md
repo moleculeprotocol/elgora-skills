@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Open, judge, and record independent Verdicts for Agora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "3.0.4"
+  version: "3.1.0"
   updated: "2026-08-24"
 ---
 
@@ -62,15 +62,19 @@ Run:
 agora-cli guardian:judgeable
 ```
 
-This is subgraph-backed advisory discovery. Agora supplies the recorded Base
-Sepolia endpoint automatically; set `AGORA_SUBGRAPH_ENDPOINT` only to override
-it. The command prints one top-level JSON array shaped as:
+This is subgraph-backed advisory discovery, using `AGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY`
+only to identify this Guardian's own address; it signs nothing and sends no
+transaction. Agora supplies the recorded Base Sepolia endpoint automatically;
+set `AGORA_SUBGRAPH_ENDPOINT` only to override it. The command prints one
+top-level JSON array shaped as:
 
 ```json
 [
   {
     "bounty_id": "<decimal id>",
     "judging_deadline_at": "4102444800",
+    "settlement_timeout_at": "4102448400",
+    "guardian_verdict": null,
     "submissions": [
       {
         "solver": "0x...",
@@ -84,10 +88,16 @@ it. The command prints one top-level JSON array shaped as:
 With no discovered work, the command prints no JSON. Do not turn absence,
 indexer lag, or a provider error into a Verdict.
 
-Discovery is deployment-wide, not personalized for one Guardian. Open each
-published bounty detail and continue only when it shows commitment-verified
-challenge bytes and this Guardian account in the hash-verified pinned roster.
-Skip every other record.
+Every listed bounty is deployment-wide advisory discovery, not personalized
+selection; open each published bounty detail and continue only when it shows
+commitment-verified challenge bytes and this Guardian account in the
+hash-verified pinned roster. Skip every other record.
+
+`guardian_verdict` is personalized: it is this Guardian's own current Verdict
+for that bounty, or `null` if this Guardian has not recorded one, shaped as
+`{"outcome", "winner", "awarded_submission_commitment", "report_commitment"}`.
+It never suppresses a write and the command still lists the bounty either way
+— see Timing And Revisions for how to use it before re-judging.
 
 For every selected item, keep `solver` and `submission_commitment` together as
 one pair. Never copy a commitment onto another Solver, infer a different pair,
@@ -173,8 +183,12 @@ before this sequence completes is operational; do not claim that a Verdict was
 recorded.
 
 First, the command reads this Guardian's current AgoraHub Verdict. If its
-outcome, winner, awarded Submission, and payout already match, the command exits
-successfully without publishing or sending another transaction.
+outcome, winner, awarded Submission, payout, and exact report body already
+match, the command exits successfully without publishing or sending another
+transaction. Anything else — a changed decision or only a corrected report
+body — is sent as an ordinary Verdict; no flag distinguishes them. Read
+`guardian_verdict` from `guardian:judgeable` first so this is a deliberate
+choice rather than a surprise.
 
 Every selected Guardian reaches and records its own decision. Divergent current
 Verdicts are ordinary chain state. Do not change a decision merely to match
@@ -182,12 +196,19 @@ another Guardian or attempt to calculate finality locally.
 
 ## Timing And Revisions
 
-- The Submission deadline ends Solver writes and begins judging.
-- Before `judging_deadline_at`, pass `--revise` to replace a different current
-  Verdict. Normal reruns do not need this flag.
-- At and after `judging_deadline_at`, an existing Verdict is locked.
-- A selected Guardian with no earlier Verdict may still record its first one
-  after that deadline while the bounty remains Open.
+Before judging, check this bounty's `guardian_verdict` from `guardian:judgeable`:
+
+- No `guardian_verdict`: judge normally and record this Guardian's first
+  Verdict, before or after `judging_deadline_at`, while the bounty remains
+  Open.
+- A `guardian_verdict` that already says what this Guardian would say:
+  nothing to do; a rerun of `guardian:verdict` is a harmless no-op.
+- A `guardian_verdict` this Guardian has genuinely changed its mind about, or
+  whose report body needs only a wording correction: call `guardian:verdict`
+  again with the new outcome or body. AgoraHub itself accepts a revision only
+  before `judging_deadline_at` and rejects one after; the command does not
+  apply a separate policy or need a flag, so let that rejection, if it
+  happens, stand as the answer rather than retrying.
 
 `consensusReachedAt`, when displayed, records the first historical threshold
 crossing. It does not prove the current Verdicts still match or that the bounty
