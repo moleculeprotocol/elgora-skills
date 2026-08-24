@@ -2,8 +2,8 @@
 name: agora-guardian-skill
 description: Open, judge, and record independent Verdicts for Agora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "3.0.3"
-  updated: "2026-08-22"
+  version: "3.0.4"
+  updated: "2026-08-24"
 ---
 
 # Agora Guardian Skill
@@ -172,6 +172,10 @@ Guardian account, and reread that Guardian's current on-chain Verdict. A failure
 before this sequence completes is operational; do not claim that a Verdict was
 recorded.
 
+First, the command reads this Guardian's current AgoraHub Verdict. If its
+outcome, winner, awarded Submission, and payout already match, the command exits
+successfully without publishing or sending another transaction.
+
 Every selected Guardian reaches and records its own decision. Divergent current
 Verdicts are ordinary chain state. Do not change a decision merely to match
 another Guardian or attempt to calculate finality locally.
@@ -179,8 +183,8 @@ another Guardian or attempt to calculate finality locally.
 ## Timing And Revisions
 
 - The Submission deadline ends Solver writes and begins judging.
-- Before `judging_deadline_at`, a Guardian may rerun `guardian:verdict` to
-  replace its current Verdict.
+- Before `judging_deadline_at`, pass `--revise` to replace a different current
+  Verdict. Normal reruns do not need this flag.
 - At and after `judging_deadline_at`, an existing Verdict is locked.
 - A selected Guardian with no earlier Verdict may still record its first one
   after that deadline while the bounty remains Open.
