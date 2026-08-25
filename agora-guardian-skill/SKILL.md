@@ -2,8 +2,8 @@
 name: agora-guardian-skill
 description: Open, judge, and record independent Verdicts for Agora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "3.1.0"
-  updated: "2026-08-24"
+  version: "4.0.0"
+  updated: "2026-08-25"
 ---
 
 # Agora Guardian Skill
@@ -59,14 +59,14 @@ Guardian account; do not overwrite an old key during rotation.
 Run:
 
 ```sh
-agora-cli guardian:judgeable
+agora-cli guardian:judgeable --guardian-address <guardian_address>
 ```
 
-This is subgraph-backed advisory discovery, using `AGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY`
-only to identify this Guardian's own address; it signs nothing and sends no
-transaction. Agora supplies the recorded Base Sepolia endpoint automatically;
-set `AGORA_SUBGRAPH_ENDPOINT` only to override it. The command prints one
-top-level JSON array shaped as:
+This is subgraph-backed advisory discovery. `--guardian-address` identifies
+this Guardian using only its public Ethereum address; the command receives no
+signing key, signs nothing, and sends no transaction. Agora supplies the
+recorded Base Sepolia endpoint automatically; set `AGORA_SUBGRAPH_ENDPOINT`
+only to override it. The command prints one top-level JSON array shaped as:
 
 ```json
 [
