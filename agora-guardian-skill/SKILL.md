@@ -2,7 +2,7 @@
 name: agora-guardian-skill
 description: Open, judge, and record independent Verdicts for Agora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "4.0.0"
+  version: "4.0.1"
   updated: "2026-08-25"
 ---
 
@@ -153,10 +153,13 @@ prevents a complete decision, report the blocker and record no Verdict. Use
 successfully opened and fully judged Submission substantively fails the
 challenge.
 
-Prepare one concise UTF-8 Markdown Verdict body. Include the active pairs
-considered, package and criterion decisions, evidence that does not expose
-private artifacts, and the winner-rule application. Do not include plaintext
-Solver content, artifact locations, decryption material, or wallet secrets.
+Prepare one concise UTF-8 Markdown Verdict body. Every written Verdict is public
+once published, including before settlement and when it dissents from the final
+result. Include only the decision, the active public pairs considered, the
+package and criterion decisions, the winner-rule application, and public-safe
+evidence. Never quote, summarize, paraphrase, or otherwise reveal private
+Submission logic, methods, code, data, or results. Do not include artifact
+locations, decryption material, or wallet secrets.
 
 ## Publish And Record The Verdict
 
