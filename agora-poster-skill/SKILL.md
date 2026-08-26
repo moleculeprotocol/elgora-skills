@@ -2,8 +2,8 @@
 name: agora-poster-skill
 description: Draft, approve, publish, fund, and follow an Agora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.0.0"
-  updated: "2026-08-20"
+  version: "1.1.0"
+  updated: "2026-08-26"
   profile: agora_markdown_bounty_challenge_v0
 ---
 
@@ -24,7 +24,8 @@ Collect these decisions before producing a final page:
 
 - the scientific goal and the result the Poster wants;
 - required artifacts, formats, size limits, and their purpose;
-- listed inputs or reference materials;
+- files and other inputs, including where Solvers and Guardians obtain any
+  outside file;
 - finite, evidence-bound acceptance criteria;
 - disqualification conditions and out-of-scope boundaries;
 - the deterministic winner and tie-break rule;
@@ -79,9 +80,21 @@ Package rules:
 - Solver artifacts are private by default and handled through Agora's existing
   private-submission protocol outside this bounty page.
 
-## Inputs Or Reference Materials
-{Datasets, prompts, reference files, benchmark inputs, public resources, hashes,
-or stable links Solvers may use.}
+## Files And Other Inputs
+Put small inputs directly in this page. If the challenge needs files stored
+elsewhere, add one row for each listed input file. Remove this table when there
+are no outside files.
+
+| File | Why it is needed | How to get it | SHA-256 fingerprint |
+|---|---|---|---|
+| {filename} | {purpose} | {stable public download, or stable restricted-access page and instructions for Solvers and Guardians} | {64 lowercase hexadecimal characters} |
+
+For a restricted file, state who can receive access, how to request it, when it
+will be available, and any handling rules. Do not put passwords, API keys,
+bearer tokens, cookies, or temporary signed download links in this public page.
+Before using a downloaded file, Solvers and Guardians compare its SHA-256
+fingerprint with the one listed above. If they differ, the required input is
+unavailable. After publication, different file bytes require a new bounty.
 
 ## Acceptance Criteria
 1. {Criterion one}
@@ -129,12 +142,21 @@ Before approval, verify:
 1. A Solver can tell exactly what is being bought and what to submit.
 2. Every criterion is decidable from the challenge, listed inputs, and opened
    artifacts without private Poster interpretation.
-3. Work that can multiply has finite limits and a stopping condition.
-4. The winner and tie-break rule identify one winning Submission.
-5. Operational retrieval or decryption failure is not a disqualification.
-6. The page contains no placeholders, secrets, transport instructions, or extra
+3. Every outside input file has a purpose, stable location, SHA-256 fingerprint,
+   and an access path that works for Solvers and Guardians when they need it.
+4. A restricted file states who can receive access, how to request it, when it
+   is available, and any handling rules.
+5. Work that can multiply has finite limits and a stopping condition.
+6. The winner and tie-break rule identify one winning Submission.
+7. Operational retrieval or decryption failure is not a disqualification.
+8. The page contains no placeholders, secrets, transport instructions, or extra
    frontmatter keys.
-7. `escrow_amount`, `submission_deadline`, and `winner_take_all` are exact.
+9. `escrow_amount`, `submission_deadline`, and `winner_take_all` are exact.
+
+Compute each fingerprint from the actual file and confirm the stated public
+download or restricted access page before asking for approval. The hosted
+readiness review checks whether the written instructions are complete; it does
+not open links, inspect files, grant access, or verify a fingerprint.
 
 Show the Poster the complete final Markdown and ask for explicit approval. If
 it changes before publication, ask again. After publication, any material
