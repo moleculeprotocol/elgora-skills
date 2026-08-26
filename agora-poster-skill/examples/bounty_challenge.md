@@ -25,11 +25,12 @@ was produced without consulting outside data.
 Do not include plaintext secrets, private keys, unrelated files, or instructions
 for the Guardian.
 
-## Inputs Or Reference Materials
+## Files And Other Inputs
 
-Use only the exact CSV below. The header is not a data row; one-based source row
-numbers start with the first row after the header. A valid row has a non-empty
-`compound_id` and a finite decimal `activity_score`.
+This example needs no outside file: the exact input is included below. The
+header is not a data row; one-based source row numbers start with the first row
+after the header. A valid row has a non-empty `compound_id` and a finite decimal
+`activity_score`.
 
 ```csv
 compound_id,activity_score
