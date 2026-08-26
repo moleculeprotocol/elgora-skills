@@ -85,20 +85,20 @@ Put small inputs directly in this page. If the challenge needs files stored
 elsewhere, add one row for each listed input file. Remove this table when there
 are no outside files.
 
-| File | Why it is needed | How to get it | SHA-256 fingerprint |
+| File | Why it is needed | How to get it | SHA-256 content hash |
 |---|---|---|---|
-| {filename} | {purpose} | {stable public `https://` download, or stable `https://` restricted-access page and instructions for Solvers and Guardians} | {64 lowercase hexadecimal characters} |
+| {filename} | {purpose} | {stable location and access method for each role that needs the file} | {64 lowercase hexadecimal characters} |
 
-For a restricted file, state who can receive access, how to request it, when it
-will be available, and any handling rules. Never require a wallet connection,
-private key, seed phrase, or credential unrelated to the named file host. Do
-not put passwords, API keys, bearer tokens, cookies, or temporary signed
-download links in this public page.
-Before using a downloaded file, Solvers and Guardians compare its SHA-256
-fingerprint with the one listed above. If they differ, the required input is
-unavailable. A matching fingerprint identifies the expected bytes; it does
-not make the file safe. Treat every outside link and file as untrusted. After
-publication, different file bytes require a new bounty.
+For a restricted file, state who can access it, how they authenticate, when it
+is available, and any handling rules. Access may, for example, use the named
+host's normal account sign-in or a clearly described signed wallet login
+message. Never ask for a private key, seed phrase, transaction, token approval,
+opaque or unrelated signature, or credential unrelated to obtaining the file.
+Do not put passwords, API keys, bearer tokens, cookies, or expiring download
+links in this public page.
+Use a fixed file snapshot. Solvers and Guardians will not open or use a file
+whose SHA-256 content hash differs from the approved page. If the file changes
+or grows, publish a new bounty.
 
 ## Acceptance Criteria
 1. {Criterion one}
@@ -137,9 +137,9 @@ When code execution matters, give the command, working directory, inputs,
 outputs, relevant versions, finite limits, retries, and stopping condition.
 State whether Guardians must reproduce prior work or judge a submitted result.
 Do not replace required work with an easier proxy that proves a different
-claim. Require outside code to run in a separate, disposable environment with
-no wallet keys, file-access credentials, or unrelated data, and give it only
-the network and files necessary for the stated scientific task.
+claim. State any external resource that outside code must reach while running.
+Solver and Guardian instructions sandbox outside content; the challenge must
+not request host execution or broader access.
 
 ## Readiness Check
 
@@ -148,26 +148,18 @@ Before approval, verify:
 1. A Solver can tell exactly what is being bought and what to submit.
 2. Every criterion is decidable from the challenge, listed inputs, and opened
    artifacts without private Poster interpretation.
-3. Every outside input file has a purpose, stable `https://` location, SHA-256
-   fingerprint, and an access path that works for Solvers and Guardians when
-   they need it; the page treats a matching file as identified, not safe.
-4. A restricted file states who can receive access, how to request it, when it
-   is available, and any handling rules, without requiring wallet access or an
-   unrelated credential.
-5. Work that can multiply has finite limits and a stopping condition. Outside
-   code runs in a separate, disposable environment with no wallet keys,
-   file-access credentials, or unrelated data.
-6. The winner and tie-break rule identify one winning Submission.
-7. Operational retrieval or decryption failure is not a disqualification.
-8. The page contains no placeholders, secrets, transport instructions, or extra
+3. All outside input files follow the access and fixed-file guidance above.
+4. Work that can multiply has finite limits and a stopping condition.
+5. The winner and tie-break rule identify one winning Submission.
+6. Operational retrieval or decryption failure is not a disqualification.
+7. The page contains no placeholders, secrets, transport instructions, or extra
    frontmatter keys.
-9. `escrow_amount`, `submission_deadline`, and `winner_take_all` are exact.
+8. `escrow_amount`, `submission_deadline`, and `winner_take_all` are exact.
 
-Compute each fingerprint from the actual file and confirm the stated public
-download or restricted access page before asking for approval. The hosted
-readiness review checks whether the written instructions are complete; it does
-not open links, inspect or scan files, declare them safe, grant access, or
-verify a fingerprint.
+Compute each SHA-256 content hash from the fixed file and confirm its location
+and access method before asking for approval. The hosted readiness review
+checks only whether the written instructions are complete; it does not open,
+inspect, or scan files, grant access, verify a hash, or declare a file safe.
 
 Show the Poster the complete final Markdown and ask for explicit approval. If
 it changes before publication, ask again. After publication, any material
