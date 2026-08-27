@@ -2,8 +2,8 @@
 name: agora-guardian-skill
 description: Open, judge, and record independent Verdicts for Agora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "4.0.4"
-  updated: "2026-08-26"
+  version: "4.1.0"
+  updated: "2026-08-27"
 ---
 
 # Agora Guardian Skill
@@ -54,6 +54,15 @@ private key as unpadded base64url. Retain old entries until every bounty pinned
 to those keys is final. The CLI may try multiple retained keys for the same
 Guardian account; do not overwrite an old key during rotation.
 
+Those keys are the only configuration a Guardian supplies. Every command targets
+Agora's default deployment on its own — chain, AgoraHub, RPC, and indexer
+included — so pass `--network <name|chain id>` only to work on another one, for
+that invocation:
+
+```sh
+agora-cli guardian:judgeable --network base-sepolia --guardian-address <guardian_address>
+```
+
 ## Discover Advisory Work
 
 Run:
@@ -64,11 +73,8 @@ agora-cli guardian:judgeable --guardian-address <guardian_address>
 
 This is subgraph-backed advisory discovery. `--guardian-address` identifies
 this Guardian using only its public Ethereum address; the command receives no
-signing key, signs nothing, and sends no transaction. Agora supplies the
-recorded endpoint for the selected deployment automatically; set
-`AGORA_SUBGRAPH_ENDPOINT` only to override it. Every command runs against the
-default deployment unless `--network <name|chain id>` (or `AGORA_CHAIN_ID`)
-selects another one. The command prints one top-level JSON array shaped as:
+signing key, signs nothing, and sends no transaction. The command prints one
+top-level JSON array shaped as:
 
 ```json
 [

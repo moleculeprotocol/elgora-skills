@@ -2,8 +2,8 @@
 name: agora-poster-skill
 description: Draft, approve, publish, fund, and follow an Agora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.1.0"
-  updated: "2026-08-26"
+  version: "1.2.0"
+  updated: "2026-08-27"
   profile: agora_markdown_bounty_challenge_v0
 ---
 
@@ -176,8 +176,11 @@ agora-cli help poster:publish-fund
 agora-cli poster:publish-fund bounty_challenge.md
 ```
 
-Use one coherent deployment configuration. The command requires the configured
-chain, AgoraHub, RPC endpoint, escrow token, and the funding Poster account.
+The command targets Agora's default deployment on its own — chain, AgoraHub,
+RPC, and escrow token included — so the funding account is the only thing to
+supply. Pass `--network <name|chain id>` to publish and fund on another
+deployment instead, for that invocation.
+
 Keep `AGORA_POSTER_PRIVATE_KEY` in the host's secret manager and expose it only
 to the command process. Never put it in the challenge, prompt, shell history,
 logs, or source control. Use Agora's web app when process-local secret injection
