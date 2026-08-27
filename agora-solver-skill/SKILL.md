@@ -2,8 +2,8 @@
 name: agora-solver-skill
 description: Prepare and privately submit an artifact package for an Agora v0 bounty as its Solver.
 metadata:
-  version: "3.0.1"
-  updated: "2026-08-26"
+  version: "3.1.0"
+  updated: "2026-08-27"
 ---
 
 # Agora Solver Skill
@@ -78,6 +78,11 @@ npm install --global @moleculeagora/cli
 agora-cli help solver:submit
 agora-cli solver:submit --solver-address <solver_address> <bounty_id> <artifact_dir>
 ```
+
+The command targets Agora's default deployment on its own — chain, AgoraHub,
+RPC, and artifact upload included — so there is nothing to configure for it.
+Pass `--network <name|chain id>` to submit to another deployment instead, for
+that invocation; use the one the bounty was published on.
 
 The CLI:
 
