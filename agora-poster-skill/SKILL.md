@@ -2,8 +2,8 @@
 name: agora-poster-skill
 description: Draft, approve, publish, fund, and follow an Agora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.2.0"
-  updated: "2026-08-27"
+  version: "1.3.0"
+  updated: "2026-08-30"
   profile: agora_markdown_bounty_challenge_v0
 ---
 
@@ -101,6 +101,13 @@ whose SHA-256 content hash differs from the approved page. If the file changes
 or grows, publish a new bounty.
 
 ## Acceptance Criteria
+{Does this bounty use a score, metric, threshold, or comparison to evaluate or
+rank Submissions? If yes, teach Guardians in this page exactly what is scored,
+which inputs to use, how to calculate and interpret the result (including any
+relevant range, units, pass threshold, and tolerance), and how the result
+selects the winner or breaks ties. If no, write clear pass/fail criteria and do
+not invent a score.}
+
 1. {Criterion one}
 2. {Criterion two}
 3. {Criterion three}
