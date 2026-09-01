@@ -202,10 +202,20 @@ Verdict, claim, refund, or delivery action.
 AgoraHub finalizes as one of:
 
 - `Awarded`: the winning Solver can claim the reserved winner-take-all award
-  directly. The funding Poster can connect the same funding wallet on the
-  bounty page and choose **Open winning solution** after delivery is available.
+  directly. The funding Poster can retrieve and decrypt the winning Submission
+  locally with the same funding wallet after delivery is available.
 - `NoValidSubmission`: the Poster can claim the queued refund.
 - `TimedOut`: the Poster can claim the full escrow refund.
+
+For an Awarded bounty, retrieve the exact finalized winner. The command creates
+a one-time key, signs both protected API requests with the funding Poster
+account, verifies the committed encrypted envelope, and writes plaintext only
+to the local output directory:
+
+```sh
+agora-cli help poster:open-winning-submission
+agora-cli poster:open-winning-submission <bounty_id> [output_dir]
+```
 
 Inspect the claim command before using it:
 
