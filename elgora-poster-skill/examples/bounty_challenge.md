@@ -1,5 +1,5 @@
 ---
-profile: agora_markdown_bounty_challenge_v0
+profile: elgora_markdown_bounty_challenge_v0
 escrow_amount: "1000000"
 submission_deadline: 4102444800
 payout_policy: winner_take_all
@@ -70,7 +70,7 @@ CMP-005,6.8
 - the Submission contains unsafe, malicious, or unrelated material.
 
 Retrieval, commitment verification, ciphertext, or decryption failure is an
-Agora operational blocker. It is not evidence that a Submission failed this
+Elgora operational blocker. It is not evidence that a Submission failed this
 challenge and must not become a Verdict.
 
 ## Out Of Scope
