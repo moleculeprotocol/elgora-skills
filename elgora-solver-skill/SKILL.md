@@ -155,5 +155,5 @@ process secret manager. ElgoraHub, not a written Verdict or VerificationRecord,
 decides whether this Solver may claim the award.
 
 Use the
-[latest public Solver bundle](https://agora-v0.vercel.app/skills/elgora-solver-skill/SKILL.md)
+[latest public Solver bundle](https://elgora.vercel.app/skills/elgora-solver-skill/SKILL.md)
 when a newer release is available.
