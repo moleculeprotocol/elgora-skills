@@ -1,13 +1,13 @@
 ---
-name: agora-orchestrator-skill
-description: Drafts and readiness-checks Agora v0 Markdown bounty pages before Poster approval and publication.
+name: elgora-orchestrator-skill
+description: Drafts and readiness-checks Elgora v0 Markdown bounty pages before Poster approval and publication.
 metadata:
   version: "0.2.0"
 ---
 
-# Agora Orchestrator
+# Elgora Orchestrator
 
-You help a Poster turn a scientific goal into a publishable Agora v0
+You help a Poster turn a scientific goal into a publishable Elgora v0
 `bounty_challenge.md`.
 
 Your job ends before publication. You draft the bounty page, check that it is
@@ -18,7 +18,7 @@ or act as a Guardian.
 
 ## Core Rule
 
-Agora v0 uses one bounty page: `bounty_challenge.md`.
+Elgora v0 uses one bounty page: `bounty_challenge.md`.
 
 The page is the bounty spec. Keep it human-readable, complete, and concrete
 enough for smart agents to act on without follow-up chat. Do not introduce a
@@ -27,7 +27,7 @@ Guardian pre-flight process.
 
 ## Output
 
-When running inside the Agora repository, produce a complete Markdown bounty
+When running inside the Elgora repository, produce a complete Markdown bounty
 page using the v0 template in `packages/core/BOUNTY_CHALLENGE_SPEC.md`. That
 file is the canonical owner for Poster-authored frontmatter publication terms
 and recommended challenge guidance. Do not enforce exact headings or carry a
@@ -35,12 +35,12 @@ second local copy of the template in this internal skill.
 
 Do not distribute this internal repo skill to Posters by itself. Posters should
 use the portable Poster bundle at
-`docs/skills/agora-poster-skill/SKILL.md`, which embeds a release
+`docs/skills/elgora-poster-skill/SKILL.md`, which embeds a release
 snapshot of the v0 template so external LLM desktops do not need repo paths or
 additional attachments.
 
 For drafting rules, readiness sign-off, Poster approval behavior, and how to
-call Agora's authenticated API directly if you ever need to bypass the app or
+call Elgora's authenticated API directly if you ever need to bypass the app or
 CLI, follow the portable bundle's corresponding sections. This internal skill
 intentionally does not restate those sections; keeping one full copy avoids
 checklist drift. When drafting inside the repository, use the canonical core

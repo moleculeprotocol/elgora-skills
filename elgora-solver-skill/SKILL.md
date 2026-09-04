@@ -1,25 +1,25 @@
 ---
-name: agora-solver-skill
-description: Prepare and privately submit an artifact package for an Agora v0 bounty as its Solver.
+name: elgora-solver-skill
+description: Prepare and privately submit an artifact package for an Elgora v0 bounty as its Solver.
 metadata:
   version: "3.1.0"
   updated: "2026-08-27"
 ---
 
-# Agora Solver Skill
+# Elgora Solver Skill
 
 Help a Solver read one published bounty challenge, build the required artifacts,
 and record one private Submission through the public CLI. The Solver owns the
 artifacts and the wallet action. Do not submit, sign, or disclose a secret
 without the Solver's explicit approval.
 
-AgoraHub owns the bounty lifecycle, Submission deadline, pinned Guardian roster,
+ElgoraHub owns the bounty lifecycle, Submission deadline, pinned Guardian roster,
 final result, and claim. This skill does not draft the challenge, judge another
 Submission, record a Verdict, or settle the bounty.
 
 ## Read The Exact Challenge
 
-Open the published Agora bounty detail for the intended `bounty_id`. Read the
+Open the published Elgora bounty detail for the intended `bounty_id`. Read the
 entire committed challenge, not a listing excerpt or cached paraphrase. Stop if
 the challenge is unavailable or its displayed bytes have not been verified
 against `spec_commitment`.
@@ -62,7 +62,7 @@ Before sealing:
    subdirectories, symlinks, or empty package.
 3. Match required filenames exactly. Artifact names must be safe leaf names and
    unique case-insensitively.
-4. Keep the whole package below Agora's 50 MiB encrypted Submission limit.
+4. Keep the whole package below Elgora's 50 MiB encrypted Submission limit.
 5. Remove plaintext secrets, private keys, unrelated files, and instructions
    aimed at the Guardian.
 
@@ -74,12 +74,12 @@ decryption material, or place an artifact location on-chain.
 Install the public CLI on Node.js 24 and inspect its exact command:
 
 ```sh
-npm install --global @moleculeagora/cli
-agora-cli help solver:submit
-agora-cli solver:submit --solver-address <solver_address> <bounty_id> <artifact_dir>
+npm install --global @elgora/cli
+elgora-cli help solver:submit
+elgora-cli solver:submit --solver-address <solver_address> <bounty_id> <artifact_dir>
 ```
 
-The command targets Agora's default deployment on its own — chain, AgoraHub,
+The command targets Elgora's default deployment on its own — chain, ElgoraHub,
 RPC, and artifact upload included — so there is nothing to configure for it.
 Pass `--network <name|chain id>` to submit to another deployment instead, for
 that invocation; use the one the bounty was published on.
@@ -87,12 +87,12 @@ that invocation; use the one the bounty was published on.
 The CLI:
 
 - obtains the ordered Guardian roster pinned to this bounty;
-- recomputes and verifies its hash against AgoraHub;
+- recomputes and verifies its hash against ElgoraHub;
 - encrypts the artifacts for those exact Guardian public keys;
-- binds the envelope to the configured chain, AgoraHub, bounty, and Solver;
+- binds the envelope to the configured chain, ElgoraHub, bounty, and Solver;
 - uploads only ciphertext;
 - rechecks that the bounty is Open and before its Submission deadline; and
-- locally verifies the complete four-argument AgoraHub Submission transaction.
+- locally verifies the complete four-argument ElgoraHub Submission transaction.
 
 For every `submit.approval_required` line, have the wallet at
 `<solver_address>` sign the displayed EIP-712 typed data and return only the
@@ -108,10 +108,10 @@ External-wallet mode needs no Solver private key in the CLI process.
 When the host can safely inject a process secret, omit `--solver-address`:
 
 ```sh
-agora-cli solver:submit <bounty_id> <artifact_dir>
+elgora-cli solver:submit <bounty_id> <artifact_dir>
 ```
 
-Provide `AGORA_SOLVER_PRIVATE_KEY` only through the host's secret manager. Never
+Provide `ELGORA_SOLVER_PRIVATE_KEY` only through the host's secret manager. Never
 put it in a command line, prompt, file, shell history, log, or source control.
 The CLI performs the same checks, sends the transaction, waits for a successful
 receipt, and reports `submit.submission_recorded`.
@@ -127,7 +127,7 @@ Stop without signing when:
 
 - the bounty is not Open or the Submission deadline has passed;
 - the roster snapshot is missing, reordered, or does not hash to the value
-  pinned by AgoraHub;
+  pinned by ElgoraHub;
 - the prepared transaction differs from the CLI's locally encoded transaction;
 - ciphertext upload or commitment verification fails; or
 - any requested approval names a different Solver or deployment.
@@ -135,14 +135,14 @@ Stop without signing when:
 Do not add a fallback roster, reuse another bounty's encrypted payload, or turn
 an operational failure into a protocol result.
 
-## After AgoraHub Finalizes
+## After ElgoraHub Finalizes
 
-If AgoraHub finalizes the bounty as `Awarded` with this Solver as winner, inspect
+If ElgoraHub finalizes the bounty as `Awarded` with this Solver as winner, inspect
 and run the claim command:
 
 ```sh
-agora-cli help claim
-agora-cli claim --claimant-address <solver_address> <bounty_id>
+elgora-cli help claim
+elgora-cli claim --claimant-address <solver_address> <bounty_id>
 ```
 
 For the Awarded winner, this command internally uses
@@ -150,10 +150,10 @@ For the Awarded winner, this command internally uses
 public syntax accepts no payout or proof input.
 
 External-wallet mode prints prepared calldata. Local signing omits
-`--claimant-address` and requires `AGORA_CLAIMANT_PRIVATE_KEY` through the
-process secret manager. AgoraHub, not a written Verdict or VerificationRecord,
+`--claimant-address` and requires `ELGORA_CLAIMANT_PRIVATE_KEY` through the
+process secret manager. ElgoraHub, not a written Verdict or VerificationRecord,
 decides whether this Solver may claim the award.
 
 Use the
-[latest public Solver bundle](https://agora-v0.vercel.app/skills/agora-solver-skill/SKILL.md)
+[latest public Solver bundle](https://elgora.vercel.app/skills/elgora-solver-skill/SKILL.md)
 when a newer release is available.

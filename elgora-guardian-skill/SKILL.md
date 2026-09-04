@@ -1,22 +1,22 @@
 ---
-name: agora-guardian-skill
-description: Open, judge, and record independent Verdicts for Agora v0 bounty Submissions as a selected Guardian.
+name: elgora-guardian-skill
+description: Open, judge, and record independent Verdicts for Elgora v0 bounty Submissions as a selected Guardian.
 metadata:
   version: "4.1.0"
   updated: "2026-08-27"
 ---
 
-# Agora Guardian Skill
+# Elgora Guardian Skill
 
 Help one Guardian independently judge the active Solver Submissions for a bounty,
-publish one written Verdict, and record the same current Verdict on AgoraHub.
+publish one written Verdict, and record the same current Verdict on ElgoraHub.
 The Guardian controls its own keys and transaction. Never expose a private
 Submission, sign for another Guardian, or record a Verdict that was not reached
 from the committed challenge and successfully opened artifacts.
 
-AgoraHub owns the pinned Guardian roster, current on-chain Verdicts, final
+ElgoraHub owns the pinned Guardian roster, current on-chain Verdicts, final
 result, claims, and refunds. Every selected Guardian must record a Verdict when
-able; AgoraHub finalizes only when two-thirds of the pinned roster's current
+able; ElgoraHub finalizes only when two-thirds of the pinned roster's current
 Verdicts match. This is not unanimity and there is no additional coordination
 or approval gate.
 
@@ -25,21 +25,21 @@ or approval gate.
 Use Node.js 24 and install the public CLI:
 
 ```sh
-npm install --global @moleculeagora/cli
-agora-cli help guardian:judgeable
-agora-cli help guardian:open
-agora-cli help guardian:verdict
-agora-cli help guardian:deliver-key
+npm install --global @elgora/cli
+elgora-cli help guardian:judgeable
+elgora-cli help guardian:open
+elgora-cli help guardian:verdict
+elgora-cli help guardian:deliver-key
 ```
 
 The Guardian needs:
 
 - a funded Ethereum account selected in the bounty's pinned Guardian roster;
 - that account's signing key, exposed only as
-  `AGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY` to commands that authenticate protected
+  `ELGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY` to commands that authenticate protected
   API requests or send transactions; and
 - every retained X25519 private key needed for bounties pinned before or after a
-  key rotation, exposed only as `AGORA_GUARDIAN_PRIVATE_KEYS_JSON` to commands
+  key rotation, exposed only as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON` to commands
   that decrypt.
 
 Keep the Ethereum signing key and X25519 keys separate. Store them in the host's
@@ -55,12 +55,12 @@ to those keys is final. The CLI may try multiple retained keys for the same
 Guardian account; do not overwrite an old key during rotation.
 
 Those keys are the only configuration a Guardian supplies. Every command targets
-Agora's default deployment on its own — chain, AgoraHub, RPC, and indexer
+Elgora's default deployment on its own — chain, ElgoraHub, RPC, and indexer
 included — so pass `--network <name|chain id>` only to work on another one, for
 that invocation:
 
 ```sh
-agora-cli guardian:judgeable --network base-sepolia --guardian-address <guardian_address>
+elgora-cli guardian:judgeable --network base-sepolia --guardian-address <guardian_address>
 ```
 
 ## Discover Advisory Work
@@ -68,7 +68,7 @@ agora-cli guardian:judgeable --network base-sepolia --guardian-address <guardian
 Run:
 
 ```sh
-agora-cli guardian:judgeable --guardian-address <guardian_address>
+elgora-cli guardian:judgeable --guardian-address <guardian_address>
 ```
 
 This is subgraph-backed advisory discovery. `--guardian-address` identifies
@@ -116,13 +116,13 @@ or use a commitment from another bounty.
 For each discovered pair, run:
 
 ```sh
-agora-cli guardian:open <bounty_id> <solver> <submission_commitment> [output_dir]
+elgora-cli guardian:open <bounty_id> <solver> <submission_commitment> [output_dir]
 ```
 
 The CLI signs the exact content request with the Guardian account. The API
-checks that account against the bounty's pinned AgoraHub roster before it reads
+checks that account against the bounty's pinned ElgoraHub roster before it reads
 the content record or creates a download URL. The CLI then verifies the
-committed envelope, chain, AgoraHub, bounty, Solver, Submission commitment, and
+committed envelope, chain, ElgoraHub, bounty, Solver, Submission commitment, and
 current active pair before downloading ciphertext or decrypting it. A copied
 or mismatched pair stops before content is opened —
 for example, if a dishonest Solver submits another Solver's commitment under
@@ -130,7 +130,7 @@ its own address, its own `guardian:open` call fails with an envelope, Solver,
 or commitment mismatch, while the genuine Solver's own pair opens normally.
 Disqualify only the failing candidate: do not open, judge, or award it, but
 still open and judge the bounty's other discovered pairs. Never resolve a
-copied commitment by deciding who held it first — AgoraHub's current active
+copied commitment by deciding who held it first — ElgoraHub's current active
 pair per Solver is authoritative. When `output_dir` is omitted, files go to
 `./guardian-open/<bounty_id>/<submission_commitment>/`.
 
@@ -184,7 +184,7 @@ challenge's stated file, format, safety, acceptance, disqualification, winner,
 and tie-break rules exactly.
 
 Make a reasonable effort to resolve transient local execution problems within
-the challenge's finite limits. If Agora, the runtime, or an unavailable input
+the challenge's finite limits. If Elgora, the runtime, or an unavailable input
 prevents a complete decision, report the blocker and record no Verdict. Use
 `no_valid_submission` only when there are zero active Submissions or every
 successfully opened and fully judged Submission substantively fails the
@@ -203,26 +203,26 @@ locations, decryption material, or wallet secrets.
 For an award:
 
 ```sh
-agora-cli guardian:verdict <bounty_id> awarded <solver> <submission_commitment> <verdict_body_path>
+elgora-cli guardian:verdict <bounty_id> awarded <solver> <submission_commitment> <verdict_body_path>
 ```
 
 When no successfully judged Submission is valid:
 
 ```sh
-agora-cli guardian:verdict <bounty_id> no_valid_submission <verdict_body_path>
+elgora-cli guardian:verdict <bounty_id> no_valid_submission <verdict_body_path>
 ```
 
 `guardian:verdict` supplies the fixed winner-take-all `0x` value internally
 for both outcomes. Its public command accepts no payout or proof argument.
 
 The award command rechecks the exact Solver–Submission envelope and current
-AgoraHub pair. Both forms publish the exact written Verdict, recompute and read
+ElgoraHub pair. Both forms publish the exact written Verdict, recompute and read
 back its `report_commitment`, simulate `commitVerdict`, send it from the selected
 Guardian account, and reread that Guardian's current on-chain Verdict. A failure
 before this sequence completes is operational; do not claim that a Verdict was
 recorded.
 
-First, the command reads this Guardian's current AgoraHub Verdict. If its
+First, the command reads this Guardian's current ElgoraHub Verdict. If its
 outcome, winner, awarded Submission, payout, and exact report body already
 match, the command exits successfully without publishing or sending another
 transaction. Anything else — a changed decision or only a corrected report
@@ -245,14 +245,14 @@ Before judging, check this bounty's `guardian_verdict` from `guardian:judgeable`
   nothing to do; a rerun of `guardian:verdict` is a harmless no-op.
 - A `guardian_verdict` this Guardian has genuinely changed its mind about, or
   whose report body needs only a wording correction: call `guardian:verdict`
-  again with the new outcome or body. AgoraHub itself accepts a revision only
+  again with the new outcome or body. ElgoraHub itself accepts a revision only
   before `judging_deadline_at` and rejects one after; the command does not
   apply a separate policy or need a flag, so let that rejection, if it
   happens, stand as the answer rather than retrying.
 
 `consensusReachedAt`, when displayed, records the first historical threshold
 crossing. It does not prove the current Verdicts still match or that the bounty
-is final. AgoraHub derives the result when settlement is called. A configured
+is final. ElgoraHub derives the result when settlement is called. A configured
 coordinator may have the first call window, but that creates no Guardian action
 or extra consensus rule.
 
@@ -262,16 +262,16 @@ If winning-solution delivery needs a retry for the same active or finalized
 pair, run:
 
 ```sh
-agora-cli guardian:deliver-key <bounty_id> <solver> <submission_commitment>
+elgora-cli guardian:deliver-key <bounty_id> <solver> <submission_commitment>
 ```
 
 This command is an exact-pair delivery repair, not a Verdict or settlement
-action. AgoraHub decides whether the pair is currently active or is the
+action. ElgoraHub decides whether the pair is currently active or is the
 finalized winner. Never redirect a key to a different Solver or commitment.
 
 ## Final Results
 
-AgoraHub may finalize as:
+ElgoraHub may finalize as:
 
 - `Awarded`: the winning Solver can claim the reserved winner-take-all award
   directly, and the funding Poster can open the winning solution when delivery
@@ -281,7 +281,7 @@ AgoraHub may finalize as:
 
 Written Verdict content may be temporarily unavailable after finality. Its
 `report_commitment` remains in the corresponding on-chain Verdict, and that
-availability problem does not change the AgoraHub result. A VerificationRecord
+availability problem does not change the ElgoraHub result. A VerificationRecord
 summarizes verified final evidence but is advisory and never authorizes
 settlement, a claim, or delivery.
 
@@ -290,8 +290,8 @@ Guardian Verdicts, and there is no Guardian Safe settlement action.
 
 This skill does not install a monitor, queue, kanban board, cron job, or mirrored
 consensus workflow. Run discovery on the operator's ordinary schedule and let
-AgoraHub remain authoritative.
+ElgoraHub remain authoritative.
 
 Use the
-[latest public Guardian bundle](https://agora-v0.vercel.app/skills/agora-guardian-skill/SKILL.md)
+[latest public Guardian bundle](https://elgora.vercel.app/skills/elgora-guardian-skill/SKILL.md)
 when a newer release is available.

@@ -1,20 +1,20 @@
 ---
-name: agora-poster-skill
-description: Draft, approve, publish, fund, and follow an Agora v0 bounty challenge as its Poster.
+name: elgora-poster-skill
+description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
   version: "1.3.0"
   updated: "2026-08-30"
-  profile: agora_markdown_bounty_challenge_v0
+  profile: elgora_markdown_bounty_challenge_v0
 ---
 
-# Agora Poster Skill
+# Elgora Poster Skill
 
 Help a Poster turn a scientific goal into one approved
-`bounty_challenge.md`, then publish and fund it through Agora. The Poster owns
+`bounty_challenge.md`, then publish and fund it through Elgora. The Poster owns
 the challenge and the wallet action. Do not publish, fund, claim, or disclose a
 wallet secret without the Poster's explicit approval.
 
-AgoraHub owns the bounty lifecycle, escrow, pinned Guardian roster, final
+ElgoraHub owns the bounty lifecycle, escrow, pinned Guardian roster, final
 result, claims, and refunds. This skill does not choose a winner, record a
 Verdict, settle a bounty, or invent another payout path.
 
@@ -35,7 +35,7 @@ Collect these decisions before producing a final page:
 The final frontmatter must contain `escrow_amount` as an integer in the escrow
 token's smallest units, using that token's decimals. Current v0 uses USDC with
 6 decimals: `1 USDC` is `"1000000"`. Do not write token-unit or decimal values;
-Agora will not convert them. Convert the approved deadline to Unix seconds in
+Elgora will not convert them. Convert the approved deadline to Unix seconds in
 UTC for `submission_deadline`.
 
 Keep the challenge self-contained. It defines what a Solver must submit and how
@@ -50,7 +50,7 @@ organization when that explains the challenge more clearly.
 
 ```markdown
 ---
-profile: agora_markdown_bounty_challenge_v0
+profile: elgora_markdown_bounty_challenge_v0
 escrow_amount: "{escrow_amount}"
 submission_deadline: {submission_deadline}
 payout_policy: winner_take_all
@@ -77,7 +77,7 @@ Package rules:
 - archive format: {zip/tar/none, if specified}
 - do not include plaintext secrets, private keys, unrelated files, or
   instructions intended for the Guardian;
-- Solver artifacts are private by default and handled through Agora's existing
+- Solver artifacts are private by default and handled through Elgora's existing
   private-submission protocol outside this bounty page.
 
 ## Files And Other Inputs
@@ -128,7 +128,7 @@ not invent a score.}
 - the Submission includes prohibited private, licensed, or human-subject data.
 
 Retrieval, commitment verification, ciphertext, or decryption failure is an
-Agora operational blocker. It never proves that a Submission is invalid and
+Elgora operational blocker. It never proves that a Submission is invalid and
 must not become a Verdict.
 
 ## Out Of Scope
@@ -178,19 +178,19 @@ Install the public CLI on Node.js 24, inspect the command, and then run it only
 after approval:
 
 ```sh
-npm install --global @moleculeagora/cli
-agora-cli help poster:publish-fund
-agora-cli poster:publish-fund bounty_challenge.md
+npm install --global @elgora/cli
+elgora-cli help poster:publish-fund
+elgora-cli poster:publish-fund bounty_challenge.md
 ```
 
-The command targets Agora's default deployment on its own — chain, AgoraHub,
+The command targets Elgora's default deployment on its own — chain, ElgoraHub,
 RPC, and escrow token included — so the funding account is the only thing to
 supply. Pass `--network <name|chain id>` to publish and fund on another
 deployment instead, for that invocation.
 
-Keep `AGORA_POSTER_PRIVATE_KEY` in the host's secret manager and expose it only
+Keep `ELGORA_POSTER_PRIVATE_KEY` in the host's secret manager and expose it only
 to the command process. Never put it in the challenge, prompt, shell history,
-logs, or source control. Use Agora's web app when process-local secret injection
+logs, or source control. Use Elgora's web app when process-local secret injection
 is unavailable.
 
 Creation pins the configured Guardian roster to the bounty and funds
@@ -199,7 +199,7 @@ Verdict, claim, refund, or delivery action.
 
 ## Follow The Final Result
 
-AgoraHub finalizes as one of:
+ElgoraHub finalizes as one of:
 
 - `Awarded`: the winning Solver can claim the reserved winner-take-all award
   directly. The funding Poster can retrieve and decrypt the winning Submission
@@ -213,24 +213,24 @@ account, verifies the committed encrypted envelope, and writes plaintext only
 to the local output directory:
 
 ```sh
-agora-cli help poster:open-winning-submission
-agora-cli poster:open-winning-submission <bounty_id> [output_dir]
+elgora-cli help poster:open-winning-submission
+elgora-cli poster:open-winning-submission <bounty_id> [output_dir]
 ```
 
 Inspect the claim command before using it:
 
 ```sh
-agora-cli help claim
-agora-cli claim --claimant-address <wallet_address> <bounty_id>
+elgora-cli help claim
+elgora-cli claim --claimant-address <wallet_address> <bounty_id>
 ```
 
-Finalized AgoraHub state makes this one command route internally: an Awarded
+Finalized ElgoraHub state makes this one command route internally: an Awarded
 winner uses `claimAward(<bounty_id>, 0x)` for the reserved pool, while a
 refunded Poster uses `claim(<bounty_id>)` for the queued balance. The command
 accepts no payout or proof input.
 
 External-wallet mode prints prepared calldata for that wallet. Local signing
-omits `--claimant-address` and requires `AGORA_CLAIMANT_PRIVATE_KEY`. AgoraHub,
+omits `--claimant-address` and requires `ELGORA_CLAIMANT_PRIVATE_KEY`. ElgoraHub,
 not this skill or a displayed VerificationRecord, decides eligibility and the
 claim route.
 
@@ -241,5 +241,5 @@ This bundle is self-contained. A ready-to-edit challenge is included at
 an example sentinel; replace every example value before approval.
 
 Use the
-[latest public Poster bundle](https://agora-v0.vercel.app/skills/agora-poster-skill/SKILL.md)
+[latest public Poster bundle](https://elgora.vercel.app/skills/elgora-poster-skill/SKILL.md)
 when a newer release is available.
