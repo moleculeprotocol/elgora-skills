@@ -2,8 +2,8 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.3.0"
-  updated: "2026-08-30"
+  version: "1.4.0"
+  updated: "2026-09-04"
   profile: elgora_markdown_bounty_challenge_v0
 ---
 
