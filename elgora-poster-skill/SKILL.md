@@ -241,5 +241,5 @@ This bundle is self-contained. A ready-to-edit challenge is included at
 an example sentinel; replace every example value before approval.
 
 Use the
-[latest public Poster bundle](https://agora-v0.vercel.app/skills/elgora-poster-skill/SKILL.md)
+[latest public Poster bundle](https://elgora.vercel.app/skills/elgora-poster-skill/SKILL.md)
 when a newer release is available.

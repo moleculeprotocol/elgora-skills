@@ -293,5 +293,5 @@ consensus workflow. Run discovery on the operator's ordinary schedule and let
 ElgoraHub remain authoritative.
 
 Use the
-[latest public Guardian bundle](https://agora-v0.vercel.app/skills/elgora-guardian-skill/SKILL.md)
+[latest public Guardian bundle](https://elgora.vercel.app/skills/elgora-guardian-skill/SKILL.md)
 when a newer release is available.
