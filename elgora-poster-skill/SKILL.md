@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.1"
+  version: "1.4.2"
   updated: "2026-09-07"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -138,6 +138,12 @@ which inputs to use, how to calculate and interpret the result (including any
 relevant range, units, pass threshold, and tolerance), and how the result
 selects the winner or breaks ties. If no, write clear pass/fail criteria and do
 not invent a score.}
+
+{If acceptance requires independent laboratory results or proof that a candidate
+sequence belongs to the tested physical sample, explain how Guardians establish
+that origin and sample linkage independently of the Solver's assertions.
+Matching Solver-supplied hashes alone cannot prove either. Do not require new
+laboratory evidence for a historical-data analysis that makes no such claim.}
 
 {For each criterion, state the result the Solver must deliver, the evidence
 required to establish it, and how the Guardian decides whether it meets the
