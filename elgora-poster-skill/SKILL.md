@@ -2,8 +2,8 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.0"
-  updated: "2026-09-04"
+  version: "1.4.1"
+  updated: "2026-09-07"
   profile: elgora_markdown_bounty_challenge_v0
 ---
 
@@ -31,6 +31,37 @@ Collect these decisions before producing a final page:
 - the deterministic winner and tie-break rule;
 - the reward amount in the configured escrow token; and
 - an absolute Submission deadline with timezone.
+
+If the Poster describes only the desired outcome, ask what evidence would
+establish it and what would be insufficient. Clarify whether the Poster wants
+predictions, observations, or a demonstrated practical effect when that changes
+what Solvers submit or Guardians judge. For experimental claims, resolve only
+questions that affect acceptance or ranking:
+- Which sequence or structure identifies the candidate, and how is it linked
+  to the physical sample and assay result?
+- Who generated the measurements, and how can Guardians verify that origin?
+- Which controls and quality checks make measurements usable, and what happens
+  when they fail?
+- Which raw data, processing steps, units, and calculation support the result?
+- How do missing measurements, conflicting repeats, uncertain estimates, or
+  differing assay conditions affect eligibility and comparison?
+- Which eligible result wins, and how are ties resolved?
+
+Do not treat a hash as proof of experiment origin or sample identity. A signature
+identifies a signing key; the page must explain why that key is trusted for the
+claimed evidence. Check the whole draft before asking an already-answered
+question. Historical-data analysis does not require new experiments when it
+makes no claim about newly tested samples.
+
+See [the protein-binding example](examples/protein_binding.md) for a bounded
+analysis of published 2026 experimental results. Its selection rules are
+illustrative, not a laboratory protocol, specialist approval, or evidence of a
+new binder. Adapt the claim and rules with the Poster before publication.
+
+Explain unresolved choices in ordinary language and let the Poster decide.
+Do not invent scores, thresholds, scientific claims, or experimental protocols
+to fill gaps. If a necessary scientific choice needs specialist input, identify
+that need and keep the draft provisional until the choice is resolved.
 
 The final frontmatter must contain `escrow_amount` as an integer in the escrow
 token's smallest units, using that token's decimals. Current v0 uses USDC with
@@ -108,9 +139,23 @@ relevant range, units, pass threshold, and tolerance), and how the result
 selects the winner or breaks ties. If no, write clear pass/fail criteria and do
 not invent a score.}
 
-1. {Criterion one}
-2. {Criterion two}
-3. {Criterion three}
+{For each criterion, state the result the Solver must deliver, the evidence
+required to establish it, and how the Guardian decides whether it meets the
+requirement. Distinguish predictions from observations when that affects the
+claim. State any evidence-quality checks and how missing, uncertain, or
+conflicting results affect acceptance or ranking. Include a threshold or
+tolerance only when that decision needs one.}
+
+{For experimental evidence, identify its producer and how Guardians verify its
+origin and candidate-to-sample linkage; specify the required raw data,
+processing, units, controls, and quality checks. State how failed controls,
+missing or conflicting measurements, uncertainty, and differing conditions
+change eligibility or comparison. Apply only checks relevant to the claim;
+do not invent a protocol or require new experiments for historical analysis.}
+
+Evaluate evidence origin and candidate linkage first, then measurement quality,
+then the stated acceptance criteria. Rank only results that satisfy those
+requirements; a better score cannot compensate for ineligible evidence.
 
 ## Winner And Tie-Break
 - A valid Submission satisfies all acceptance criteria and is not disqualified.

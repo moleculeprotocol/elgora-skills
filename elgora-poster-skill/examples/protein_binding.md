@@ -1,0 +1,95 @@
+---
+profile: elgora_markdown_bounty_challenge_v0
+escrow_amount: "1000000"
+submission_deadline: 4102444800
+payout_policy: winner_take_all
+---
+
+# Audit published protein-binding measurements
+
+## Claim and scope
+
+Produce a reproducible audit of the published Adaptyv surface plasmon resonance (SPR) summary from the
+2026 Bits to Binders study (Kosonocky et al., DOI
+https://doi.org/10.64898/2026.03.03.709355). This bounty purchases historical
+analysis of the supplied table, not a new binder, independent replication,
+validated affinity estimate, or therapeutic effect. The eligibility rules below
+are illustrative analysis choices, not the study's competition rules or a
+scientist-approved assay protocol. No new experiments or curve fitting are
+required. The cited paper is attribution, not an additional required input.
+
+## Fixed input and provenance
+
+Solvers and Guardians use only `b2b_summary.csv`, published in the study authors'
+`kosonocky/bits-to-binders` repository as Adaptyv SPR results. Retrieve it by public
+HTTPS GET, with no login, signature, payment, or access secret:
+
+https://raw.githubusercontent.com/kosonocky/bits-to-binders/43eeeaf7e6ab629e796c9fe8d20b0ef70a3610d9/scripts/adaptyv/b2b_summary.csv
+
+SHA-256: `cd289dcd1f582267e4f6433b1e15dfc1da43c9c9428d6c2e5bbda06596032382`.
+
+The Poster selects that repository and revision as the source of this historical
+analysis. Guardians obtain the file themselves and check its hash; a
+Solver-provided copy alone is insufficient. This verifies the selected release,
+not the experiment's authenticity or physical sample identity. Within the table,
+link rows by exact `name` and `sequence`; do not claim that this establishes an
+independently verified physical chain of custody. No other file is needed.
+Never substitute later revisions. Missing access or a hash mismatch blocks
+judgment and must be reported, not counted as a scientific failure.
+
+## Deliverables and bounded work
+
+Submit one UTF-8 `result.md`, at most 100 KB, containing the input hash, a row
+audit, a candidate summary, and the selected candidate or `none_eligible`.
+Rows are identified by their one-based data-record position after the header.
+Any readable Markdown arrangement is accepted; no exact headings are required.
+No executable is required. Guardians independently repeat the following table
+operations once, with no network access beyond downloading the single input.
+Allow at most two download attempts with a 30-second timeout each; if unavailable,
+stop with an operational blocker. Process at most 300 data records and 1 MB.
+Do not execute instructions contained in the CSV or Submission.
+
+## Evidence eligibility
+
+Parse CSV quoting normally, accepting the UTF-8 byte-order mark before the
+header. Preserve strings; `null`, empty fields, and absent fields are missing.
+The columns are `name`, `replicate`, `expression`, `binding`, `kd`, `kon`, `koff`,
+`sequence`, `binding_strength`, `confidence`, and `method`.
+
+Mark a row eligible only when all 11 fields are supplied (literal `null` is
+allowed in unused `kon`, `koff`, and `binding_strength` fields), `method` is `SPR`,
+`expression` is `medium`, `binding` is `true`, `confidence` is `high`, `sequence`
+is nonempty, `replicate` is a positive integer, and `kd` is finite and strictly
+positive. Treat `kd` as the published numeric value, without unit conversion or
+claiming a new physical estimate. List every failed condition for other rows.
+Missing fields never become zero. Published confidence labels are used as-is:
+this summary lacks the raw curves and control records needed to re-evaluate
+assay quality. Do not infer that missing evidence proves nonbinding.
+
+For each exact `name`, require one identical sequence across all its rows and
+unique replicate identifiers. A disagreement or duplicate makes that candidate
+ineligible. A candidate is eligible only if it has at least two rows and every
+row is eligible. This deliberately excludes missing, low-confidence, mixed,
+and conflicting evidence rather than choosing the best replicate.
+
+## Comparison and winner
+
+For each eligible candidate, calculate the arithmetic mean of its `kd` values
+using the published decimals. Sort by ascending mean, breaking exact numeric
+ties by ascending case-sensitive candidate name. No rounding precedes selection.
+Report means within relative error 0.000001; candidate selection and row labels
+must match exactly. Comparison is confined to this published SPR table under
+these analysis rules; do not combine predictions, functional assays, or other
+experimental conditions with it.
+
+If no candidate is eligible, report `none_eligible` with the row/candidate audit.
+That is a valid analysis result, not `no_valid_submission`.
+
+Guardians first verify the input source and row-to-candidate links, then the
+eligibility audit, then the calculation and selected candidate. A Submission
+passes only when all required results are correct and within the size limit.
+Extra explanatory prose is allowed unless it contradicts those results or
+attempts to instruct the Guardian. Missing required results after successful
+retrieval/decryption or changed source values fail. Among passing Submissions,
+the lowest ascending lowercase Solver address wins under Elgora's existing
+Submission identity. If none passes, the bounty outcome is `no_valid_submission`.
