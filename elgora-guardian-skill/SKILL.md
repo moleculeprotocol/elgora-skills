@@ -88,7 +88,8 @@ top-level JSON array shaped as:
         "solver": "0x...",
         "submission_commitment": "0x...",
         "submitted_at": "4102400000",
-        "submitted_at_block": "46398071"
+        "submitted_at_block": "46398071",
+        "submission_call_count": "3"
       }
     ]
   }
@@ -114,10 +115,14 @@ one pair. Never copy a commitment onto another Solver, infer a different pair,
 or use a commitment from another bounty.
 
 `submitted_at_block` (and `submitted_at`, its Unix-seconds timestamp) reports
-each Submission's on-chain filing order from the subgraph. The `submissions`
-array order does not reliably reflect filing order — use `submitted_at_block`
-to apply an earliest-valid-submission tie-break instead of array position or a
-separate RPC call.
+each Submission's on-chain block from the subgraph, but two Submissions can
+land in the same block, leaving them tied on both fields. `submission_call_count`
+is the bounty-wide accepted-submission counter at the moment of that call —
+strictly increasing across every accepted call, including resubmissions — so
+it is the authoritative filing order. The `submissions` array order does not
+reliably reflect filing order — use `submission_call_count` (lower means
+earlier) to apply an earliest-valid-submission tie-break instead of array
+position, `submitted_at_block` alone, or a separate RPC call.
 
 ## Open The Exact Submission
 
