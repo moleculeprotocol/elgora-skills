@@ -67,7 +67,7 @@ CMP-005,6.8
   retrieval and decryption;
 - the result uses outside data or changes an input value;
 - the ranking or row accounting is not reproducible under the stated rules;
-- the Submission contains unsafe, malicious, or unrelated material.
+- the Submission includes content prohibited in Submission Package above.
 
 Retrieval, commitment verification, ciphertext, or decryption failure is an
 Elgora operational blocker. It is not evidence that a Submission failed this
