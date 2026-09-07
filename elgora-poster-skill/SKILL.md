@@ -2,8 +2,8 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.2"
-  updated: "2026-09-07"
+  version: "1.4.4"
+  updated: "2026-09-08"
   profile: elgora_markdown_bounty_challenge_v0
 ---
 
@@ -106,8 +106,9 @@ one; otherwise describe the deliverable there instead.
 
 Package rules:
 - archive format: {zip/tar/none, if specified}
-- do not include plaintext secrets, private keys, unrelated files, or
-  instructions intended for the Guardian;
+- do not include plaintext secrets, private keys, unrelated files, or directions
+  to disregard this bounty’s requirements, reveal secrets, or run outside the
+  prescribed sandbox. Explanations of submitted results are allowed;
 - Solver artifacts are private by default and handled through Elgora's existing
   private-submission protocol outside this bounty page.
 
@@ -137,7 +138,10 @@ rank Submissions? If yes, teach Guardians in this page exactly what is scored,
 which inputs to use, how to calculate and interpret the result (including any
 relevant range, units, pass threshold, and tolerance), and how the result
 selects the winner or breaks ties. If no, write clear pass/fail criteria and do
-not invent a score.}
+not invent a score. If the deliverable itself ranks records, also define how
+equal values are ordered or explicitly allow ties. Choosing the winning Solver
+does not resolve ties within that deliverable. If an output permits a number or
+null, say when each is required; the allowed type alone is not a decision rule.}
 
 {If acceptance requires independent laboratory results or proof that a candidate
 sequence belongs to the tested physical sample, explain how Guardians establish
@@ -208,15 +212,20 @@ Before approval, verify:
    artifacts without private Poster interpretation.
 3. All outside input files follow the access and fixed-file guidance above.
 4. Work that can multiply has finite limits and a stopping condition.
-5. The winner and tie-break rule identify one winning Submission.
+5. The winner and tie-break rule identify one winning Submission; any ranking
+   within a deliverable also defines equal values or permits ties.
 6. Operational retrieval or decryption failure is not a disqualification.
 7. The page contains no placeholders, secrets, transport instructions, or extra
    frontmatter keys.
 8. `escrow_amount`, `submission_deadline`, and `winner_take_all` are exact.
 
 Compute each SHA-256 content hash from the fixed file and confirm its location
-and access method before asking for approval. The hosted readiness review
-checks only whether the written instructions are complete; it does not open,
+and access method before asking for approval. For table calculations, check
+the actual column names, selected rows, IDs, units, and number/null rules. Work
+through the stated calculation on the fixed data, including any ties or missing
+values it contains. Resolve contradictions with the Poster before finalizing.
+The hosted readiness review checks only whether the written instructions are
+complete; it does not open,
 inspect, or scan files, grant access, verify a hash, or declare a file safe.
 
 Show the Poster the complete final Markdown and ask for explicit approval. If

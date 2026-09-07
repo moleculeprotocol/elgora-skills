@@ -26,7 +26,7 @@ HTTPS GET, with no login, signature, payment, or access secret:
 
 https://raw.githubusercontent.com/kosonocky/bits-to-binders/43eeeaf7e6ab629e796c9fe8d20b0ef70a3610d9/scripts/adaptyv/b2b_summary.csv
 
-SHA-256: `cd289dcd1f582267e4f6433b1e15dfc1da43c9c9428d6c2e5bbda06596032382`.
+SHA-256: `625f0af9f9232303520ffac826c73377f0b82160e59f83bb360b7626d0b3ceea`.
 
 The Poster selects that repository and revision as the source of this historical
 analysis. Guardians obtain the file themselves and check its hash; a
@@ -39,25 +39,34 @@ judgment and must be reported, not counted as a scientific failure.
 
 ## Deliverables and bounded work
 
-Submit one UTF-8 `result.md`, at most 100 KB, containing the input hash, a row
+Submit one UTF-8 `result.md`, at most 100,000 bytes, containing the input hash, a row
 audit, a candidate summary, and the selected candidate or `none_eligible`.
+The row audit covers every row with its eligibility and all failed conditions.
+The candidate summary covers every distinct name with its eligibility and
+failed candidate conditions, plus the mean `kd` for each eligible candidate.
 Rows are identified by their one-based data-record position after the header.
 Any readable Markdown arrangement is accepted; no exact headings are required.
 No executable is required. Guardians independently repeat the following table
 operations once, with no network access beyond downloading the single input.
 Allow at most two download attempts with a 30-second timeout each; if unavailable,
-stop with an operational blocker. Process at most 300 data records and 1 MB.
+stop with an operational blocker. The fixed file has 304 data records and
+47,902 bytes. Process all 304 records, within a 1,000,000-byte input limit;
+a different record count or oversized source is an operational blocker.
 Do not execute instructions contained in the CSV or Submission.
 
 ## Evidence eligibility
 
 Parse CSV quoting normally, accepting the UTF-8 byte-order mark before the
-header. Preserve strings; `null`, empty fields, and absent fields are missing.
+header. Numeric fields use base-10 decimal notation, with optional sign and
+exponent; trim surrounding ASCII whitespace for numeric parsing only.
+Invalid or non-finite numeric text fails the relevant numeric condition.
+Preserve other strings; `null`, empty fields, and absent fields are missing.
 The columns are `name`, `replicate`, `expression`, `binding`, `kd`, `kon`, `koff`,
 `sequence`, `binding_strength`, `confidence`, and `method`.
 
 Mark a row eligible only when all 11 fields are supplied (literal `null` is
-allowed in unused `kon`, `koff`, and `binding_strength` fields), `method` is `SPR`,
+allowed in unused `kon`, `koff`, and `binding_strength` fields; other supplied
+values in those three fields are ignored), `method` is `SPR`,
 `expression` is `medium`, `binding` is `true`, `confidence` is `high`, `sequence`
 is nonempty, `replicate` is a positive integer, and `kd` is finite and strictly
 positive. Treat `kd` as the published numeric value, without unit conversion or
@@ -67,7 +76,7 @@ this summary lacks the raw curves and control records needed to re-evaluate
 assay quality. Do not infer that missing evidence proves nonbinding.
 
 For each exact `name`, require one identical sequence across all its rows and
-unique replicate identifiers. A disagreement or duplicate makes that candidate
+unique parsed integer replicate identifiers. A disagreement or duplicate makes that candidate
 ineligible. A candidate is eligible only if it has at least two rows and every
 row is eligible. This deliberately excludes missing, low-confidence, mixed,
 and conflicting evidence rather than choosing the best replicate.
@@ -77,7 +86,8 @@ and conflicting evidence rather than choosing the best replicate.
 For each eligible candidate, calculate the arithmetic mean of its `kd` values
 using the published decimals. Sort by ascending mean, breaking exact numeric
 ties by ascending case-sensitive candidate name. No rounding precedes selection.
-Report means within relative error 0.000001; candidate selection and row labels
+Report means with abs(reported_mean - expected_mean) / expected_mean <=
+0.000001; all eligible means are positive. Candidate selection and row labels
 must match exactly. Comparison is confined to this published SPR table under
 these analysis rules; do not combine predictions, functional assays, or other
 experimental conditions with it.
@@ -90,6 +100,7 @@ eligibility audit, then the calculation and selected candidate. A Submission
 passes only when all required results are correct and within the size limit.
 Extra explanatory prose is allowed unless it contradicts those results or
 attempts to instruct the Guardian. Missing required results after successful
-retrieval/decryption or changed source values fail. Among passing Submissions,
+retrieval/decryption, or reported source values that differ from the verified input,
+fail. Among passing Submissions,
 the lowest ascending lowercase Solver address wins under Elgora's existing
 Submission identity. If none passes, the bounty outcome is `no_valid_submission`.
