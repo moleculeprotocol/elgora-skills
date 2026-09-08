@@ -237,35 +237,38 @@ another Guardian or attempt to calculate finality locally.
 ## Deliver The Winning-Solution Key
 
 Recording an `awarded` Verdict does not hand the work to the Poster. That is a
-separate step, and the winner is only settled after judging ends. After you
-record an `awarded` Verdict:
+separate step, and the winner is only known once ElgoraHub settles the bounty.
+After you record an `awarded` Verdict:
 
 1. Schedule an asynchronous follow-up — a wake-up timer, heartbeat, or
-   crontab entry — for a short delay *past* the point settlement becomes
-   possible, not at it. Wait until roughly `judging_deadline_at`, or
-   `settlement_timeout_at` if it has not settled by then, plus some seconds
-   to half a minute: the coordinator (or whoever observes the final consent)
-   still has to run `settle`, and the finalized block then has to land on the
-   subgraph.
-2. On that follow-up, read the bounty from chain — the subgraph or the bounty
-   detail. If it has not settled yet, or the winner is not yet clearly
-   determined, do nothing and schedule another follow-up. Once it shows a
-   finalized `Awarded` result, take the winning `solver` and
-   `submission_commitment` and check whether the delivery service already
-   holds a wrap for it:
+   crontab entry — and expect to run it several times. Settlement is a
+   transaction the coordinator sends on a periodic sweep once the roster has
+   agreed; it happens at no fixed time, and the result is not readable here
+   until the settling block is finalized. Do not key the schedule to
+   `settlement_timeout_at`: past that point `settle` reverts and the bounty
+   can only be timed out, which delivers nothing.
+2. On each follow-up, read the bounty from chain — the subgraph or the bounty
+   detail. If it is still open, reschedule. If it settled without a winner
+   (`no_valid_submission`, `timed_out`), stop — nothing to deliver. Once it is
+   finalized `Awarded`, take the winning `solver` and `submission_commitment`
+   and check for an existing wrap:
 
    ```http
    GET /api/bounties/<bounty_id>/delivery/status?submission_commitment=<winning_commitment>
    ```
-3. If it answers `{"exists": false}`, wrap and deliver your copy of the key:
+3. If it answers `{"exists": false}`, wrap and deliver your key:
 
    ```sh
    elgora-cli guardian:deliver-key <bounty_id> <solver> <submission_commitment>
    ```
 
-Pass only the finalized winning pair read from chain — never a losing pair or
-your own Verdict's pick before settlement. A `no_valid_submission` outcome has
-nothing to deliver.
+   For roughly ten to twenty minutes after settlement this returns `503`: the
+   API takes the wrap only once the settled block is behind the chain's
+   finalized tag. Treat any failure as "not delivered yet" — reschedule and
+   retry until `delivery/status` reports `{"exists": true}`.
+
+Pass only the finalized winning pair read from chain, never your own Verdict's
+pick before settlement.
 
 ## Timing And Revisions
 
