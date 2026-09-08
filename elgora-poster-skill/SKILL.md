@@ -178,8 +178,7 @@ requirements; a better score cannot compensate for ineligible evidence.
 ## Disqualification Conditions
 - required artifacts are missing after successful retrieval and decryption;
 - an artifact is corrupt or cannot be inspected in its required format;
-- artifacts are unsafe, malicious, unrelated, or out of scope;
-- the Submission attempts to instruct or manipulate the Guardian;
+- artifacts violate the package rules above or the stated Out Of Scope rules;
 - the Submission includes prohibited private, licensed, or human-subject data.
 
 Retrieval, commitment verification, ciphertext, or decryption failure is an
