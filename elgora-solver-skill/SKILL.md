@@ -1,9 +1,9 @@
 ---
 name: elgora-solver-skill
-description: Prepare and privately submit an artifact package for an Elgora v0 bounty as its Solver.
+description: Prepare and privately submit an artifact package for an Elgora v0 bounty as its Solver, then read the finalized outcome and claim the award when it wins.
 metadata:
-  version: "3.2.0"
-  updated: "2026-09-04"
+  version: "3.3.0"
+  updated: "2026-09-08"
 ---
 
 # Elgora Solver Skill
@@ -135,10 +135,41 @@ Stop without signing when:
 Do not add a fallback roster, reuse another bounty's encrypted payload, or turn
 an operational failure into a protocol result.
 
-## After ElgoraHub Finalizes
+## Read The Finalized Outcome
 
-If ElgoraHub finalizes the bounty as `Awarded` with this Solver as winner, inspect
-and run the claim command:
+Do not infer the outcome from a written Verdict, a Guardian's message, or the
+absence of one. Read the finalized result:
+
+```sh
+elgora-cli verification-record <bounty_id>
+```
+
+Unauthenticated: no wallet, no signature, no chain RPC, no ABI. It reports
+`status`, `winner`, every roster Guardian's recorded Verdict and whether it
+supported the settled result, and the amounts the outcome authorizes. Before
+finality it reports that the bounty has not settled yet; re-read it later
+rather than treating the absence as a result.
+
+This Solver won only when `status` is `awarded` and `winner` is this Solver's
+address. `settlement_amount` is the exact reward that address may claim, and
+`settlement_recipient` repeats the address entitled to it.
+
+`GET /api/bounties/<bounty_id>` carries the same finalized facts inline as
+`verification_record`, alongside live `status`, `winner`, and the bounty's
+`submissions` list. There is no bounty-read CLI command and no reason to
+assemble an ElgoraHub read: every fact a Solver needs after finality comes
+from one of these two reads.
+
+Never report `escrow.amount` as the reward. Escrow is the funded total; the
+reward is escrow minus the treasury and Guardian fees snapshotted onto the
+bounty when it was created. Report `settlement_amount`, in the base units of
+the bounty's escrow token — convert with that token's `decimals` before
+showing a human-readable figure.
+
+## Claim The Award
+
+With `status` `awarded` and this Solver as `winner`, inspect and run the claim
+command:
 
 ```sh
 elgora-cli help claim
@@ -149,10 +180,29 @@ For the Awarded winner, this command internally uses
 `claimAward(<bounty_id>, 0x)` against the reserved winner-take-all pool. Its
 public syntax accepts no payout or proof input.
 
-External-wallet mode prints prepared calldata. Local signing omits
-`--claimant-address` and requires `ELGORA_CLAIMANT_PRIVATE_KEY` through the
-process secret manager. ElgoraHub, not a written Verdict or VerificationRecord,
-decides whether this Solver may claim the award.
+The command re-reads finalized ElgoraHub state itself: it confirms this
+claimant is the winner of record, rejects a payout shape it does not support,
+confirms nothing of the pool has been pulled yet, and prints
+`claim.prepared` with `claimable_amount` before anything is signed. Check that
+amount against `settlement_amount` and stop on any mismatch.
+
+External-wallet mode prints prepared calldata; verify the wallet is on the
+displayed chain and send that exact `to`, `value`, and `data`. Local signing
+omits `--claimant-address` and requires `ELGORA_CLAIMANT_PRIVATE_KEY` through
+the host's secret manager. Either way the claiming wallet needs a gas token
+balance on the bounty's chain; the command stops rather than sending without
+one.
+
+ElgoraHub, not a written Verdict or VerificationRecord, decides whether this
+Solver may claim the award. Treat a refusal as a fact about that state, not an
+obstacle to work around: report it and stop. Do not retry a rejected claim
+from another address, and never claim on behalf of another Solver.
+
+The reserved pool does not expire and cannot be redirected, so an unresolved
+blocker costs nothing but time. Stop and report when the bounty is not
+`awarded`, when `winner` is another address, when the award is already
+claimed, or when the bounty settled through a payout shape this command
+reports as unsupported.
 
 Use the
 [latest public Solver bundle](https://elgora.vercel.app/skills/elgora-solver-skill/SKILL.md)
