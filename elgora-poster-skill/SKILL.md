@@ -161,7 +161,10 @@ origin and candidate-to-sample linkage; specify the required raw data,
 processing, units, controls, and quality checks. State how failed controls,
 missing or conflicting measurements, uncertainty, and differing conditions
 change eligibility or comparison. Apply only checks relevant to the claim;
-do not invent a protocol or require new experiments for historical analysis.}
+do not invent a protocol or require new experiments for historical analysis.
+When laboratory work is needed, state who arranges and pays for it, how Solvers
+submit candidates and receive evidence before the final deadline, and whether
+earlier cutoffs affect eligibility and how compliance is established.}
 
 Evaluate evidence origin and candidate linkage first, then measurement quality,
 then the stated acceptance criteria. Rank only results that satisfy those
