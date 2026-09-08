@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.4"
+  version: "1.4.5"
   updated: "2026-09-08"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -168,9 +168,9 @@ State how failed controls, missing or conflicting measurements, uncertainty,
 and differing conditions
 change eligibility or comparison. Apply only checks relevant to the claim;
 do not invent a protocol or require new experiments for historical analysis.
-When laboratory work is needed, state who arranges and pays for it, how Solvers
-submit candidates and receive evidence before the final deadline, and whether
-earlier cutoffs affect eligibility and how compliance is established.}
+State any lab restrictions the Poster requires; otherwise Solvers choose the
+lab. Lab booking and payment are Solver responsibilities, not required
+challenge details.}
 
 Evaluate evidence origin and candidate linkage first, then measurement quality,
 then the stated acceptance criteria. Rank only results that satisfy those
