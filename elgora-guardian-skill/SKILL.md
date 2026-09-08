@@ -306,6 +306,12 @@ or when another Guardian already delivered the same pair, is a harmless no-op.
 ElgoraHub decides whether the pair is the finalized winner and the API rejects
 any other; never redirect a key to a different Solver or commitment.
 
+Deliver again as well if a Poster reports retrieval failing while
+`delivery/status` still says `{"exists": true}`. That check only confirms a
+wrap row exists, not that it opens with the deployment's current delivery key
+— for example after a key rotation — and re-delivering stores a fresh wrap
+under the current key.
+
 ## Final Results
 
 ElgoraHub may finalize as:
