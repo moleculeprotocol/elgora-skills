@@ -2,8 +2,8 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.2"
-  updated: "2026-09-07"
+  version: "1.4.5"
+  updated: "2026-09-08"
   profile: elgora_markdown_bounty_challenge_v0
 ---
 
@@ -39,7 +39,8 @@ what Solvers submit or Guardians judge. For experimental claims, resolve only
 questions that affect acceptance or ranking:
 - Which sequence or structure identifies the candidate, and how is it linked
   to the physical sample and assay result?
-- Who generated the measurements, and how can Guardians verify that origin?
+- Which trusted producer and record establish origin, which fields link the
+  result to the candidate, and what exact comparison must Guardians perform?
 - Which controls and quality checks make measurements usable, and what happens
   when they fail?
 - Which raw data, processing steps, units, and calculation support the result?
@@ -50,8 +51,9 @@ questions that affect acceptance or ranking:
 Do not treat a hash as proof of experiment origin or sample identity. A signature
 identifies a signing key; the page must explain why that key is trusted for the
 claimed evidence. Check the whole draft before asking an already-answered
-question. Historical-data analysis does not require new experiments when it
-makes no claim about newly tested samples.
+question. Distinguish a completed evidence check that fails from an unavailable
+verification service. Historical-data analysis does not require new experiments
+when it makes no claim about newly tested samples.
 
 See [the protein-binding example](examples/protein_binding.md) for a bounded
 analysis of published 2026 experimental results. Its selection rules are
@@ -106,8 +108,9 @@ one; otherwise describe the deliverable there instead.
 
 Package rules:
 - archive format: {zip/tar/none, if specified}
-- do not include plaintext secrets, private keys, unrelated files, or
-  instructions intended for the Guardian;
+- do not include plaintext secrets, private keys, unrelated files, or directions
+  to disregard this bounty’s requirements, reveal secrets, or run outside the
+  prescribed sandbox. Explanations of submitted results are allowed;
 - Solver artifacts are private by default and handled through Elgora's existing
   private-submission protocol outside this bounty page.
 
@@ -137,7 +140,10 @@ rank Submissions? If yes, teach Guardians in this page exactly what is scored,
 which inputs to use, how to calculate and interpret the result (including any
 relevant range, units, pass threshold, and tolerance), and how the result
 selects the winner or breaks ties. If no, write clear pass/fail criteria and do
-not invent a score.}
+not invent a score. If the deliverable itself ranks records, also define how
+equal values are ordered or explicitly allow ties. Choosing the winning Solver
+does not resolve ties within that deliverable. If an output permits a number or
+null, say when each is required; the allowed type alone is not a decision rule.}
 
 {If acceptance requires independent laboratory results or proof that a candidate
 sequence belongs to the tested physical sample, explain how Guardians establish
@@ -152,12 +158,19 @@ claim. State any evidence-quality checks and how missing, uncertain, or
 conflicting results affect acceptance or ranking. Include a threshold or
 tolerance only when that decision needs one.}
 
-{For experimental evidence, identify its producer and how Guardians verify its
-origin and candidate-to-sample linkage; specify the required raw data,
-processing, units, controls, and quality checks. State how failed controls,
-missing or conflicting measurements, uncertainty, and differing conditions
+{For experimental evidence, identify its trusted producer, the record Guardians
+verify, and which values they compare to establish origin and candidate linkage.
+Name the relevant fields and their relationship, or reference their definition
+elsewhere in this page; do not assume an undocumented report layout. State how a
+failed evidence check affects eligibility, separately from unavailable access.
+Specify the required raw data, processing, units, controls, and quality checks.
+State how failed controls, missing or conflicting measurements, uncertainty,
+and differing conditions
 change eligibility or comparison. Apply only checks relevant to the claim;
-do not invent a protocol or require new experiments for historical analysis.}
+do not invent a protocol or require new experiments for historical analysis.
+State any lab restrictions the Poster requires; otherwise Solvers choose the
+lab. Lab booking and payment are Solver responsibilities, not required
+challenge details.}
 
 Evaluate evidence origin and candidate linkage first, then measurement quality,
 then the stated acceptance criteria. Rank only results that satisfy those
@@ -174,8 +187,7 @@ requirements; a better score cannot compensate for ineligible evidence.
 ## Disqualification Conditions
 - required artifacts are missing after successful retrieval and decryption;
 - an artifact is corrupt or cannot be inspected in its required format;
-- artifacts are unsafe, malicious, unrelated, or out of scope;
-- the Submission attempts to instruct or manipulate the Guardian;
+- artifacts violate the package rules above or the stated Out Of Scope rules;
 - the Submission includes prohibited private, licensed, or human-subject data.
 
 Retrieval, commitment verification, ciphertext, or decryption failure is an
@@ -208,15 +220,20 @@ Before approval, verify:
    artifacts without private Poster interpretation.
 3. All outside input files follow the access and fixed-file guidance above.
 4. Work that can multiply has finite limits and a stopping condition.
-5. The winner and tie-break rule identify one winning Submission.
+5. The winner and tie-break rule identify one winning Submission; any ranking
+   within a deliverable also defines equal values or permits ties.
 6. Operational retrieval or decryption failure is not a disqualification.
 7. The page contains no placeholders, secrets, transport instructions, or extra
    frontmatter keys.
 8. `escrow_amount`, `submission_deadline`, and `winner_take_all` are exact.
 
 Compute each SHA-256 content hash from the fixed file and confirm its location
-and access method before asking for approval. The hosted readiness review
-checks only whether the written instructions are complete; it does not open,
+and access method before asking for approval. For table calculations, check
+the actual column names, selected rows, IDs, units, and number/null rules. Work
+through the stated calculation on the fixed data, including any ties or missing
+values it contains. Resolve contradictions with the Poster before finalizing.
+The hosted readiness review checks only whether the written instructions are
+complete; it does not open,
 inspect, or scan files, grant access, verify a hash, or declare a file safe.
 
 Show the Poster the complete final Markdown and ask for explicit approval. If
