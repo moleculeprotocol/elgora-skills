@@ -89,7 +89,7 @@ top-level JSON array shaped as:
         "submission_commitment": "0x...",
         "submitted_at": "4102400000",
         "submitted_at_block": "46398071",
-        "submission_call_count": "3"
+        "submission_call_count": 3
       }
     ]
   }
