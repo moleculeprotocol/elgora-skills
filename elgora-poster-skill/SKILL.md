@@ -39,7 +39,8 @@ what Solvers submit or Guardians judge. For experimental claims, resolve only
 questions that affect acceptance or ranking:
 - Which sequence or structure identifies the candidate, and how is it linked
   to the physical sample and assay result?
-- Who generated the measurements, and how can Guardians verify that origin?
+- Which trusted producer and record establish origin, which fields link the
+  result to the candidate, and what exact comparison must Guardians perform?
 - Which controls and quality checks make measurements usable, and what happens
   when they fail?
 - Which raw data, processing steps, units, and calculation support the result?
@@ -50,8 +51,9 @@ questions that affect acceptance or ranking:
 Do not treat a hash as proof of experiment origin or sample identity. A signature
 identifies a signing key; the page must explain why that key is trusted for the
 claimed evidence. Check the whole draft before asking an already-answered
-question. Historical-data analysis does not require new experiments when it
-makes no claim about newly tested samples.
+question. Distinguish a completed evidence check that fails from an unavailable
+verification service. Historical-data analysis does not require new experiments
+when it makes no claim about newly tested samples.
 
 See [the protein-binding example](examples/protein_binding.md) for a bounded
 analysis of published 2026 experimental results. Its selection rules are
@@ -156,10 +158,14 @@ claim. State any evidence-quality checks and how missing, uncertain, or
 conflicting results affect acceptance or ranking. Include a threshold or
 tolerance only when that decision needs one.}
 
-{For experimental evidence, identify its producer and how Guardians verify its
-origin and candidate-to-sample linkage; specify the required raw data,
-processing, units, controls, and quality checks. State how failed controls,
-missing or conflicting measurements, uncertainty, and differing conditions
+{For experimental evidence, identify its trusted producer, the record Guardians
+verify, and which values they compare to establish origin and candidate linkage.
+Name the relevant fields and their relationship, or reference their definition
+elsewhere in this page; do not assume an undocumented report layout. State how a
+failed evidence check affects eligibility, separately from unavailable access.
+Specify the required raw data, processing, units, controls, and quality checks.
+State how failed controls, missing or conflicting measurements, uncertainty,
+and differing conditions
 change eligibility or comparison. Apply only checks relevant to the claim;
 do not invent a protocol or require new experiments for historical analysis.
 When laboratory work is needed, state who arranges and pays for it, how Solvers
