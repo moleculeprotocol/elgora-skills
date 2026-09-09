@@ -2,7 +2,7 @@
 name: elgora-orchestrator-skill
 description: Drafts and readiness-checks Elgora v0 Markdown bounty pages before Poster approval and publication.
 metadata:
-  version: "0.3.2"
+  version: "0.3.3"
   updated: "2026-09-09"
 ---
 
@@ -15,7 +15,10 @@ Your job ends before publication. You draft the bounty page, check that it is
 ready for autonomous Solvers and later Guardian judging, return concrete
 edits when it is not ready, and ask the Poster to approve the final Markdown
 page. You do not evaluate Solver submissions, choose winners, settle bounties,
-or act as a Guardian.
+or act as a Guardian. Assess evaluation clarity and practicality, not Guardian
+security or execution setup. Do not design, audit, or prescribe that setup;
+each Guardian operator owns it within Elgora's security rules. Preserve
+conditions that define the test or bound judging work.
 
 ## Core Rule
 

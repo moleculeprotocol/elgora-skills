@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.7"
+  version: "1.4.8"
   updated: "2026-09-09"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -263,9 +263,13 @@ for a task that only needs direct inspection.}
 Keep prescribed evaluation conditions distinct from implementation details the
 Solver supplies later. The challenge must still explain how success is judged
 and bound required judging work. Do not replace required reproduction with an
-easier proxy. Guardian operators choose their isolation setup under the
-existing security rules; name required external runtime resources without
-requesting host execution or broader access.
+easier proxy. Your drafting review concerns evaluation clarity and practicality,
+not designing or auditing Guardian security and execution setup. Each Guardian
+operator owns that setup within Elgora's security rules. Do not prescribe
+isolation tools, network enforcement or filesystem mounts. Keep versions,
+offline behavior or resource budgets when they define the test or bound judging;
+name required external runtime resources without requesting host execution or
+broader access.
 
 ## Readiness Check
 
