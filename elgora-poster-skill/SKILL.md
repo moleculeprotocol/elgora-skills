@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.9"
+  version: "1.4.10"
   updated: "2026-09-09"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -20,11 +20,18 @@ Verdict, settle a bounty, or invent another payout path.
 
 ## Draft The Challenge
 
-Write a readable title and short prose overview of the task and desired result
-for the Poster to approve with the challenge. Use Summary for that overview;
-add Challenge Context only when more explanation is needed. Reuse equivalent
-existing introductory text instead of requiring a duplicate summary. The
-frontend displays approved text, not an AI-generated description.
+Draft a readable title and five core parts for Poster approval: Summary,
+Challenge details, Deliverables, Acceptance Criteria, and How is the winner
+selected? Summary is a short overview. Challenge details explains the full
+task, scope, relevant definitions and intended result. All core content is
+required; extra history or motivation is optional. Keep simple tasks brief
+and reuse information already clear elsewhere on the page without repetition.
+The frontend displays approved text, not an AI-generated description.
+
+Use the full nine-section template below. Choose supporting sections and
+subsections according to the task, asking for missing information only when
+needed to explain or evaluate it. The five core template sections open by
+default in the challenge UI; relevant supporting sections remain expandable.
 
 Establish the desired result, required deliverables, usable acceptance and
 winner rules, reward, and deadline before final approval. Ask about inputs,
@@ -85,8 +92,9 @@ encryption internals, wallet UI steps, or a Solver's private method. Use only
 
 ## Embedded V0 Challenge Template
 
-Use the shared core headings below for consistent bounty pages. Remove
-inapplicable sections and suggested subsections instead of asking for `None`.
+Use the shared core headings below for consistent bounty pages. Fill the five
+core parts; remove inapplicable supporting sections and suggested subsections
+instead of asking for `None`.
 Keep the exact frontmatter. The hosted review checks sufficient, judgeable
 content, not heading spelling, order or count. Acceptance and judging criteria
 must be clear and followable; scoring, evidence, formats and execution details
@@ -106,8 +114,11 @@ payout_policy: winner_take_all
 ## Summary
 {One short paragraph explaining the scientific task and desired result.}
 
-## Challenge Context
-{The background, goal, and what a useful answer would accomplish.}
+## Challenge details
+{Explain the task in full: what the Solver must accomplish, its scope,
+relevant definitions and the intended result. Refer to Deliverables and
+Acceptance Criteria for their specific rules instead of duplicating them.
+Keep simple tasks brief; add history or motivation only when useful.}
 
 ### Definitions And Scope
 {Define terms, record identities, population, and units that affect the result.
@@ -217,7 +228,7 @@ Evaluate evidence origin and candidate linkage first, then measurement quality,
 then the stated acceptance criteria. Rank only results that satisfy those
 requirements; a better score cannot compensate for ineligible evidence.
 
-## Winner And Tie-Break
+## How is the winner selected?
 - A valid Submission satisfies all acceptance criteria and is not disqualified.
 - If multiple Submissions are valid, {the Submission with the highest stated
   artifact metric, with ties broken by ascending lowercase Solver address / the
@@ -281,7 +292,8 @@ broader access.
 
 Before approval, verify:
 
-1. A Solver can tell exactly what is being bought and what to submit.
+1. The page supplies a readable title, short summary, full task explanation,
+   deliverables, acceptance criteria and winner-selection rules.
 2. Every criterion is decidable from the challenge, listed inputs, and opened
    artifacts without private Poster interpretation.
 3. All outside input files follow the access and fixed-file guidance above.

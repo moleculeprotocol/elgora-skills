@@ -11,7 +11,7 @@ payout_policy: winner_take_all
 Analyze the supplied assay table and return a concise, reproducible
 ranking of the three compounds with the highest valid activity scores.
 
-## Challenge Context
+## Challenge details
 The input table contains one measurement per row. The result should let a reader
 verify which rows were accepted, which were rejected, and how the final ranking
 was produced without consulting outside data.
@@ -53,7 +53,7 @@ CMP-005,6.8
 4. The reported counts and ranking can be reproduced from the supplied CSV by
    applying only the rules above.
 
-## Winner And Tie-Break
+## How is the winner selected?
 
 - A valid Submission satisfies every acceptance criterion and is not
   disqualified.

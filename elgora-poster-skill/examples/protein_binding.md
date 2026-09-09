@@ -12,7 +12,7 @@ payout_policy: winner_take_all
 Produce a reproducible audit of the published protein-binding table and select
 a candidate under the analysis rules below.
 
-## Challenge Context
+## Challenge details
 
 ### Definitions And Scope
 
@@ -102,7 +102,7 @@ experimental conditions with it.
 If no candidate is eligible, report `none_eligible` with the row/candidate audit.
 That is a valid analysis result, not `no_valid_submission`.
 
-## Winner And Tie-Break
+## How is the winner selected?
 
 Among passing Submissions,
 the lowest ascending lowercase Solver address wins under Elgora's existing
