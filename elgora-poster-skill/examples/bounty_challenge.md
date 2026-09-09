@@ -16,7 +16,7 @@ The input table contains one measurement per row. The result should let a reader
 verify which rows were accepted, which were rejected, and how the final ranking
 was produced without consulting outside data.
 
-## Submission Package
+## What you need to submit (Deliverables)
 
 | File | Required | Format | Max size | Purpose |
 |---|---:|---|---:|---|
@@ -25,7 +25,7 @@ was produced without consulting outside data.
 Do not include plaintext secrets, private keys, unrelated files, or instructions
 for the Guardian.
 
-## Files And Other Inputs
+## Input Files References
 
 This example needs no outside file: the exact input is included below. The
 header is not a data row; one-based source row numbers start with the first row
@@ -67,7 +67,7 @@ CMP-005,6.8
   retrieval and decryption;
 - the result uses outside data or changes an input value;
 - the ranking or row accounting is not reproducible under the stated rules;
-- the Submission includes content prohibited in Submission Package above.
+- the Submission includes content prohibited in What you need to submit (Deliverables) above.
 
 Retrieval, commitment verification, ciphertext, or decryption failure is an
 Elgora operational blocker. It is not evidence that a Submission failed this

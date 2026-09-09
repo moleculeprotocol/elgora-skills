@@ -2,8 +2,8 @@
 name: elgora-orchestrator-skill
 description: Drafts and readiness-checks Elgora v0 Markdown bounty pages before Poster approval and publication.
 metadata:
-  version: "0.3.0"
-  updated: "2026-09-04"
+  version: "0.3.1"
+  updated: "2026-09-09"
 ---
 
 # Elgora Orchestrator
@@ -31,8 +31,9 @@ Guardian pre-flight process.
 When running inside the Elgora repository, produce a complete Markdown bounty
 page using the v0 template in `packages/core/BOUNTY_CHALLENGE_SPEC.md`. That
 file is the canonical owner for Poster-authored frontmatter publication terms
-and recommended challenge guidance. Do not enforce exact headings or carry a
-second local copy of the template in this internal skill.
+and the required title and nine ordered section headings. Preserve those names
+and order; use conditional subsections only when relevant to judging. Do not
+carry a second local copy of the template in this internal skill.
 
 Do not distribute this internal repo skill to Posters by itself. Posters should
 use the portable Poster bundle at
