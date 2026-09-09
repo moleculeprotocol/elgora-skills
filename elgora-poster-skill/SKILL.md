@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.8"
+  version: "1.4.9"
   updated: "2026-09-09"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -19,6 +19,12 @@ result, claims, and refunds. This skill does not choose a winner, record a
 Verdict, settle a bounty, or invent another payout path.
 
 ## Draft The Challenge
+
+Write a readable title and short prose overview of the task and desired result
+for the Poster to approve with the challenge. Use Summary for that overview;
+add Challenge Context only when more explanation is needed. Reuse equivalent
+existing introductory text instead of requiring a duplicate summary. The
+frontend displays approved text, not an AI-generated description.
 
 Establish the desired result, required deliverables, usable acceptance and
 winner rules, reward, and deadline before final approval. Ask about inputs,
