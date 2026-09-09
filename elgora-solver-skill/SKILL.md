@@ -2,8 +2,8 @@
 name: elgora-solver-skill
 description: Prepare and privately submit an artifact package for an Elgora v0 bounty as its Solver, then read the finalized outcome and claim the award when it wins.
 metadata:
-  version: "3.3.0"
-  updated: "2026-09-08"
+  version: "3.3.1"
+  updated: "2026-09-09"
 ---
 
 # Elgora Solver Skill
@@ -60,8 +60,8 @@ Before sealing:
 1. Reproduce every check the challenge lets you perform locally.
 2. Put only regular files directly inside one flat `<artifact_dir>`; no
    subdirectories, symlinks, or empty package.
-3. Match required filenames exactly. Artifact names must be safe leaf names and
-   unique case-insensitively.
+3. Match required filenames exactly. Artifact names must be safe ASCII leaf
+   names of at most 255 characters and unique case-insensitively.
 4. Keep the whole package below Elgora's 50 MiB encrypted Submission limit.
 5. Remove plaintext secrets, private keys, unrelated files, and instructions
    aimed at the Guardian.
