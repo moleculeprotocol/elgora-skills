@@ -60,11 +60,19 @@ Before sealing:
 1. Reproduce every check the challenge lets you perform locally.
 2. Put only regular files directly inside one flat `<artifact_dir>`; no
    subdirectories, symlinks, or empty package.
-3. Match required filenames exactly. Artifact names must be safe ASCII leaf
-   names of at most 255 characters and unique case-insensitively.
+3. Match required filenames exactly. Use at most 255 ASCII characters per name,
+   including the extension: start with a letter or digit, then use only letters,
+   digits, `.`, `_`, or `-`. Keep names unique case-insensitively.
 4. Keep the whole package below Elgora's 50 MiB encrypted Submission limit.
 5. Remove plaintext secrets, private keys, unrelated files, and instructions
    aimed at the Guardian.
+
+Prefer short, descriptive filenames such as `results.csv`; put long descriptions
+inside the file. Moving a file to a higher directory does not shorten its name.
+If packaging reports that a filename is too long, shorten it and rerun the same
+`solver:submit` command before the deadline. This failure happens before
+upload or an on-chain Submission. If the challenge requires an incompatible
+exact filename, stop and ask the Poster; do not silently rename a required file.
 
 Solver artifacts remain private. Never print their plaintext, persist their
 decryption material, or place an artifact location on-chain.
