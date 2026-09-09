@@ -69,10 +69,10 @@ Before sealing:
 
 Prefer short, descriptive filenames such as `results.csv`; put long descriptions
 inside the file. Moving a file to a higher directory does not shorten its name.
-If packaging reports that a filename is too long, shorten it and rerun the same
-`solver:submit` command before the deadline. This failure happens before
-upload or an on-chain Submission. If the challenge requires an incompatible
-exact filename, stop and ask the Poster; do not silently rename a required file.
+For an oversized filename, shorten it only if the published challenge permits,
+then retry `solver:submit` before the deadline. Validation fails before upload
+or an on-chain Submission. An oversized exact required name cannot be submitted;
+published requirements cannot be changed.
 
 Solver artifacts remain private. Never print their plaintext, persist their
 decryption material, or place an artifact location on-chain.
