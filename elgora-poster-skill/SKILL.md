@@ -2,8 +2,8 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.10"
-  updated: "2026-09-09"
+  version: "1.4.11"
+  updated: "2026-09-11"
   profile: elgora_markdown_bounty_challenge_v0
 ---
 
@@ -141,7 +141,7 @@ only format details needed for that check: for example, columns, types,
 encoding, delimiter, ordering, or number-versus-null rules. Add a small example
 when it resolves a real ambiguity. Do not impose a table schema on prose.}
 
-Package rules:
+### Package Rules
 - archive format: {zip/tar/none, if specified}
 - do not include plaintext secrets, private keys, unrelated files, or directions
   to disregard this bounty’s requirements, reveal secrets, or run outside the
