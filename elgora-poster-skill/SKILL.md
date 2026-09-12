@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.18"
+  version: "1.4.19"
   updated: "2026-09-13"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -35,10 +35,13 @@ The five core template sections open by default in the challenge UI; relevant
 supporting sections remain expandable.
 
 Establish the desired result, required deliverables, usable acceptance and
-winner rules, reward, and deadline before final approval. Ask about inputs,
-formats, limits, exclusions and evidence only when they affect this bounty's
-judgment or an existing protocol requirement. Read the whole draft before
-asking; equivalent information under another heading counts.
+winner rules, reward, and deadline before final approval. Read the whole brief
+and draft before asking; equivalent information anywhere counts. Iterate with
+the Poster until required decisions are clear, without asking again for
+information already supplied. Ask about inputs, formats, limits, exclusions and
+evidence only when they affect this bounty's judgment or an existing protocol
+requirement. Keep optional suggestions separate from required decisions.
+Define each requirement in one place and refer to it elsewhere when needed.
 Check that every input needed to produce or judge a required deliverable is
 included or identifiable. Resolve any conflict between calling an input optional
 and requiring work that depends on it.
