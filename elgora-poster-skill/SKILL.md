@@ -2,8 +2,8 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.17"
-  updated: "2026-09-12"
+  version: "1.4.18"
+  updated: "2026-09-13"
   profile: elgora_markdown_bounty_challenge_v0
 ---
 
@@ -39,6 +39,9 @@ winner rules, reward, and deadline before final approval. Ask about inputs,
 formats, limits, exclusions and evidence only when they affect this bounty's
 judgment or an existing protocol requirement. Read the whole draft before
 asking; equivalent information under another heading counts.
+Check that every input needed to produce or judge a required deliverable is
+included or identifiable. Resolve any conflict between calling an input optional
+and requiring work that depends on it.
 
 For each missing detail, identify the decision it prevents, who supplies it,
 and when it must be available. The Poster owns success criteria, but need not
@@ -188,7 +191,9 @@ assumptions involved, and what remains unverified. Identify any accepted
 verification source, why it is acceptable, and how its evidence connects to the
 claim. For new experimental work, explain which records establish that the work
 happened, who produced them, and how they connect the tested sample to the
-reported result.}
+reported result. If acceptance depends on when the work occurred, state whether
+existing work qualifies or when new work must occur, and what evidence Guardians
+use to verify that timing.}
 
 {State which underlying data, methods and relevant quality checks Guardians
 inspect, what they verify, and how missing or contradictory evidence affects
