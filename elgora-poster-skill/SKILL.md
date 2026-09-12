@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.16"
+  version: "1.4.17"
   updated: "2026-09-12"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -153,6 +153,8 @@ or discretionary approval after submission.}
 {Identify the fixed version of each required input file so Solvers and Guardians
 use the same bytes. A content hash can identify those bytes, but is not a
 mandatory field. A supplied hash must match; changed inputs require a new bounty.
+Where a referenced webpage or other source can change and affect acceptance,
+state which version governs judgment and how Guardians can verify that version.
 Explain access restrictions that affect the task. Never include credentials or
 ask for private keys, seed phrases, transactions, token approvals, or unrelated
 signatures to obtain a file.}
@@ -175,6 +177,10 @@ replication or validation, identify the specific finding being tested and what
 counts as agreement, disagreement or an inconclusive result.}
 
 ### Evidence, Provenance and Verification (When Applicable)
+{If acceptance depends on qualifications or independence, define what qualifies,
+independence from whom or what, and what evidence Guardians use to establish
+those requirements.}
+
 {Clarify whether the claim concerns a prediction, existing data or new work,
 and require evidence appropriate to it. For claims about real-world events or
 external sources, define what Guardians can independently check, the trust
@@ -307,7 +313,7 @@ Read the whole page, including cross-references, before reporting a gap. An equi
 
 Whether the page supplies a readable title and all five core parts: a short Summary for marketplace display; Challenge details explaining the full task, scope, relevant definitions and intended result; Deliverables; Acceptance Criteria; and How is the winner selected? All core content is required, but no exact heading is required. A simple task can be explained briefly; extra history or motivation is optional.
 
-How the winner is chosen among eligible Submissions. If any Submission meets the acceptance criteria, the winner and tie-break must select exactly one eligible Submission. If none meets the criteria, no_valid_submission is the correct outcome. Qualitative judging is allowed when the stated standards, priorities and tie-break let Guardians choose one eligible Submission. Flag undefined terms only when they leave that choice unresolved. Do not require numerical scores solely because judgment is involved.
+How the winner is chosen among eligible Submissions. If any Submission meets the acceptance criteria, the winner and tie-break must select exactly one eligible Submission. If none meets the criteria, no_valid_submission is the correct outcome. Qualitative judging is allowed when the stated standards, priorities and tie-break let Guardians choose one eligible Submission. Flag undefined comparison terms when they leave ranking unresolved; a final tie-break does not replace a missing judging standard. Do not require numerical scores solely because judgment is involved.
 
 Apply Elgora's operational rules before interpreting acceptance or winner clauses. Required input or infrastructure: artifacts cannot be retrieved/decrypted, the required source cannot be accessed, downloaded fixed-input bytes differ from the hash committed in the page, or evaluation infrastructure is unavailable. That Guardian cannot complete judgment of the bounty and records no Verdict for that attempt. Elgora supplies the timeout/refund path. General acceptance and winner clauses apply only once judgment is possible; they need no repeated exception. Report a platform conflict when the page explicitly uses this unavailability to disqualify a Submission, select among only reviewable Submissions, or return no_valid_submission. State the required correction, not a request for the Poster to choose a platform outcome.
 
