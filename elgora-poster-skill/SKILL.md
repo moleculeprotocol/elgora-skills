@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.15"
+  version: "1.4.16"
   updated: "2026-09-12"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -216,8 +216,10 @@ Remove this subsection for a task that does not need it.}
 acceptance criteria and not disqualified. State the selection method and the
 evidence or attributes used to compare eligible Submissions. If using scores,
 define the calculation, weights and ranking order, or refer to their definition
-above. For qualitative comparison, describe the judging standards and their
-priority. Specify tie-break rules that resolve to one Submission. If only one
+above. Numerical scores are optional. For qualitative judging, explain what
+makes one eligible Submission better than another. Describe what Guardians
+should look for under terms such as clarity, usefulness or traceability, state
+which standards take priority, and resolve remaining ties. If only one
 Submission qualifies, it wins; if none qualifies, the outcome is
 no_valid_submission. Keep these rules consistent with acceptance criteria and
 the evaluation procedure, and settle them with the Poster before approval.}
@@ -305,7 +307,7 @@ Read the whole page, including cross-references, before reporting a gap. An equi
 
 Whether the page supplies a readable title and all five core parts: a short Summary for marketplace display; Challenge details explaining the full task, scope, relevant definitions and intended result; Deliverables; Acceptance Criteria; and How is the winner selected? All core content is required, but no exact heading is required. A simple task can be explained briefly; extra history or motivation is optional.
 
-How the winner is chosen among eligible Submissions. Scores are optional. The winner and tie-break must resolve to one Submission.
+How the winner is chosen among eligible Submissions. If any Submission meets the acceptance criteria, the winner and tie-break must select exactly one eligible Submission. If none meets the criteria, no_valid_submission is the correct outcome. Qualitative judging is allowed when the stated standards, priorities and tie-break let Guardians choose one eligible Submission. Flag undefined terms only when they leave that choice unresolved. Do not require numerical scores solely because judgment is involved.
 
 Apply Elgora's operational rules before interpreting acceptance or winner clauses. Required input or infrastructure: artifacts cannot be retrieved/decrypted, the required source cannot be accessed, downloaded fixed-input bytes differ from the hash committed in the page, or evaluation infrastructure is unavailable. That Guardian cannot complete judgment of the bounty and records no Verdict for that attempt. Elgora supplies the timeout/refund path. General acceptance and winner clauses apply only once judgment is possible; they need no repeated exception. Report a platform conflict when the page explicitly uses this unavailability to disqualify a Submission, select among only reviewable Submissions, or return no_valid_submission. State the required correction, not a request for the Poster to choose a platform outcome.
 
