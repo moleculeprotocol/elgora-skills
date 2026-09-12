@@ -25,7 +25,7 @@ was produced without consulting outside data.
 Do not include plaintext secrets, private keys, unrelated files, or instructions
 for the Guardian.
 
-## Input Files References
+## Inputs, Materials and References
 
 This example needs no outside file: the exact input is included below. The
 header is not a data row; one-based source row numbers start with the first row
