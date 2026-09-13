@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.19"
+  version: "1.4.20"
   updated: "2026-09-13"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -225,6 +225,10 @@ when they clarify that decision. Resolve missing or conflicting results when
 they affect acceptance. Refer to rules elsewhere rather than repeating them.
 Remove this subsection for a task that does not need it.}
 
+{When applicable, define how partially correct predictions, confidence estimates
+and permitted abstentions affect acceptance and ranking. Distinguish a missing
+required prediction from unavailable reference evidence.}
+
 ## How is the winner selected?
 {Define how Guardians select one winning Submission from those meeting all
 acceptance criteria and not disqualified. State the selection method and the
@@ -276,6 +280,13 @@ uncertainty affects the comparison, where relevant.}
 data used for final evaluation. Define any restrictions needed to prevent
 evaluation answers from influencing the submitted solution, and explain how
 Guardians can check compliance.}
+
+{For forecasts judged against later observations, identify the reference
+evidence and who supplies it. State when predictions become final, when outcomes
+become available, and how Guardians verify that predictions were fixed before
+outcome disclosure. Ensure evidence availability allows judgment within Elgora's
+protocol deadlines; the bounty cannot extend them. A timestamp proves ordering,
+not that the Solver lacked earlier access to the answers.}
 
 {Describe how Guardians apply the acceptance criteria to the deliverables and
 listed inputs. If the Poster requires a benchmark or reproduction method,
