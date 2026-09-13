@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.21"
+  version: "1.4.22"
   updated: "2026-09-13"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -116,8 +116,9 @@ to the task. State any format, organization, naming or size requirements needed
 to use or evaluate them. Clarify when a link is sufficient and when the actual
 artifact must be included in the Submission.
 
-Make clear what constitutes a complete Submission and connect the deliverables
-to the acceptance criteria and applicable evidence requirements. Leave
+Define Submission completeness here: which outputs and required content must
+be present. Refer to Acceptance Criteria for what those outputs must demonstrate,
+and to any applicable evidence requirements for their evidentiary support. Leave
 implementation choices to the Solver unless a particular method is part of
 the bounty's agreed requirements.}
 
@@ -162,14 +163,16 @@ ask for private keys, seed phrases, transactions, token approvals, or unrelated
 signatures to obtain a file.}
 
 ## Acceptance Criteria
-{Define clear acceptance criteria for each required deliverable. State what
-must be demonstrated, what evidence the Solver must submit, and how Guardians
-will check whether it passes. Specify any thresholds, tolerances, comparisons
-or qualitative standards needed for that decision. Explain how missing,
-incomplete or conflicting results affect acceptance where relevant. Resolve
-ambiguous terms with the Poster before approval, and keep the criteria
-consistent with the deliverables, references and evaluation procedure. Use
-concrete descriptions or examples where they clarify the expected result.}
+{Define what each required deliverable must demonstrate to pass, referring to
+its required content under Deliverables rather than reproducing the output
+checklist. Specify any thresholds, tolerances, comparisons or qualitative
+standards needed for that decision. Identify the evidence supporting each
+criterion, referring to Evidence, Provenance and Verification where further
+detail is needed. Explain how missing, incomplete or conflicting results affect
+acceptance where relevant. Make each decision clear enough for Guardians to
+apply; put additional testing steps or comparison conditions in Evaluation
+Procedure when needed. Resolve ambiguous terms with the Poster before approval.
+Use concrete descriptions or examples where they clarify the expected result.}
 
 {Where relevant, state whether negative or inconclusive results satisfy the
 bounty. Distinguish reliable work that finds no effect from evidence that
@@ -284,8 +287,10 @@ outcome disclosure. Ensure evidence availability allows judgment within Elgora's
 protocol deadlines; the bounty cannot extend them. A timestamp proves ordering,
 not that the Solver lacked earlier access to the answers.}
 
-{Describe how Guardians apply the acceptance criteria to the deliverables and
-listed inputs. If the Poster requires a benchmark or reproduction method,
+{Describe any additional steps or conditions Guardians need to apply the stated
+acceptance and evidence rules. Refer to those rules and the listed inputs rather
+than reproducing their checklists. Omit this subsection when those rules already
+explain the evaluation fully. If the Poster requires a benchmark or reproduction method,
 explain its procedure and the conditions that define the test. If Solvers
 develop the implementation, they supply any needed run instructions and
 dependencies with their Submission. Leave their choice of method open unless
