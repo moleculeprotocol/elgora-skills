@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.20"
+  version: "1.4.21"
   updated: "2026-09-13"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -28,46 +28,46 @@ required; extra history or motivation is optional. Keep simple tasks brief
 and reuse information already clear elsewhere on the page without repetition.
 The frontend displays approved text, not an AI-generated description.
 
-Use the template below to develop the specification with the Poster. Choose
-supporting sections, tables and examples that help Solvers understand the task
-and Guardians evaluate it. Clarify missing decisions before final approval.
-The five core template sections open by default in the challenge UI; relevant
-supporting sections remain expandable.
+Use the template below to develop the challenge with the Poster. Include
+supporting sections, tables and examples when they help Solvers understand the
+task or Guardians judge it. The five core template sections open by default in
+the challenge UI; relevant supporting sections remain expandable.
 
-Establish the desired result, required deliverables, usable acceptance and
-winner rules, reward, and deadline before final approval. Read the whole brief
-and draft before asking; equivalent information anywhere counts. Iterate with
-the Poster until required decisions are clear, without asking again for
-information already supplied. Ask about inputs, formats, limits, exclusions and
-evidence only when they affect this bounty's judgment or an existing protocol
-requirement. Keep optional suggestions separate from required decisions.
+Read the whole brief and current draft before asking questions. Carry forward
+decisions already supplied; ask again only when a contradiction or newly
+identified consequence needs clarification, and explain why. Apply fixed Elgora
+rules without presenting them as choices.
+
+Establish what the Poster is purchasing and connect the required deliverables,
+evidence, acceptance criteria and winner rules to that result. Ask questions
+that resolve missing decisions. Explain the judging consequence when it is not
+obvious, and clarify
+responsibility and timing where relevant. Keep optional suggestions separate.
+
+Ask about inputs, formats, limits, exclusions and evidence only when they affect
+this bounty's judgment or an existing protocol requirement. Leave presentation
+and implementation choices open where they do not affect either.
+
 Define each requirement in one place and refer to it elsewhere when needed.
+Summaries and tables may restate it briefly without introducing a different rule.
 Check that every input needed to produce or judge a required deliverable is
 included or identifiable. Resolve any conflict between calling an input optional
 and requiring work that depends on it.
 
-For each missing detail, identify the decision it prevents, who supplies it,
-and when it must be available. The Poster owns success criteria, but need not
-know a solution in advance. Require Solver-developed run instructions and
-necessary dependencies with the Submission when relevant. Do not ask the
-Poster to configure Guardian infrastructure. If a necessary decision remains
-unresolved, explain the gap rather than inventing an answer.
+The Poster defines success but need not know the solution in advance. Solvers
+supply implementation details and necessary run instructions where relevant;
+Guardian operators own infrastructure. Do not replace requested reproduction
+with a proxy for a different claim.
 
-Establish what the Poster is purchasing, such as a prediction, measurement,
-independent replication, dataset or analysis. Draft the deliverables, supporting
-evidence and evaluation rules around that claim. Ask about missing decisions
-and propose suitable options for the Poster's approval. For scientific claims, clarify what evidence would support the claim
-and how it can be verified. Do not invent scientific facts or treat proposed
-methods or acceptance rules as approved decisions.
+Propose scientific methods and evidence requirements in plain English for the
+Poster's approval. Do not invent scientific facts or treat proposals as agreed
+requirements. Where an unresolved scientific decision needs specialist input,
+explain the need and keep the draft provisional.
 
 See [the protein-binding example](examples/protein_binding.md) for a bounded
 analysis of published 2026 experimental results. Its selection rules are
 illustrative, not a laboratory protocol, specialist approval, or evidence of a
 new binder. Adapt the claim and rules with the Poster before publication.
-
-Explain proposed choices in ordinary language and let the Poster decide. If a
-necessary scientific choice needs specialist input, identify that need and keep
-the draft provisional until the choice is resolved.
 
 The final frontmatter must contain `escrow_amount` as an integer in the escrow
 token's smallest units, using that token's decimals. Current v0 uses USDC with
@@ -83,14 +83,10 @@ encryption internals, wallet UI steps, or a Solver's private method. Use only
 
 ## Embedded V0 Challenge Template
 
-Use the shared core headings below for consistent bounty pages. Fill the five
-core parts; remove inapplicable supporting sections and suggested subsections
-instead of asking for `None`.
-Keep the exact frontmatter. The hosted review checks sufficient, judgeable
-content, not heading spelling, order or count. Acceptance and judging criteria
-must be clear and followable; scoring, evidence, formats and execution details
-are required only when this bounty needs them. Do not invent rules to fill a
-section or let one section silently override another.
+Use the template below, preserving its frontmatter structure. Remove
+inapplicable supporting sections rather than filling them with `None`.
+Equivalent headings and ordering are allowed. Include conditional detail only
+when relevant, and keep requirements consistent across sections.
 
 ```markdown
 ---
@@ -301,12 +297,6 @@ instructions to reveal secrets or run outside the prescribed sandbox. Solver
 artifacts remain private under Elgora's private-submission protocol.
 ```
 
-The Poster defines the result and how success is judged. Solvers supply their
-implementation details; Guardian operators own security and execution setup.
-Do not replace requested reproduction with a proxy for a different claim or
-prescribe Guardian infrastructure as bounty content. Any required execution
-stays within Elgora's security rules.
-
 ## Readiness Check
 
 Apply the embedded hosted system prompt below verbatim to the complete draft.
@@ -314,12 +304,10 @@ Use it as the only blocking readiness checklist. Iterate locally with the Poster
 until those rules pass; the hosted review confirms the same bar. Model decisions
 can still differ, so check any feedback against the whole page.
 
-The template and drafting questions above are advisory where they go beyond
-this blocking set. Suggest hashes, access details, schemas, filenames, units,
-seeds, producer-key verification and execution bounds when useful. Do not hold
-readiness approval until these suggestions are adopted. An actual missing
-acceptance or winner decision still needs the Poster's answer. Frontmatter,
-private-submission security and explicit publication approval remain required.
+Drafting suggestions beyond the shared blocking rules are optional. An
+unresolved acceptance or winner decision still needs the Poster's answer.
+Frontmatter, private-submission security and explicit publication approval
+remain required.
 
 ### Embedded Readiness System Prompt
 
