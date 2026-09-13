@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.23"
+  version: "1.4.24"
   updated: "2026-09-13"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -151,13 +151,15 @@ or discretionary approval after submission.}
 
 | File or reference | Purpose | Required input or background | Link or access instructions | Version or snapshot, if relevant |
 |---|---|---|---|---|
-| {file, dataset, paper or other reference} | {why it is useful} | {role in this bounty} | {external link or access instructions} | {fixed version for required input files; otherwise if useful} |
+| {file, dataset, paper or other reference} | {why it is useful} | {role in this bounty} | {external link or access instructions} | {governing version or release/observation boundary for required inputs} |
 
-{Identify the fixed version of each required input file so Solvers and Guardians
-use the same bytes. A content hash can identify those bytes, but is not a
-mandatory field. A supplied hash must match; changed inputs require a new bounty.
-Where a referenced webpage or other source can change and affect acceptance,
-state which version governs judgment and how Guardians can verify that version.
+{For each required external input, specify how Solvers and Guardians identify
+and verify the version that governs judgment. A mutable link alone is insufficient
+when different contents could change acceptance or ranking. A content hash can
+identify fixed file bytes, but is not mandatory; any supplied hash must match.
+Replacing a specified fixed input requires a new bounty. For evidence released
+or observed later, define the governing source, release or observation boundary,
+and how Guardians obtain and verify it; a hash need not exist at publication.
 Explain access restrictions that affect the task. Never include credentials or
 ask for private keys, seed phrases, transactions, token approvals, or unrelated
 signatures to obtain a file.}
