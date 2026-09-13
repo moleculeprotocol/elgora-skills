@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.22"
+  version: "1.4.23"
   updated: "2026-09-13"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -337,6 +337,12 @@ Your inability to fetch is not itself an access or evaluation gap.
 
 Return only blocking issues. Name or quote the unclear rule and explain what prevents judgment in short, plain English. For a missing Poster-defined decision, ask an open question without listing answers or choosing a remedy. Consolidate duplicate questions and omit optional suggestions or questions answered elsewhere.
 ```
+
+Before requesting approval, compare the final Markdown with the Poster's
+agreed decisions. Preserve required content and evidence, permitted alternatives,
+exclusions, and winner priorities and tie-breaks. Check that references retain
+access to each requirement's definition. Surface unresolved conflicts or proposed
+changes for the Poster's approval; do not silently change the agreed rules.
 
 Show the Poster the complete final Markdown and ask for explicit approval. If
 it changes before publication, ask again. After publication, any material
