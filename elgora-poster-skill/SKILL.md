@@ -2,8 +2,8 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.24"
-  updated: "2026-09-13"
+  version: "1.4.25"
+  updated: "2026-09-14"
   profile: elgora_markdown_bounty_challenge_v0
 ---
 
@@ -47,6 +47,13 @@ responsibility and timing where relevant. Keep optional suggestions separate.
 Ask about inputs, formats, limits, exclusions and evidence only when they affect
 this bounty's judgment or an existing protocol requirement. Leave presentation
 and implementation choices open where they do not affect either.
+
+Check that the required Submission can fit at most 50 files and 50 MiB
+(52,428,800 bytes) for the whole encrypted package, including packaging and
+encryption overhead. This is not a per-file allowance. External inputs and
+references do not count unless copies must be submitted. If required outputs
+cannot fit, resolve the conflict with the Poster before approval; do not silently
+drop evidence or replace required files with links.
 
 Define each requirement in one place and refer to it elsewhere when needed.
 Summaries and tables may restate it briefly without introducing a different rule.
@@ -330,7 +337,7 @@ Follow specific references:
 A bounty may specify a rule by pointing to an identified source and the relevant section, table or definition—for example, “Use the follow-up periods in Table 1 of Paper X.” Do not require that rule to be copied into the bounty. A general reference such as “See this paper” is insufficient when it leaves unclear which rule applies. Do not assume a source contains information you have not seen.
 
 Check judgeability:
-Report a blocker only when an unresolved choice prevents deciding acceptance or selecting a winner. Check that the required deliverables, evidence and evaluation rules let Guardians determine whether a Submission supports the result or work required by the stated task and acceptance criteria, and which eligible Submission wins. Where acceptance depends on evidence origin or verification, the page must explain how Guardians establish it.
+Report a blocker only when an unresolved choice prevents deciding acceptance or selecting a winner, or the bounty conflicts with the platform rules below. Check that the required deliverables, evidence and evaluation rules let Guardians determine whether a Submission supports the result or work required by the stated task and acceptance criteria, and which eligible Submission wins. Where acceptance depends on evidence origin or verification, the page must explain how Guardians establish it.
 
 Keep rejection narrow:
 Block missing or contradictory decisions only when they prevent that judgment. Do not prescribe a particular scientific method or verification technology. Different valid outputs, Solver implementation choices and qualitative judging standards are allowed when the stated rules remain usable. Do not turn optional improvements into requirements.
@@ -338,6 +345,9 @@ Block missing or contradictory decisions only when they prevent that judgment. D
 Whether the page supplies a readable title and all five core parts: a short Summary for marketplace display; Challenge details explaining the full task, scope, relevant definitions and intended result; Deliverables; Acceptance Criteria; and How is the winner selected? All core content is required, but no exact heading is required. A simple task can be explained briefly; extra history or motivation is optional.
 
 How the winner is chosen among eligible Submissions. If any Submission meets the acceptance criteria, the winner and tie-break must select exactly one eligible Submission. If none meets the criteria, no_valid_submission is the correct outcome. Qualitative judging is allowed when the stated standards, priorities and tie-break let Guardians choose one eligible Submission. Flag undefined comparison terms when they leave ranking unresolved; a final tie-break does not replace a missing judging standard. Do not require numerical scores solely because judgment is involved.
+
+Respect Submission limits:
+Each encrypted Submission may contain at most 50 files and must not exceed 50 MiB (52,428,800 bytes) in total, including packaging and encryption overhead; this is not a per-file allowance. Flag required Submission contents that cannot fit these limits. External inputs and references do not count unless the bounty requires copies inside the Submission. Do not reject a bounty merely because its external dataset is large, require exact output sizes without a concrete conflict, or assume links may replace required submitted files.
 
 Apply Elgora's operational rules before interpreting acceptance or winner clauses. Required input or infrastructure: artifacts cannot be retrieved/decrypted, the required source cannot be accessed, downloaded fixed-input bytes differ from the hash committed in the page, or evaluation infrastructure is unavailable. That Guardian cannot complete judgment of the bounty and records no Verdict for that attempt. Elgora supplies the timeout/refund path. General acceptance and winner clauses apply only once judgment is possible; they need no repeated exception. Report a platform conflict when the page explicitly uses this unavailability to disqualify a Submission, select among only reviewable Submissions, or return no_valid_submission. State the required correction, not a request for the Poster to choose a platform outcome.
 
