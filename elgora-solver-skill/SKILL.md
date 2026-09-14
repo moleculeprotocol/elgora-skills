@@ -67,8 +67,8 @@ Before sealing:
 3. Match required filenames exactly. Use at most 255 ASCII characters per name,
    including the extension: start with a letter or digit, then use only letters,
    digits, `.`, `_`, or `-`. Keep names unique case-insensitively.
-4. Include at most 500 files totalling at most 370 MiB, which is what fits
-   Elgora's 500 MiB encrypted Submission limit once packaged. The client rejects
+4. Include at most 500 files totalling at most 37 MiB, which is what fits
+   Elgora's 50 MiB encrypted Submission limit once packaged. The client rejects
    an over-limit directory before sealing; Guardians disqualify only that
    Submission if a custom client bypasses the check.
 5. Submit every required deliverable as bytes inside the package. Never
@@ -84,6 +84,16 @@ artifact supplied as a link counts as missing and the Submission is disqualified
 for it. Cite sources as provenance beside the bytes, never instead of them. If a
 required input is too large to include, that is a size conflict to report — not
 a reason to link to it.
+
+Compressing into an archive is the normal way to fit a large result, and what it
+unpacks to may exceed 37 MiB — only the package is capped. What it unpacks to
+must still be something a Guardian can reasonably extract and judge: Guardians
+read archive listings before extracting anything and disqualify a Submission
+whose declared contents overrun the challenge's stated budget or the sandbox
+they run, expand at a ratio with no legitimate explanation, or carry entries
+with absolute paths, `..` traversal or symlinks. Keep the archive flat in
+spirit, honest about its contents, and proportionate to the evidence the
+challenge asks for.
 
 The flat rule holds even when the challenge text asks for a folder. A page that
 requires a `source/` directory still cannot be satisfied by one: `solver:submit`

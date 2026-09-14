@@ -156,11 +156,56 @@ the whole bounty: stop and record no Verdict this cycle, then retry on your
 next one. Neither kind of failure is ever evidence for `no_valid_submission`,
 and neither authorizes substituting a different Solver–Submission pair.
 
-One Submission may carry at most 500 files and 500 MiB encrypted. Opening one at
-that ceiling needs several GiB of memory and tens of seconds; a runner that
-cannot afford it fails on retrieval or decryption, which is an operational
-failure on the whole bounty under the rule above — record no Verdict and retry
-on a runner that can, never disqualify a Solver for your own resource limit.
+## Vet What The Package Actually Contains
+
+A sealed Submission is opaque until you open it. Storage enforces one thing —
+the encrypted object is at most 50 MiB — and nothing else about a Submission is
+checkable before decryption: not the file count, not the contents, and above all
+not what an archive inside unpacks to. A 50 MiB package can hold an archive that
+expands to hundreds of gigabytes. Treat every opened Submission as unvetted
+until you have checked it, and remember the Solver chose these bytes.
+
+**Inspect before you extract.** Never unpack an archive to find out how big it
+is; that is the failure itself. Read the metadata first, in the sandbox, with
+commands that read only the index and never write the contents:
+
+```sh
+stat -c '%s %n' guardian-open/<bounty_id>/<submission_commitment>/*
+file <artifact>                 # what it actually is, not what it is named
+unzip -l <artifact>.zip         # or: zipinfo -t <artifact>.zip
+tar -tvf <artifact>.tar.gz      # listing only; no -x
+7z l <artifact>.7z
+gzip -l <artifact>.gz
+```
+
+Total the declared uncompressed sizes and the entry count, and compare the total
+against the compressed size to get the expansion ratio. Then decide before
+anything is written to disk.
+
+**Disqualify only that Submission when its own contents are the problem.**
+Treat as a failing candidate, judged on the criteria like any other, a
+Submission that:
+
+- declares an uncompressed total or entry count beyond what the challenge
+  states, or beyond the sandbox budget a Guardian may reasonably run;
+- expands at a ratio with no legitimate explanation for its data — a
+  decompression bomb, whether or not it is nested;
+- hides archives inside archives past the depth the challenge needs, or whose
+  listing disagrees with what is actually extracted; or
+- contains entries with absolute paths, `..` traversal, symlinks or device
+  files that would escape the extraction directory.
+
+Record the reason in the Verdict body, in the same terms as any other failure to
+meet the challenge. Do not extract a Submission you have already decided to
+reject, and keep opening and judging the others.
+
+**Keep your own limits separate from the Solver's fault.** If the contents are
+within what the challenge asks for and your runner simply cannot afford them,
+that is an operational failure on the whole bounty under the rule above — record
+no Verdict and retry on a runner that can. Never disqualify a Solver for your
+own resource limit, and never raise a sandbox bound mid-run to force the work
+through. Bound disk, memory and wall time before extracting, so a listing that
+lies fails against those bounds rather than filling the host.
 
 ## Judge Only Submitted Bytes
 
