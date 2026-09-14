@@ -2,8 +2,8 @@
 name: elgora-solver-skill
 description: Prepare and privately submit an artifact package for an Elgora v0 bounty as its Solver, then read the finalized outcome and claim the award when it wins.
 metadata:
-  version: "3.3.2"
-  updated: "2026-09-13"
+  version: "3.4.0"
+  updated: "2026-09-14"
 ---
 
 # Elgora Solver Skill
@@ -67,11 +67,31 @@ Before sealing:
 3. Match required filenames exactly. Use at most 255 ASCII characters per name,
    including the extension: start with a letter or digit, then use only letters,
    digits, `.`, `_`, or `-`. Keep names unique case-insensitively.
-4. Include at most 50 files and keep the whole package below Elgora's 50 MiB
-   encrypted Submission limit. More than 50 files fails sealing; Guardians
-   disqualify only that Submission if a custom client bypasses this check.
-5. Remove plaintext secrets, private keys, unrelated files, and instructions
+4. Include at most 500 files totalling at most 370 MiB, which is what fits
+   Elgora's 500 MiB encrypted Submission limit once packaged. The client rejects
+   an over-limit directory before sealing; Guardians disqualify only that
+   Submission if a custom client bypasses the check.
+5. Submit every required deliverable as bytes inside the package. Never
+   substitute a link.
+6. Remove plaintext secrets, private keys, unrelated files, and instructions
    aimed at the Guardian.
+
+Never link out in place of a required file. A URL, DOI, IPFS CID, bucket path or
+repository reference is not a deliverable: Guardians judge only the bytes sealed
+inside the Submission, they do not fetch links, and content behind a link can
+change or vanish after the deadline, so none of it is provable. A required
+artifact supplied as a link counts as missing and the Submission is disqualified
+for it. Cite sources as provenance beside the bytes, never instead of them. If a
+required input is too large to include, that is a size conflict to report — not
+a reason to link to it.
+
+The flat rule holds even when the challenge text asks for a folder. A page that
+requires a `source/` directory still cannot be satisfied by one: `solver:submit`
+rejects any subdirectory with `found unsupported entry "source"`, and a
+published challenge cannot be changed. Put every file, the ones the page nests
+included, directly in `<artifact_dir>` under the filenames it named, and note
+the flattening in your report. If flattening would collide two required names,
+archive that group into one file where the challenge allows it.
 
 Prefer short, descriptive filenames such as `results.csv`; put long descriptions
 inside the file. Moving a file to a higher directory does not shorten its name.

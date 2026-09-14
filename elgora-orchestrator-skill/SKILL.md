@@ -2,8 +2,8 @@
 name: elgora-orchestrator-skill
 description: Drafts and readiness-checks Elgora v0 Markdown bounty pages before Poster approval and publication.
 metadata:
-  version: "0.3.5"
-  updated: "2026-09-09"
+  version: "0.3.6"
+  updated: "2026-09-14"
 ---
 
 # Elgora Orchestrator

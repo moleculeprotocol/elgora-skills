@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "1.4.25"
+  version: "1.5.0"
   updated: "2026-09-14"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -48,12 +48,21 @@ Ask about inputs, formats, limits, exclusions and evidence only when they affect
 this bounty's judgment or an existing protocol requirement. Leave presentation
 and implementation choices open where they do not affect either.
 
-Check that the required Submission can fit at most 50 files and 50 MiB
-(52,428,800 bytes) for the whole encrypted package, including packaging and
-encryption overhead. This is not a per-file allowance. External inputs and
-references do not count unless copies must be submitted. If required outputs
-cannot fit, resolve the conflict with the Poster before approval; do not silently
-drop evidence or replace required files with links.
+Keep the two sides of the bounty apart. A Poster uploads nothing: the challenge
+identifies its inputs and reference materials by link, with a hash where the
+bytes must be fixed, and their size is unlimited — a 500 GB external dataset is
+a perfectly ordinary Poster input and never a reason to reject a bounty. A
+Solver uploads everything: the Submission is a sealed package of bytes, capped
+at 500 files and 370 MiB before packaging, which is what fits Elgora's 500 MiB
+encrypted Submission limit.
+
+Check the required Submission against that cap, counting only what Solvers must
+submit. If the required outputs cannot fit, resolve the conflict with the Poster
+before approval. Do not silently drop required evidence, and never resolve it by
+letting a link stand in for a required file: a Submission is judged only on the
+bytes inside it, Guardians do not fetch links, and content behind one can change
+after the deadline. Requiring a deliverable that is too large to submit is a
+blocker to fix in the challenge, not something a URL can carry.
 
 Define each requirement in one place and refer to it elsewhere when needed.
 Summaries and tables may restate it briefly without introducing a different rule.
@@ -118,10 +127,12 @@ state its required content, purpose, and whether it is mandatory or optional.
 Explain how related outputs fit together, including which evidence supports
 which result or claim.
 
-Specify files, artifacts, reports, datasets, code or reference links as relevant
-to the task. State any format, organization, naming or size requirements needed
-to use or evaluate them. Clarify when a link is sufficient and when the actual
-artifact must be included in the Submission.
+Specify files, artifacts, reports, datasets or code as relevant to the task.
+State any format, organization, naming or size requirements needed to use or
+evaluate them. Every required deliverable must be submitted as bytes inside the
+Submission: Guardians judge only what the sealed package contains, so a link
+never stands in for a required artifact. Cite external sources as references
+supporting a deliverable, not as the deliverable.
 
 Define Submission completeness here: which outputs and required content must
 be present. Refer to Acceptance Criteria for what those outputs must demonstrate,
@@ -347,7 +358,7 @@ Whether the page supplies a readable title and all five core parts: a short Summ
 How the winner is chosen among eligible Submissions. If any Submission meets the acceptance criteria, the winner and tie-break must select exactly one eligible Submission. If none meets the criteria, no_valid_submission is the correct outcome. Qualitative judging is allowed when the stated standards, priorities and tie-break let Guardians choose one eligible Submission. Flag undefined comparison terms when they leave ranking unresolved; a final tie-break does not replace a missing judging standard. Do not require numerical scores solely because judgment is involved.
 
 Respect Submission limits:
-Each encrypted Submission may contain at most 50 files and must not exceed 50 MiB (52,428,800 bytes) in total, including packaging and encryption overhead; this is not a per-file allowance. Flag required Submission contents that cannot fit these limits. External inputs and references do not count unless the bounty requires copies inside the Submission. Do not reject a bounty merely because its external dataset is large, require exact output sizes without a concrete conflict, or assume links may replace required submitted files.
+Posters upload nothing and Solvers upload everything, so these limits bind only what the bounty requires Solvers to submit. Each encrypted Submission may contain at most 500 files totalling at most 370 MiB before packaging, which is what fits Elgora's 500 MiB encrypted Submission limit; this is not a per-file allowance. Flag required Submission contents that cannot fit. External inputs and reference materials are identified by link, carry no size limit, and do not count unless the bounty requires copies inside the Submission, so never reject a bounty merely because its external dataset is large, and never require exact output sizes without a concrete conflict. A Submission is judged only on the bytes sealed inside it: Guardians do not fetch links, so report a platform conflict where the page requires or permits a link, DOI, CID, bucket path or repository reference to stand in for a required submitted file, and resolve an oversized required deliverable in the challenge rather than by pointing at one.
 
 Apply Elgora's operational rules before interpreting acceptance or winner clauses. Required input or infrastructure: artifacts cannot be retrieved/decrypted, the required source cannot be accessed, downloaded fixed-input bytes differ from the hash committed in the page, or evaluation infrastructure is unavailable. That Guardian cannot complete judgment of the bounty and records no Verdict for that attempt. Elgora supplies the timeout/refund path. General acceptance and winner clauses apply only once judgment is possible; they need no repeated exception. Report a platform conflict when the page explicitly uses this unavailability to disqualify a Submission, select among only reviewable Submissions, or return no_valid_submission. State the required correction, not a request for the Poster to choose a platform outcome.
 
