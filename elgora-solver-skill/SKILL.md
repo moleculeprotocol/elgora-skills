@@ -67,7 +67,9 @@ Before sealing:
 3. Match required filenames exactly. Use at most 255 ASCII characters per name,
    including the extension: start with a letter or digit, then use only letters,
    digits, `.`, `_`, or `-`. Keep names unique case-insensitively.
-4. Keep the whole package below Elgora's 50 MiB encrypted Submission limit.
+4. Include at most 50 files and keep the whole package below Elgora's 50 MiB
+   encrypted Submission limit. More than 50 files fails sealing; Guardians
+   disqualify only that Submission if a custom client bypasses this check.
 5. Remove plaintext secrets, private keys, unrelated files, and instructions
    aimed at the Guardian.
 

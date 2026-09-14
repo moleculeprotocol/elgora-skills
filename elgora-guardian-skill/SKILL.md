@@ -148,8 +148,9 @@ pair per Solver is authoritative. When `output_dir` is omitted, files go to
 `./guardian-open/<bounty_id>/<submission_commitment>/`.
 
 A `guardian:open` failure reported as an envelope, Solver, or commitment
-mismatch, or an artifact filename exceeding 255 ASCII characters, disqualifies
-only that one candidate, as above. Any other failure —
+mismatch, an artifact filename exceeding 255 ASCII characters, or
+`Submission exceeds the maximum of 50 files.`, disqualifies only that one
+candidate. Continue opening and judging the others. Any other failure —
 retrieval, ciphertext download, or decryption — is an operational failure on
 the whole bounty: stop and record no Verdict this cycle, then retry on your
 next one. Neither kind of failure is ever evidence for `no_valid_submission`,
