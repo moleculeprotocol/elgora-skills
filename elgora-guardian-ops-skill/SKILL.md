@@ -14,6 +14,39 @@ judge. Read this one first and at every start.
 You do not repair your own environment. A step that keeps failing means this
 Guardian is not configured for the work, which is an operator's decision.
 
+## Setup
+
+Install the public CLI on the Node version its `engines` range declares, and
+read `elgora-cli help <command>` before running anything:
+
+```sh
+npm install --global @elgora/cli
+```
+
+An operator supplies three things and nothing else:
+
+- a funded Ethereum account selected in the bounty's pinned Guardian roster;
+- that account's signing key, exposed only as
+  `ELGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY` to commands that authenticate protected
+  requests or send transactions; and
+- every retained X25519 private key for bounties pinned before or after a key
+  rotation, exposed only as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON` to commands that
+  decrypt.
+
+Keep the signing key and the X25519 keys separate. Store both in the host's
+secret manager, expose them only to the command process, and never place them in
+prompts, command lines, reports, logs, or source control. Fund the account with
+chain gas before a Verdict is attempted.
+
+Each X25519 entry uses the Guardian account as its lowercase `key_id`, the suite
+`hpke-dhkem-x25519-hkdf-sha256+hkdf-sha256+aes-256-gcm@1`, and the 32-byte
+private key as unpadded base64url. **Retain old entries until every bounty
+pinned to those keys is final** — the CLI tries the retained keys in turn, so a
+rotation that overwrites one makes those Submissions permanently unopenable.
+
+Every command targets the default deployment on its own. Pass
+`--network <name|chain id>` only to work on another one, for that invocation.
+
 ## Preflight
 
 Run before accepting any judging work. Each check fails closed: on a failure,
@@ -36,6 +69,24 @@ report it and judge nothing.
 
 Report the preflight result before the first evaluation of a session. A passed
 preflight is not a claim that any bounty is judgeable.
+
+The model provider credential is the **operator's own**. Elgora supplies no
+model budget to a Guardian runtime, and no Elgora-held key is ever a Guardian
+credential. An exhausted key answers HTTP 402, then 403 once the account limit
+is reached; both name their cause, so neither is retried.
+
+### What "judgeable" requires
+
+Preflight proves the runtime starts. It does not prove this runtime can judge a
+particular bounty. Before accepting one, check you can provide what its
+challenge needs — toolchains, interpreters, and the disk and memory for a
+Submission at the ceiling. Where you cannot, report the bounty, name the missing
+capability, and record no Verdict. Never attempt it anyway and report a failure
+that looks like the Solver's.
+
+**Report discovery health and evaluation health separately.** Completed
+discovery runs prove the schedule works, and prove nothing about whether any
+bounty was opened, judged, or recorded.
 
 ## Sandbox
 
@@ -172,8 +223,16 @@ On any blocker:
 Report each distinct blocker once. A blocker still present next cycle is
 already an operator's to clear.
 
-Preserve consumed execution allowances. Before repeating any state-changing
-action, check whether it already succeeded.
+### Allowance accounting
+
+An execution attempt is consumed when the sandbox starts running the
+submission's own code, not when a command is issued and not when it succeeds.
+Record it at that moment, with the bounty, the Submission, and the outcome.
+
+A retry never resets a consumed allowance. The one extra attempt above is a
+second attempt against the same budget, not a fresh one, and a restarted worker
+inherits the count rather than starting over. Before repeating any
+state-changing action, check whether it already succeeded.
 
 Three things are not retry loops and stay allowed: the one extra attempt above;
 re-attempting a bounty on your **next cycle** after an operational failure
