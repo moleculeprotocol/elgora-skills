@@ -67,49 +67,30 @@ Before sealing:
 3. Match required filenames exactly. Use at most 255 ASCII characters per name,
    including the extension: start with a letter or digit, then use only letters,
    digits, `.`, `_`, or `-`. Keep names unique case-insensitively.
-4. Keep the sealed package under Elgora's 50 MiB limit, and include at most 500
-   files. Sealing inflates the directory by about a third, so in practice the
-   directory itself has to stay under 37 MiB; the client rejects an oversized
-   one before sealing rather than after. Guardians disqualify only that
-   Submission if a custom client bypasses either check.
-5. Submit every required deliverable as bytes inside the package. Never
-   substitute a link.
+4. Keep the package within the limits below. Sealing inflates the directory by
+   about a third, so it has to stay under 37 MiB to pack within 50 MiB; the
+   client rejects an oversized one before sealing.
+5. Submit every required deliverable as bytes inside the package.
 6. Remove plaintext secrets, private keys, unrelated files, and instructions
    aimed at the Guardian.
 
-Never link out in place of a required file. A URL, DOI, IPFS CID, bucket path or
-repository reference is not a deliverable: Guardians judge only the bytes sealed
-inside the Submission, they do not fetch links, and content behind a link can
-change or vanish after the deadline, so none of it is provable. A required
-artifact supplied as a link counts as missing and the Submission is disqualified
-for it. Cite sources as provenance beside the bytes, never instead of them. If a
-required input is too large to include, that is a size conflict to report — not
-a reason to link to it.
+A Submission is at most 500 files, packs to at most 50 MiB encrypted, and
+extracts to at most 250 MB unpacked; a challenge may lower the extracted budget,
+never raise it. It is flat at every level — plain filenames, no directories,
+a v0 limitation planned to lift. Every required deliverable is submitted as
+bytes: a link (URL, DOI, CID, bucket path, repository reference) never stands in
+for one and counts as missing, though citing a source beside its bytes is fine.
 
-Compressing into an archive is the normal way to fit a large result. Only the
-packed size is capped at 50 MiB: what the Submission extracts to may be much
-larger, up to **250 MB** across everything it unpacks. A challenge may set a
-lower extracted budget, and then that number applies instead.
+Compress into an archive to fit a large result, and pack the archive flat.
+Guardians check this after decrypting and delete a non-conforming package rather
+than extract it, so a directory entry, an unexplained expansion ratio, or an
+absolute or `..` path anywhere inside costs the Submission.
 
-Pack the archive flat. A v0 Submission is a flat set of files at every level, so
-an archive must hold plain filenames and no directory entries. Guardians read
-archive listings before extracting anything and disqualify a Submission whose
-listing shows a directory or any name containing a path separator — they will
-not flatten it for you, and they delete it rather than extract it.
-
-Guardians apply the 250 MB themselves for the same reason, because nothing
-before decryption can see it. They also disqualify a Submission that expands at
-a ratio with no legitimate explanation for its data, or carries entries with
-absolute paths, `..` traversal or symlinks. Keep the archive honest about its
-contents and proportionate to the evidence the challenge asks for.
-
-The flat rule holds even when the challenge text asks for a folder. A page that
-requires a `source/` directory still cannot be satisfied by one: `solver:submit`
-rejects any subdirectory with `found unsupported entry "source"`, and a
-published challenge cannot be changed. Put every file, the ones the page nests
-included, directly in `<artifact_dir>` under the filenames it named, and note
-the flattening in your report. If flattening would collide two required names,
-archive that group into one file where the challenge allows it.
+The flat rule holds when the challenge asks for a folder: `solver:submit`
+rejects any subdirectory, and a published challenge cannot be changed. Put every
+file directly in `<artifact_dir>` under the names the challenge gave, note the
+flattening in your report, and archive a colliding group into one file where the
+challenge allows it.
 
 Prefer short, descriptive filenames such as `results.csv`; put long descriptions
 inside the file. Moving a file to a higher directory does not shorten its name.

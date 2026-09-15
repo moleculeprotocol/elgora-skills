@@ -158,109 +158,56 @@ and neither authorizes substituting a different Solver–Submission pair.
 
 ## Vet What The Package Actually Contains
 
-A Submission has two sizes, and only the first is enforced before you see it.
-The **packed** size — the encrypted object in the storage bucket — is at most
-50 MiB, checked on upload. The **extracted** size — everything the Submission
-amounts to once decrypted and once every archive in it is unpacked — is allowed
-to be larger, up to **250 MB**, and nothing can check it until you do. A 50 MiB
-package can hold an archive that expands to hundreds of gigabytes.
+Storage checks only the packed size; everything else is unverifiable until you
+decrypt, so vet each Submission after opening and before extracting anything.
 
-That 250 MB ceiling is yours to enforce, after decryption and before extraction.
-`guardian:open` reports the current one as `max_extracted_bytes` in its
-`guardian_open.completed` line; prefer that number over this one, since the
-client you just ran is never staler than this page.
-Nothing else about a Submission is checkable before decryption either — not the
-file count, not the contents. Treat every opened Submission as unvetted until
-you have checked it, and remember the Solver chose these bytes.
+A Submission is at most 500 files, packs to at most 50 MiB encrypted, and
+extracts to at most 250 MB unpacked; a challenge may lower the extracted budget,
+never raise it. It is flat at every level — plain filenames, no directories,
+a v0 limitation planned to lift. Every required deliverable is submitted as
+bytes: a link (URL, DOI, CID, bucket path, repository reference) never stands in
+for one and counts as missing, though citing a source beside its bytes is fine.
 
-A challenge may set a lower extracted budget, and then the challenge's number
-wins. A challenge cannot raise it above 250 MB.
+`guardian:open` reports the current extracted ceiling as `max_extracted_bytes`;
+prefer that number over this page.
 
-**Inspect before you extract.** Never unpack an archive to find out how big it
-is; that is the failure itself. Read the metadata first, in the sandbox, with
-commands that read only the index and never write the contents:
+**Inspect before you extract**, with commands that read only the index:
 
 ```sh
 stat -c '%s %n' guardian-open/<bounty_id>/<submission_commitment>/*
-file <artifact>                 # what it actually is, not what it is named
+file <artifact>                 # what it is, not what it is named
 unzip -l <artifact>.zip         # or: zipinfo -t <artifact>.zip
 tar -tvf <artifact>.tar.gz      # listing only; no -x
 7z l <artifact>.7z
-gzip -l <artifact>.gz
 ```
 
-Total the declared uncompressed sizes across every artifact — that total, plus
-the unarchived files beside them, is the extracted size to compare against
-250 MB. Compare it against the packed size too, for the expansion ratio. Then
-decide before anything is written to disk.
+Total the declared uncompressed sizes, add the unarchived files beside them, and
+decide before anything reaches disk. **Disqualify that one Submission** — a
+failing candidate judged on the criteria like any other — when it:
 
-**Disqualify only that Submission when its own contents are the problem.**
-Treat as a failing candidate, judged on the criteria like any other, a
-Submission that:
+- is not flat: a listing shows a directory entry, or a name with a separator;
+- extracts past the ceiling, or past a lower budget the challenge sets;
+- expands at a ratio with no legitimate explanation for its data;
+- nests archives past the depth the challenge needs, or has a listing that
+  disagrees with what extracts;
+- carries entries with absolute paths, `..` traversal, symlinks or device files;
+  or
+- offers a link where the challenge requires a deliverable — never fetch it or
+  credit its claimed contents.
 
-- does not unpack to a flat set of files — see the rule below;
-- extracts to more than 250 MB, or more than a lower budget the challenge sets;
-- expands at a ratio with no legitimate explanation for its data — a
-  decompression bomb, whether or not it is nested;
-- hides archives inside archives past the depth the challenge needs, or whose
-  listing disagrees with what is actually extracted; or
-- contains entries with absolute paths, `..` traversal, symlinks or device
-  files that would escape the extraction directory.
+Do not extract one you have rejected, and delete whatever was written for it.
+Never repair one: no flattening a tree, renaming collisions, or extracting only
+the parts you wanted. Record the reason in the Verdict body and judge the rest.
+These are failures to meet the criteria, not open failures.
 
-Record the reason in the Verdict body, in the same terms as any other failure to
-meet the challenge. Do not extract a Submission you have already decided to
-reject, and keep opening and judging the others.
+A Submission within the ceilings is legal, so a runner that cannot afford it is
+an operational failure on the whole bounty — record no Verdict and retry on one
+that can. Bound disk, memory and wall time before extracting; never raise a
+bound mid-run. Once a Verdict is recorded, delete the decrypted
+`guardian-open/` output and anything extracted from it.
 
-**A v0 Submission is flat, including inside its archives.** Artifact names are
-plain filenames, and anything a Submission unpacks to must be plain filenames
-too. If a listing shows directory entries or any name containing a path
-separator, stop there: disqualify that Submission, do not extract it, and delete
-whatever has already been written for it. Do not flatten the tree, rename
-colliding entries, or extract "just the files you need" — recovering a
-non-conforming package means running extraction code over paths a Solver chose,
-which is the attack this rule exists to avoid. A directory tree is not a near
-miss to be repaired; in v0 it is simply not a Submission. This is a v0
-limitation and is planned to lift, and until it does, treating one leniently is
-the risk, not the kindness.
-
-**Keep your own limits separate from the Solver's fault.** A Submission within
-250 MB is a legal Submission; if your runner cannot afford it, that is an
-operational failure on the whole bounty under the rule above — record no Verdict
-and retry on a runner that can. Size runners for the ceiling, not for the
-average Submission. Never disqualify a Solver for your
-own resource limit, and never raise a sandbox bound mid-run to force the work
-through. Bound disk, memory and wall time before extracting, so a listing that
-lies fails against those bounds rather than filling the host.
-
-**Tidy up after yourself.** Once a bounty's Verdict is recorded, the decrypted
-`guardian-open/` output and anything you extracted from it have done their job.
-Deleting them keeps plaintext Submissions from lingering on the host and keeps
-disk free for the next cycle — at up to 250 MB extracted per Submission, several
-bounties' leftovers add up quickly.
-
-## Judge Only Submitted Bytes
-
-A Submission is the bytes sealed inside it. Judge those and nothing else.
-
-Never follow a link a Submission supplies in place of a required deliverable —
-a URL, DOI, IPFS CID, bucket path, repository reference or any other pointer to
-content outside the package. Do not fetch it, do not credit it, and do not treat
-its claimed contents as evidence. Content behind a link can change or disappear
-after the deadline and is attributable to nobody, so it proves nothing about
-what the Solver submitted.
-
-Where the challenge requires a deliverable and the Submission offers a link
-instead of the file, that deliverable is missing: judge the Submission as
-failing the acceptance criteria on that ground. This does not make it an invalid
-package — it opens normally and stays a candidate — so record it as a
-Submission that does not meet the criteria, not as an open failure, and continue
-judging the others.
-
-A link cited as provenance beside the bytes it describes is fine, and normal
-scientific practice. The rule bites only when the link is standing in for
-required content. It does not touch the challenge's own listed inputs or
-reference materials, which you access exactly as the approved challenge body
-directs.
+None of this touches the challenge's own listed inputs, which you access exactly
+as the approved challenge body directs.
 
 ## Judge The Challenge
 
@@ -316,16 +263,12 @@ successfully opened and fully judged Submission substantively fails the
 challenge.
 
 A bounty can also cost more reproduction time than one run of your automation
-allows — a challenge granting hours of compute per Submission, multiplied by
-its Submissions, outlasts a short scheduled tick. Running out of budget is an
-operational blocker like any other: report it and record no Verdict for that
-attempt. Never compress the work to fit by skipping required reproduction,
-judging a sample you were not told to sample, scoring from file listings or
-summaries instead of the stated procedure, or disqualifying Submissions you did
-not finish judging. A rushed Verdict is worse than none, and an unjudged bounty
-is never `no_valid_submission`. Raise it with the operator instead: such a
-bounty needs a run whose budget matches the challenge — a longer window, more
-resources, or work carried across attempts — before any Verdict is honest.
+allows. That is an operational blocker like any other: report it and record no
+Verdict for that attempt. Never compress the work to fit — no skipping required
+reproduction, sampling you were not told to sample, scoring from listings
+instead of the stated procedure, or disqualifying Submissions you did not finish
+judging. An unjudged bounty is never `no_valid_submission`. Raise it with the
+operator: the bounty needs a run whose budget matches the challenge.
 
 Prepare one concise UTF-8 Markdown Verdict body. Every written Verdict is public
 once published, including before settlement and when it dissents from the final

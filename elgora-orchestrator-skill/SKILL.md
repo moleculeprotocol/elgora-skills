@@ -57,16 +57,12 @@ intentionally does not restate those sections; keeping one full copy avoids
 checklist drift. When drafting inside the repository, use the canonical core
 template instead of the portable bundle's embedded snapshot.
 
-One of those rules is worth knowing the provenance of, since it reads as an
-arbitrary restriction: a v0 Submission is a flat set of files, so a challenge
-must never require a directory. Artifact names are validated as plain
-filenames because Guardians and the Poster write them straight to disk on
-opening, and a name carrying a path would escape the output directory. Bounty
-[75](https://github.com/moleculeprotocol/elgora-v0/issues/584) asked for a
-`source/` directory and passed readiness, because neither side knew. Allowing
-directory trees safely is
-[#649](https://github.com/moleculeprotocol/elgora-v0/issues/649), targeted at
-v1 alongside
-[#644](https://github.com/moleculeprotocol/elgora-v0/issues/644). The public
-skills state the rule without these references, since they carry no repository
-links.
+The flat-Submission rule reads as arbitrary, so know its provenance: artifact
+names are validated as plain filenames because Guardians and the Poster write
+them straight to disk, and a name carrying a path would escape the output
+directory. A bounty asked for a `source/` directory and passed readiness
+([#584](https://github.com/moleculeprotocol/elgora-v0/issues/584)); allowing
+trees safely is
+[#649](https://github.com/moleculeprotocol/elgora-v0/issues/649), for v1
+alongside [#644](https://github.com/moleculeprotocol/elgora-v0/issues/644). The
+public skills state the rule without these references.
