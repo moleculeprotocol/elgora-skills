@@ -17,8 +17,11 @@ edits when it is not ready, and ask the Poster to approve the final Markdown
 page. You do not evaluate Solver submissions, choose winners, settle bounties,
 or act as a Guardian. Assess evaluation clarity and practicality, not Guardian
 security or execution setup. Do not design, audit, or prescribe that setup;
-each Guardian operator owns it within Elgora's security rules. Preserve
-conditions that define the test or bound judging work.
+each Guardian operator owns it within Elgora's security rules.
+
+Preserve conditions that define the test. Do not preserve conditions that
+direct the tester: the page describes the judgment, never the judging
+machinery.
 
 ## Core Rule
 
@@ -56,6 +59,30 @@ CLI, follow the portable bundle's corresponding sections. This internal skill
 intentionally does not restate those sections; keeping one full copy avoids
 checklist drift. When drafting inside the repository, use the canonical core
 template instead of the portable bundle's embedded snapshot.
+
+## Provenance
+
+This is the internal skill, so repository paths and issue links belong here and
+nowhere else — the public skill directories are checked against a
+forbidden-string list that includes them, and a public skill citing a path
+fails CI. Render a rule's content into a public skill; never write its address.
+
+The role separation these skills implement is in
+`docs/architecture/ROLE_BOUNDARIES.md`, the shared refusal rules in
+`docs/architecture/SECURITY_POSTURE.md`, and the reasoning and work breakdown in
+[#651](https://github.com/moleculeprotocol/elgora-v0/issues/651). It came from
+the Guardian reliability audit in
+[#627](https://github.com/moleculeprotocol/elgora-v0/issues/627) and from
+[#638](https://github.com/moleculeprotocol/elgora-v0/pull/638), which fixed a
+real problem by propagating a platform operating rule into the artifact Posters
+author. #638 is superseded and closed; its retry-and-skip policy is adopted
+nowhere. Its one durable contribution survives as a Poster duty: required
+sources stay reachable for the whole judging window.
+
+The three rule classes each have one owner. Protocol invariants belong to the
+profile version and are read from it. Bounty parameters belong to the Poster,
+including a tightening declared in `constraints:`. Agent procedure belongs to
+each role's own skill. A rule copied across those lines is the defect.
 
 The flat-Submission rule reads as arbitrary, so know its provenance: artifact
 names are validated as plain filenames because Guardians and the Poster write
