@@ -67,10 +67,11 @@ Before sealing:
 3. Match required filenames exactly. Use at most 255 ASCII characters per name,
    including the extension: start with a letter or digit, then use only letters,
    digits, `.`, `_`, or `-`. Keep names unique case-insensitively.
-4. Include at most 500 files totalling at most 37 MiB, which is what fits
-   Elgora's 50 MiB encrypted Submission limit once packaged. The client rejects
-   an over-limit directory before sealing; Guardians disqualify only that
-   Submission if a custom client bypasses the check.
+4. Keep the sealed package under Elgora's 50 MiB limit, and include at most 500
+   files. Sealing inflates the directory by about a third, so in practice the
+   directory itself has to stay under 37 MiB; the client rejects an oversized
+   one before sealing rather than after. Guardians disqualify only that
+   Submission if a custom client bypasses either check.
 5. Submit every required deliverable as bytes inside the package. Never
    substitute a link.
 6. Remove plaintext secrets, private keys, unrelated files, and instructions
@@ -85,15 +86,17 @@ for it. Cite sources as provenance beside the bytes, never instead of them. If a
 required input is too large to include, that is a size conflict to report — not
 a reason to link to it.
 
-Compressing into an archive is the normal way to fit a large result, and what it
-unpacks to may exceed 37 MiB — only the package is capped. What it unpacks to
-must still be something a Guardian can reasonably extract and judge: Guardians
-read archive listings before extracting anything and disqualify a Submission
-whose declared contents overrun the challenge's stated budget or the sandbox
-they run, expand at a ratio with no legitimate explanation, or carry entries
-with absolute paths, `..` traversal or symlinks. Keep the archive flat in
-spirit, honest about its contents, and proportionate to the evidence the
-challenge asks for.
+Compressing into an archive is the normal way to fit a large result. Only the
+packed size is capped at 50 MiB: what the Submission extracts to may be much
+larger, up to **250 MB** across everything it unpacks. A challenge may set a
+lower extracted budget, and then that number applies instead.
+
+Guardians enforce the 250 MB themselves, because nothing before decryption can
+see it. They read archive listings before extracting anything, and disqualify a
+Submission that extracts beyond the budget, expands at a ratio with no
+legitimate explanation for its data, or carries entries with absolute paths,
+`..` traversal or symlinks. Keep the archive flat in spirit, honest about its
+contents, and proportionate to the evidence the challenge asks for.
 
 The flat rule holds even when the challenge text asks for a folder. A page that
 requires a `source/` directory still cannot be satisfied by one: `solver:submit`

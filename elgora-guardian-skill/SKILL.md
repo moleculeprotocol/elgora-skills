@@ -158,12 +158,20 @@ and neither authorizes substituting a different Solver–Submission pair.
 
 ## Vet What The Package Actually Contains
 
-A sealed Submission is opaque until you open it. Storage enforces one thing —
-the encrypted object is at most 50 MiB — and nothing else about a Submission is
-checkable before decryption: not the file count, not the contents, and above all
-not what an archive inside unpacks to. A 50 MiB package can hold an archive that
-expands to hundreds of gigabytes. Treat every opened Submission as unvetted
-until you have checked it, and remember the Solver chose these bytes.
+A Submission has two sizes, and only the first is enforced before you see it.
+The **packed** size — the encrypted object in the storage bucket — is at most
+50 MiB, checked on upload. The **extracted** size — everything the Submission
+amounts to once decrypted and once every archive in it is unpacked — is allowed
+to be larger, up to **250 MB**, and nothing can check it until you do. A 50 MiB
+package can hold an archive that expands to hundreds of gigabytes.
+
+That 250 MB ceiling is yours to enforce, after decryption and before extraction.
+Nothing else about a Submission is checkable before decryption either — not the
+file count, not the contents. Treat every opened Submission as unvetted until
+you have checked it, and remember the Solver chose these bytes.
+
+A challenge may set a lower extracted budget, and then the challenge's number
+wins. A challenge cannot raise it above 250 MB.
 
 **Inspect before you extract.** Never unpack an archive to find out how big it
 is; that is the failure itself. Read the metadata first, in the sandbox, with
@@ -178,16 +186,16 @@ tar -tvf <artifact>.tar.gz      # listing only; no -x
 gzip -l <artifact>.gz
 ```
 
-Total the declared uncompressed sizes and the entry count, and compare the total
-against the compressed size to get the expansion ratio. Then decide before
-anything is written to disk.
+Total the declared uncompressed sizes across every artifact — that total, plus
+the unarchived files beside them, is the extracted size to compare against
+250 MB. Compare it against the packed size too, for the expansion ratio. Then
+decide before anything is written to disk.
 
 **Disqualify only that Submission when its own contents are the problem.**
 Treat as a failing candidate, judged on the criteria like any other, a
 Submission that:
 
-- declares an uncompressed total or entry count beyond what the challenge
-  states, or beyond the sandbox budget a Guardian may reasonably run;
+- extracts to more than 250 MB, or more than a lower budget the challenge sets;
 - expands at a ratio with no legitimate explanation for its data — a
   decompression bomb, whether or not it is nested;
 - hides archives inside archives past the depth the challenge needs, or whose
@@ -199,10 +207,11 @@ Record the reason in the Verdict body, in the same terms as any other failure to
 meet the challenge. Do not extract a Submission you have already decided to
 reject, and keep opening and judging the others.
 
-**Keep your own limits separate from the Solver's fault.** If the contents are
-within what the challenge asks for and your runner simply cannot afford them,
-that is an operational failure on the whole bounty under the rule above — record
-no Verdict and retry on a runner that can. Never disqualify a Solver for your
+**Keep your own limits separate from the Solver's fault.** A Submission within
+250 MB is a legal Submission; if your runner cannot afford it, that is an
+operational failure on the whole bounty under the rule above — record no Verdict
+and retry on a runner that can. Size runners for the ceiling, not for the
+average Submission. Never disqualify a Solver for your
 own resource limit, and never raise a sandbox bound mid-run to force the work
 through. Bound disk, memory and wall time before extracting, so a listing that
 lies fails against those bounds rather than filling the host.
