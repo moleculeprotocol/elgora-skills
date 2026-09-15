@@ -53,14 +53,14 @@ identifies its inputs and reference materials by link, with a hash where the
 bytes must be fixed, and their size is unlimited — a 500 GB external dataset is
 a perfectly ordinary Poster input and never a reason to reject a bounty. A
 Solver uploads everything, within two ceilings: the sealed package is at most
-50 MiB, and what it extracts to is at most 1 GB across at most 500 files.
+50 MiB, and what it extracts to is at most 250 MB across at most 500 files.
 
 Those two numbers answer different questions. Ask required deliverables against
-the 1 GB: that is the real room a Solver has, because a large result can be
+the 250 MB: that is the real room a Solver has, because a large result can be
 submitted compressed. The 50 MiB is the packed ceiling the client enforces, and
 only a poorly compressible deliverable runs into it first. A challenge may set a
 lower extracted budget, and should where the expanded size matters for judging;
-it cannot raise it above 1 GB.
+it cannot raise it above 250 MB.
 
 If the required outputs cannot fit, resolve the conflict with the Poster before
 approval. Do not silently drop required evidence, and never resolve it by
@@ -363,7 +363,7 @@ Whether the page supplies a readable title and all five core parts: a short Summ
 How the winner is chosen among eligible Submissions. If any Submission meets the acceptance criteria, the winner and tie-break must select exactly one eligible Submission. If none meets the criteria, no_valid_submission is the correct outcome. Qualitative judging is allowed when the stated standards, priorities and tie-break let Guardians choose one eligible Submission. Flag undefined comparison terms when they leave ranking unresolved; a final tie-break does not replace a missing judging standard. Do not require numerical scores solely because judgment is involved.
 
 Respect Submission limits:
-Posters upload nothing and Solvers upload everything, so these limits bind only what the bounty requires Solvers to submit. A Submission is at most 500 files, sealing to a packed object of at most 50 MiB and extracting to at most 1 GB; neither is a per-file allowance. Judge required deliverables against the 1 GB, since a large result may be required compressed, and treat the 50 MiB packed ceiling as binding only where a deliverable compresses poorly. A challenge may set a lower extracted budget and should where the expanded size matters for judging; it may not raise it above 1 GB. Flag required Submission contents that cannot fit. External inputs and reference materials are identified by link, carry no size limit, and do not count unless the bounty requires copies inside the Submission, so never reject a bounty merely because its external dataset is large, and never require exact output sizes without a concrete conflict. A Submission is judged only on the bytes sealed inside it: Guardians do not fetch links, so report a platform conflict where the page requires or permits a link, DOI, CID, bucket path or repository reference to stand in for a required submitted file, and resolve an oversized required deliverable in the challenge rather than by pointing at one.
+Posters upload nothing and Solvers upload everything, so these limits bind only what the bounty requires Solvers to submit. A Submission is at most 500 files, sealing to a packed object of at most 50 MiB and extracting to at most 250 MB; neither is a per-file allowance. Judge required deliverables against the 250 MB, since a large result may be required compressed, and treat the 50 MiB packed ceiling as binding only where a deliverable compresses poorly. A challenge may set a lower extracted budget and should where the expanded size matters for judging; it may not raise it above 250 MB. Flag required Submission contents that cannot fit. External inputs and reference materials are identified by link, carry no size limit, and do not count unless the bounty requires copies inside the Submission, so never reject a bounty merely because its external dataset is large, and never require exact output sizes without a concrete conflict. A Submission is judged only on the bytes sealed inside it: Guardians do not fetch links, so report a platform conflict where the page requires or permits a link, DOI, CID, bucket path or repository reference to stand in for a required submitted file, and resolve an oversized required deliverable in the challenge rather than by pointing at one.
 
 Apply Elgora's operational rules before interpreting acceptance or winner clauses. Required input or infrastructure: artifacts cannot be retrieved/decrypted, the required source cannot be accessed, downloaded fixed-input bytes differ from the hash committed in the page, or evaluation infrastructure is unavailable. That Guardian cannot complete judgment of the bounty and records no Verdict for that attempt. Elgora supplies the timeout/refund path. General acceptance and winner clauses apply only once judgment is possible; they need no repeated exception. Report a platform conflict when the page explicitly uses this unavailability to disqualify a Submission, select among only reviewable Submissions, or return no_valid_submission. State the required correction, not a request for the Poster to choose a platform outcome.
 

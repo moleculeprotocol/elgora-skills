@@ -88,10 +88,10 @@ a reason to link to it.
 
 Compressing into an archive is the normal way to fit a large result. Only the
 packed size is capped at 50 MiB: what the Submission extracts to may be much
-larger, up to **1 GB** across everything it unpacks. A challenge may set a
+larger, up to **250 MB** across everything it unpacks. A challenge may set a
 lower extracted budget, and then that number applies instead.
 
-Guardians enforce the 1 GB themselves, because nothing before decryption can
+Guardians enforce the 250 MB themselves, because nothing before decryption can
 see it. They read archive listings before extracting anything, and disqualify a
 Submission that extracts beyond the budget, expands at a ratio with no
 legitimate explanation for its data, or carries entries with absolute paths,
