@@ -45,8 +45,20 @@ runs in a fresh isolated sandbox. Never on the host.
 - No private keys, credentials, environment secrets, or unrelated data.
 - Only the files needed for the stated task.
 - Network off, except a resource the approved challenge names as required.
-- Bounded CPU, memory, and wall clock. Record what each attempt consumed.
+- Bounded disk, memory, CPU and wall clock, set before anything is extracted,
+  so a package whose listing lies fails against those bounds instead of filling
+  the host. Record what each attempt consumed.
 - Destroyed after the evaluation. Never reused across bounties.
+
+**Size runners for the protocol's extracted ceiling, not for the average
+Submission.** A Submission within the ceiling is a legal Submission. If your
+runner cannot afford one, that is an operational failure on the bounty — report
+it and record no Verdict. Never disqualify a Solver for your own resource limit,
+and never raise a sandbox bound mid-run to force the work through.
+
+Delete the decrypted `guardian-open/` output and anything extracted from it once
+the Verdict is recorded. Plaintext Submissions should not linger, and leftovers
+fill a runner quickly.
 
 ## Untrusted content
 
