@@ -198,6 +198,7 @@ decide before anything is written to disk.
 Treat as a failing candidate, judged on the criteria like any other, a
 Submission that:
 
+- does not unpack to a flat set of files — see the rule below;
 - extracts to more than 250 MB, or more than a lower budget the challenge sets;
 - expands at a ratio with no legitimate explanation for its data — a
   decompression bomb, whether or not it is nested;
@@ -209,6 +210,18 @@ Submission that:
 Record the reason in the Verdict body, in the same terms as any other failure to
 meet the challenge. Do not extract a Submission you have already decided to
 reject, and keep opening and judging the others.
+
+**A v0 Submission is flat, including inside its archives.** Artifact names are
+plain filenames, and anything a Submission unpacks to must be plain filenames
+too. If a listing shows directory entries or any name containing a path
+separator, stop there: disqualify that Submission, do not extract it, and delete
+whatever has already been written for it. Do not flatten the tree, rename
+colliding entries, or extract "just the files you need" — recovering a
+non-conforming package means running extraction code over paths a Solver chose,
+which is the attack this rule exists to avoid. A directory tree is not a near
+miss to be repaired; in v0 it is simply not a Submission. This is a v0
+limitation and is planned to lift, and until it does, treating one leniently is
+the risk, not the kindness.
 
 **Keep your own limits separate from the Solver's fault.** A Submission within
 250 MB is a legal Submission; if your runner cannot afford it, that is an

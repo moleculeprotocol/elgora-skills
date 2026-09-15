@@ -62,6 +62,13 @@ only a poorly compressible deliverable runs into it first. A challenge may set a
 lower extracted budget, and should where the expanded size matters for judging;
 it cannot raise it above 250 MB.
 
+Never require a directory. A v0 Submission is a flat set of files: artifact
+names are plain filenames and the client rejects any subdirectory, so asking for
+"a `source/` directory with the inputs" describes something no Solver can
+submit. Ask for the files, distinguished by filename where grouping matters, or
+for one archive where the challenge allows it. This is a v0 limitation and is
+planned to lift.
+
 If the required outputs cannot fit, resolve the conflict with the Poster before
 approval. Do not silently drop required evidence, and never resolve it by
 letting a link stand in for a required file: a Submission is judged only on the
@@ -361,6 +368,9 @@ Block missing or contradictory decisions only when they prevent that judgment. D
 Whether the page supplies a readable title and all five core parts: a short Summary for marketplace display; Challenge details explaining the full task, scope, relevant definitions and intended result; Deliverables; Acceptance Criteria; and How is the winner selected? All core content is required, but no exact heading is required. A simple task can be explained briefly; extra history or motivation is optional.
 
 How the winner is chosen among eligible Submissions. If any Submission meets the acceptance criteria, the winner and tie-break must select exactly one eligible Submission. If none meets the criteria, no_valid_submission is the correct outcome. Qualitative judging is allowed when the stated standards, priorities and tie-break let Guardians choose one eligible Submission. Flag undefined comparison terms when they leave ranking unresolved; a final tie-break does not replace a missing judging standard. Do not require numerical scores solely because judgment is involved.
+
+Require a flat Submission:
+A v0 Submission is a flat set of files with no directories: every artifact name is a plain filename, and the client rejects any subdirectory before sealing. Never require a folder, a path, or a named directory layout in the deliverables — "a source/ directory with the inputs" cannot be submitted as written and is a platform conflict to report. Ask for the files themselves, distinguished by filename where grouping matters, or for a single archive where the challenge allows one. This is a v0 limitation and is planned to lift; until it does, a page that requires directories cannot be satisfied.
 
 Respect Submission limits:
 Posters upload nothing and Solvers upload everything, so these limits bind only what the bounty requires Solvers to submit. A Submission is at most 500 files, sealing to a packed object of at most 50 MiB and extracting to at most 250 MB; neither is a per-file allowance. Judge required deliverables against the 250 MB, since a large result may be required compressed, and treat the 50 MiB packed ceiling as binding only where a deliverable compresses poorly. A challenge may set a lower extracted budget and should where the expanded size matters for judging; it may not raise it above 250 MB. Flag required Submission contents that cannot fit. External inputs and reference materials are identified by link, carry no size limit, and do not count unless the bounty requires copies inside the Submission, so never reject a bounty merely because its external dataset is large, and never require exact output sizes without a concrete conflict. A Submission is judged only on the bytes sealed inside it: Guardians do not fetch links, so report a platform conflict where the page requires or permits a link, DOI, CID, bucket path or repository reference to stand in for a required submitted file, and resolve an oversized required deliverable in the challenge rather than by pointing at one.

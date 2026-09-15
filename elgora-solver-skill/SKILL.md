@@ -91,12 +91,17 @@ packed size is capped at 50 MiB: what the Submission extracts to may be much
 larger, up to **250 MB** across everything it unpacks. A challenge may set a
 lower extracted budget, and then that number applies instead.
 
-Guardians enforce the 250 MB themselves, because nothing before decryption can
-see it. They read archive listings before extracting anything, and disqualify a
-Submission that extracts beyond the budget, expands at a ratio with no
-legitimate explanation for its data, or carries entries with absolute paths,
-`..` traversal or symlinks. Keep the archive flat in spirit, honest about its
-contents, and proportionate to the evidence the challenge asks for.
+Pack the archive flat. A v0 Submission is a flat set of files at every level, so
+an archive must hold plain filenames and no directory entries. Guardians read
+archive listings before extracting anything and disqualify a Submission whose
+listing shows a directory or any name containing a path separator — they will
+not flatten it for you, and they delete it rather than extract it.
+
+Guardians apply the 250 MB themselves for the same reason, because nothing
+before decryption can see it. They also disqualify a Submission that expands at
+a ratio with no legitimate explanation for its data, or carries entries with
+absolute paths, `..` traversal or symlinks. Keep the archive honest about its
+contents and proportionate to the evidence the challenge asks for.
 
 The flat rule holds even when the challenge text asks for a folder. A page that
 requires a `source/` directory still cannot be satisfied by one: `solver:submit`
