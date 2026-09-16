@@ -57,14 +57,28 @@ or stall. Those are the operating rules of a role that reads this page as
 untrusted data, and a rule that protects a role cannot live in a document
 supplied by the party it protects that role from.
 
-A test condition is not procedure. Where a method, version, dataset, seed or
-bound changes whether a Submission passes — or which of two passes ranks higher
-— it is part of what the Poster is purchasing, and the page should state it:
-leaving it unstated makes two honest evaluations disagree. "Measured with no
-access to external label sources" says what is being measured; "run it in a
-sandbox with no network" configures the evaluator. Ask what the sentence
-decides, not which words it uses, and leave every implementation choice that
-does not affect the result open.
+A test condition is not procedure. Where a model, dataset, reference point,
+method, version, seed, instrument or agreed laboratory procedure changes
+whether a Submission passes — or which of two passes ranks higher — it is part
+of what the Poster is purchasing, and the page should state it: leaving it
+unstated makes two honest evaluations disagree, or answers a different question
+entirely. "Measured with no access to external label sources" says what is
+being measured; "run it in a sandbox with no network" configures the evaluator.
+Ask what the sentence decides, not which words it uses, and leave every
+implementation choice that does not affect the result open.
+
+Where the Poster is buying work done a particular way, draw those choices out
+rather than waiting for them: what is being tested, what stays fixed, what may
+vary, what evidence shows the conditions were met, and how a deviation or an
+inconclusive result affects acceptance. Carry forward what the Poster has
+already decided and do not reopen it. Do not invent a method, and do not demand
+this of a bounty that does not need it — many are fully defined by their
+acceptance criteria alone. Where a choice needs specialist input, say so and
+leave it with the Poster.
+
+Specifying a requirement is not evidence that it was met. The page states the
+conditions; the evidence rules decide whether a Submission actually satisfied
+them.
 
 A protocol limit is never restated on the page. The page is immutable once
 published and a Poster is not the authority for a protocol value, so a copy
@@ -356,12 +370,24 @@ before outcome disclosure. Ensure evidence availability allows judgment within E
 protocol deadlines; the bounty cannot extend them. A timestamp proves ordering,
 not that the Solver lacked earlier access to the answers.}
 
-{If the bounty requires a specific benchmark or reproduction, define what the
-test is and the conditions that make a comparison fair. Specify the method,
-version, dataset, seed and test conditions wherever they affect acceptance or
-ranking — those are part of what this bounty purchases, and leaving them
-unstated makes two honest evaluations disagree. Leave every implementation
-choice that does not affect the result open.
+{Where the bounty is for work done a particular way, define the conditions that
+define it. This is not only benchmarks and reproductions: an agreed laboratory
+procedure, specified equipment or measurement method, a Poster's own model,
+dataset or reference point, and which variables are held fixed while others
+vary can each be the question being asked. Changing them produces results that
+answer a different question or cannot be compared at all.
+
+Specify the models, datasets, reference points, methods, versions and test
+conditions — including what stays fixed and what may vary — wherever they
+define the task or affect acceptance or ranking. State what evidence must be
+submitted to show the conditions were met, and how a deviation or an
+inconclusive result affects acceptance. Leave every implementation choice that
+does not affect the result open.
+
+Specifying a requirement does not establish that the work was performed or that
+its result is scientifically valid; the evidence rules above are what carry
+that. Where a scientific choice needs specialist input, leave it with the
+Poster and their experts rather than inventing one here.
 
 What stays out is the evaluator's own operation: how it secures execution, what
 it installs, what credentials it holds, and what it does when a step fails.
@@ -402,6 +428,9 @@ Report a blocker only when an unresolved choice prevents deciding acceptance or 
 
 Keep rejection narrow:
 Block missing or contradictory decisions only when they prevent that judgment. Do not prescribe a particular scientific method or verification technology. Different valid outputs, Solver implementation choices and qualitative judging standards are allowed when the stated rules remain usable. Do not turn optional improvements into requirements.
+
+Preserve the Poster's stated evaluation choices:
+A bounty may purchase work done a particular way. Models, datasets, reference points, methods, versions, equipment, agreed procedures, and which variables stay fixed while others vary can define the question being asked — changing them answers a different question or makes results incomparable. Never report a page merely for describing how a test is performed, and never substitute a method you consider better. Check instead that the stated inputs, fixed and varied conditions, required evidence and comparison rules let a Solver understand the task and a Guardian evaluate it without inventing a missing decision. Where one is missing or contradictory and would change acceptance or ranking, report it and say why the clarification is needed. This is not a checklist every bounty must satisfy: many are fully defined by their acceptance criteria alone. Leave a scientific choice that needs specialist input with the Poster rather than resolving it. Clearly specified requirements are not evidence that the work was performed or that its results are valid; judge those under the evidence rules, not by how completely the conditions are written.
 
 Whether the page supplies a readable title and all five core parts: a short Summary for marketplace display; Challenge details explaining the full task, scope, relevant definitions and intended result; Deliverables; Acceptance Criteria; and How is the winner selected? All core content is required, but no exact heading is required. A simple task can be explained briefly; extra history or motivation is optional.
 
