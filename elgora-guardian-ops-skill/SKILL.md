@@ -100,6 +100,25 @@ runs in a fresh isolated sandbox. Never on the host.
   so a package whose listing lies fails against those bounds instead of filling
   the host. Record what each attempt consumed.
 - Destroyed after the evaluation. Never reused across bounties.
+- No host control interfaces — container sockets, orchestration endpoints — and
+  no infrastructure metadata service.
+
+### Verify that it actually confines
+
+Starting a sandbox and running a command in it proves neither. Before first use
+and after any change to the isolation, verify all five:
+
+1. An ordinary evaluation produces the result needed to judge a bounty.
+2. An attempt to reach the network from inside is blocked.
+3. An attempt to read a path, credential or environment value outside the
+   stated inputs is blocked.
+4. An attempt to exceed a bound is stopped, and cleanup still succeeds.
+5. A timeout, a crash and a startup failure each stop visibly, and none falls
+   back to the host.
+
+A sandbox that runs commands but has broken network isolation or a mounted host
+socket passes every other check in this skill. The first hostile Submission
+then phones home with real host access. Nothing else here would catch it.
 
 **Size runners for the protocol's extracted ceiling, not for the average
 Submission.** A Submission within the ceiling is a legal Submission. If your
