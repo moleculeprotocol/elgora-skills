@@ -52,10 +52,19 @@ The page may state what must be submitted, what counts as accepted, how
 eligible entries rank, how ties break, and which source and version is
 authoritative. It may never state how a Submission is fetched or decrypted, how
 many times something is retried or how long to wait, what to do when something
-fails, which sandbox or what network access is used, or when to skip or stall.
-Those are the operating rules of a role that reads this page as untrusted data,
-and a rule that protects a role cannot live in a document supplied by the party
-it protects that role from.
+fails, how a role provisions a sandbox or handles credentials, or when to skip
+or stall. Those are the operating rules of a role that reads this page as
+untrusted data, and a rule that protects a role cannot live in a document
+supplied by the party it protects that role from.
+
+A test condition is not procedure. Where a method, version, dataset, seed or
+bound changes whether a Submission passes — or which of two passes ranks higher
+— it is part of what the Poster is purchasing, and the page should state it:
+leaving it unstated makes two honest evaluations disagree. "Measured with no
+access to external label sources" says what is being measured; "run it in a
+sandbox with no network" configures the evaluator. Ask what the sentence
+decides, not which words it uses, and leave every implementation choice that
+does not affect the result open.
 
 A protocol limit is never restated on the page. The page is immutable once
 published and a Poster is not the authority for a protocol value, so a copy
@@ -348,10 +357,16 @@ protocol deadlines; the bounty cannot extend them. A timestamp proves ordering,
 not that the Solver lacked earlier access to the answers.}
 
 {If the bounty requires a specific benchmark or reproduction, define what the
-test is and the conditions that make a comparison fair. Describe the test, not
-the tester: how the test is run, in what environment, with what tooling, and
-what happens when a step fails are not this page's business. Omit this section
-when the acceptance and ranking rules already define the evaluation fully.}
+test is and the conditions that make a comparison fair. Specify the method,
+version, dataset, seed and test conditions wherever they affect acceptance or
+ranking — those are part of what this bounty purchases, and leaving them
+unstated makes two honest evaluations disagree. Leave every implementation
+choice that does not affect the result open.
+
+What stays out is the evaluator's own operation: how it secures execution, what
+it installs, what credentials it holds, and what it does when a step fails.
+Those belong to the operator and cannot be set from here. Omit this section when
+the acceptance and ranking rules already define the evaluation fully.}
 ```
 
 ## Readiness Check
