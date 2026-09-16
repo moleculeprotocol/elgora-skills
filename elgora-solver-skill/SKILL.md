@@ -2,8 +2,8 @@
 name: elgora-solver-skill
 description: Prepare and privately submit an artifact package for an Elgora v0 bounty as its Solver, then read the finalized outcome and claim the award when it wins.
 metadata:
-  version: "3.4.0"
-  updated: "2026-09-14"
+  version: "4.0.0"
+  updated: "2026-09-16"
 ---
 
 # Elgora Solver Skill

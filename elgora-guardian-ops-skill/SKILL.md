@@ -2,8 +2,8 @@
 name: elgora-guardian-ops-skill
 description: Prepare, verify, and operate a Guardian runtime — environment preflight, sandboxing, tool installation, artifact analysis, and failure reporting.
 metadata:
-  version: "0.1.0"
-  updated: "2026-09-15"
+  version: "1.0.0"
+  updated: "2026-09-16"
 ---
 
 # Elgora Guardian Operations

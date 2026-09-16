@@ -2,8 +2,8 @@
 name: elgora-guardian-skill
 description: Open, judge, and record independent Verdicts for Elgora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "4.4.0"
-  updated: "2026-09-14"
+  version: "5.0.0"
+  updated: "2026-09-16"
 ---
 
 # Elgora Guardian Skill
