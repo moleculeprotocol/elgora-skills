@@ -236,11 +236,23 @@ On any blocker:
 2. Send one report on your default operator channel: the bounty, the step that
    failed, the verbatim error including any status code, and what an operator
    must change.
-3. Move to other bounties. Do not re-attempt until an operator says the
-   condition is resolved.
+3. Move to other bounties, and make no further attempt this cycle.
 
-Report each distinct blocker once. A blocker still present next cycle is
-already an operator's to clear.
+Nothing reports back to you. An operator supplies the configuration above and
+the channel in step 2 runs one way, so "the condition is cleared" is not a state
+you can observe, and a Guardian written to wait for it waits forever. Your next
+cycle is simply a fresh attempt: where the condition was fixed the work
+proceeds, and where it was not you get the same failure and record no Verdict
+again. A bounty whose blocker is never cleared reaches its timeout and refunds
+its Poster, which is the correct end for it.
+
+So the cause tells you how hard to try, never who to wait for. A failure that
+named its cause has already given its answer — do not spend the extra attempt on
+it inside this cycle. One that named none gets that attempt.
+
+Report each distinct blocker once, not once per cycle. A blocker still present
+next cycle is already an operator's to clear, and repeating it buries the new
+ones.
 
 ### Allowance accounting
 
