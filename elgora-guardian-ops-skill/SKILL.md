@@ -54,7 +54,9 @@ report it and judge nothing.
 
 1. **Runtime version.** Compare the installed Node version against the
    `engines` range declared by the installed `@elgora/cli`. A version outside
-   that range fails preflight. `elgora-cli --version` does not exist; read the
+   that range fails preflight. `elgora-cli --version` reports which CLI release
+   is installed, which belongs in the preflight result and in any failure you
+   report; it does not print the `engines` range, so read that from the
    installed package manifest.
 2. **Host tools.** `unzip`, `zipinfo`, `tar`, `sha256sum` present and
    executable.

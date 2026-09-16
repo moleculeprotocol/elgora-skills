@@ -49,6 +49,7 @@ to work on another one, for that invocation.
 Run:
 
 ```sh
+elgora-cli help guardian:judgeable
 elgora-cli guardian:judgeable --guardian-address <guardian_address>
 ```
 
@@ -109,6 +110,7 @@ position, `submitted_at_block` alone, or a separate RPC call.
 For each discovered pair, run:
 
 ```sh
+elgora-cli help guardian:open
 elgora-cli guardian:open <bounty_id> <solver> <submission_commitment> [output_dir]
 ```
 
@@ -246,6 +248,7 @@ in two parts.
 **Structure**, with the client:
 
 ```sh
+elgora-cli help check-page
 elgora-cli check-page <bounty_challenge_md_path>
 ```
 
@@ -341,6 +344,7 @@ locations, decryption material, or wallet secrets.
 For an award:
 
 ```sh
+elgora-cli help guardian:verdict
 elgora-cli guardian:verdict <bounty_id> awarded <solver> <submission_commitment> <verdict_body_path>
 ```
 
@@ -436,6 +440,7 @@ Key delivery is idempotent. If every Guardian missed the step above and you
 are later asked for the winning work, just deliver your key again:
 
 ```sh
+elgora-cli help guardian:deliver-key
 elgora-cli guardian:deliver-key <bounty_id> <solver> <submission_commitment>
 ```
 
