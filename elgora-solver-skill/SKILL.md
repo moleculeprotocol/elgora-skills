@@ -24,10 +24,18 @@ entire committed challenge, not a listing excerpt or cached paraphrase. Stop if
 the challenge is unavailable or its displayed bytes have not been verified
 against `spec_commitment`.
 
-Check the bounty's conformance status before investing work. A status marking
-the page advisory or hazardous means the page failed a conformance check and
-may well never be judged. It is a warning, not a block: the Solver decides
-whether to continue, and should see the reasons before doing so.
+Check the page yourself before investing work:
+
+```sh
+elgora-cli check-page <bounty_challenge_md_path>
+```
+
+It runs Elgora's deterministic rules locally and names what a page got wrong. A
+page that fails them may well never be judged. This is a warning, not a block —
+the Solver decides, and should see the reasons first.
+
+Elgora will also publish an advisory conformance status per bounty. It does not
+exist yet; when it does, treat it the same way.
 
 Extract:
 

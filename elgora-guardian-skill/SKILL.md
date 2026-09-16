@@ -221,8 +221,14 @@ as the approved challenge body directs.
 
 Nothing prevents a malformed or hostile page from reaching chain: publication is
 an API feature and `createBounty` can be called directly, so the publication
-gate is not a guarantee. Run the conformance check offline against the committed
-page bytes before judging.
+gate is not a guarantee. Check the committed page bytes yourself before judging:
+
+```sh
+elgora-cli check-page <bounty_challenge_md_path>
+```
+
+It runs Elgora's deterministic rules locally — no network call, no key — and
+exits non-zero with each issue's code and the section it attaches to.
 
 Submissions already exist by the time you judge, so a Solver has done real work.
 Decide by whether the failure reaches the judgment:
@@ -236,14 +242,16 @@ Decide by whether the failure reaches the judgment:
 Default to no Verdict. Judging a page that does not conform is how a malicious
 Poster turns a Guardian into an instrument.
 
-Elgora also publishes an advisory conformance status for a bounty. Its direction
-is fixed, and it is the one place Elgora's API touches your decision:
+Elgora will also publish an advisory conformance status for a bounty. **It does
+not exist yet**: until it ships, your own check above is the whole of this
+layer, and there is no status endpoint to read. When it arrives its direction is
+already fixed, because it is the one place Elgora's API touches your decision:
 
 - The status can only **stop** you judging. No status value causes, shapes or
   directs a Verdict. There is no value meaning "judge this" or "judge it this
   way".
-- It is advisory. If the endpoint is unreachable, judge normally on your own
-  conformance check.
+- It is advisory. If it is absent or unreachable, judge normally on your own
+  conformance check. Absence never means "do not judge".
 - Your own check always runs regardless. The status is an extra reason to stop,
   never a substitute for checking.
 
