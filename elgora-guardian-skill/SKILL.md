@@ -134,8 +134,8 @@ Solver, commitment or ciphertext hash mismatch — a stored ciphertext that does
 not match the hash its own Solver committed is that Solver's failure, since the
 alternative lets one bad upload deny every other Solver a Verdict. Covers a
 filename outside the profile's filename rule, more files than the profile
-allows, and everything the package-vetting section below decides. Continue
-opening and judging the others.
+allows, and what the package-vetting section below decides about a package's own
+form. Continue opening and judging the others.
 
 **2. Fails the acceptance criteria.** A normal judging result, not a
 disqualification and not an open failure. A valid package that opened normally
@@ -197,23 +197,36 @@ tar -tvf <artifact>.tar.gz      # listing only; no -x
 ```
 
 Total the declared uncompressed sizes, add the unarchived files beside them, and
-decide before anything reaches disk. **Disqualify that one Submission** — a
-failing candidate judged on the criteria like any other — when it:
+decide before anything reaches disk. **Disqualify that one Submission** —
+category 1 above, recorded against that Solver and no one else — when it:
 
 - is not flat: a listing shows a directory entry, or a name with a separator;
 - extracts past the ceiling, or past a lower budget the challenge sets;
 - expands at a ratio with no legitimate explanation for its data;
 - nests archives past the depth the challenge needs, or has a listing that
   disagrees with what extracts;
-- carries entries with absolute paths, `..` traversal, symlinks or device files;
-  or
-- offers a link where the challenge requires a deliverable — never fetch it or
-  credit its claimed contents.
+- carries entries with absolute paths, `..` traversal, symlinks or device files.
+
+Every one of those is computed from the package's own form, so every honest
+Guardian reaches the same answer from the same bytes.
+
+A link offered where the challenge requires a deliverable is **not** one of
+them. Never fetch it or credit its claimed contents — but the package is valid
+and opened normally, and deciding that a link stands where a deliverable should
+means reading the challenge's deliverable list, not measuring the package. The
+deliverable is missing, so it fails the acceptance criteria: category 2 above,
+not this list.
+
+That difference decides more than a label. A category 1 disqualification is
+never evidence for `no_valid_submission`, while a substantive failure is. So
+where every Submission points at a link instead of submitting one, each is
+fully judged and substantively fails, and `no_valid_submission` is the correct
+outcome under the rule below — not a bounty left with nothing to report.
 
 Do not extract one you have rejected, and delete whatever was written for it.
 Never repair one: no flattening a tree, renaming collisions, or extracting only
 the parts you wanted. Record the reason in the Verdict body and judge the rest.
-These are failures to meet the criteria, not open failures.
+Each is that one Solver's failure, never an open failure on the bounty.
 
 A Submission within the ceilings is legal, so a runner that cannot afford it is
 an operational failure on the whole bounty — record no Verdict and retry on one
