@@ -144,8 +144,13 @@ required deliverable, which makes that deliverable missing.
 
 **3. No Verdict this cycle.** The bounty, not the Solver. Retrieval, ciphertext
 download and decryption failures, and a runner that cannot afford a Submission
-that is legal under the ceiling. Record no Verdict and re-attempt on your next
-cycle. Never the Solver's fault.
+that is legal under the ceiling. Record no Verdict. Never the Solver's fault.
+
+When you come back to it follows the same test as everything else. A failure
+that named no cause — a retrieval or download that timed out — is re-attempted
+on your **next cycle**, without waiting for an operator. A runner that cannot
+afford a legal Submission named its cause, so an operator clears it first and
+the next cycle changes nothing on its own.
 
 Category 1 is strictly deterministic, and nothing locally configurable may enter
 it. Neither category 1 nor category 3 is ever evidence for
@@ -160,10 +165,11 @@ answer:** act on it under the rule for that step rather than running the command
 again.
 
 Three things are not retry loops and stay allowed: that one extra attempt;
-re-attempting a bounty on your **next cycle** after an operational failure
-stopped it; and the winning-key delivery loop, which stops on its own when
-delivery status reports the key exists. What is forbidden is retrying inside a
-cycle, retrying a failure that named its cause, and repairing the environment.
+re-attempting a bounty on your **next cycle** after an operational failure that
+named no cause stopped it; and the winning-key delivery loop, which stops on its
+own when delivery status reports the key exists. What is forbidden is retrying
+inside a cycle, retrying a failure that named its cause, and repairing the
+environment.
 
 ## Vet What The Package Actually Contains
 
