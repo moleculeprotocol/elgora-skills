@@ -230,26 +230,29 @@ hold. Each needs an operator.
 Beyond that one extra attempt, do not retry in a loop, work around a missing
 capability, or repair the environment.
 
-On a blocker that named its cause — any of those above, and anything else only
-an operator can change:
+On any blocker:
 
 1. Leave the bounty pending and record no Verdict.
 2. Send one report on your default operator channel: the bounty, the step that
    failed, the verbatim error including any status code, and what an operator
    must change.
-3. Move to other bounties, and do not re-attempt — next cycle or any later one
-   — until an operator says the condition is resolved. The answer has already
-   been given; asking again spends a cycle to be told the same thing.
+3. Move to other bounties, and make no further attempt this cycle.
 
-On an operational failure that named no cause and did not clear on its extra
-attempt — a download that timed out twice, a dropped connection — steps 1 and 2
-are the same, and step 3 is not: re-attempt on your **next cycle**, without
-waiting for an operator. Nothing about the next cycle is the same call, and the
-condition may have cleared on its own. Waiting for clearance here would park a
-bounty on a blip until a human happened to answer.
+Nothing reports back to you. An operator supplies the configuration above and
+the channel in step 2 runs one way, so "the condition is cleared" is not a state
+you can observe, and a Guardian written to wait for it waits forever. Your next
+cycle is simply a fresh attempt: where the condition was fixed the work
+proceeds, and where it was not you get the same failure and record no Verdict
+again. A bounty whose blocker is never cleared reaches its timeout and refunds
+its Poster, which is the correct end for it.
 
-Report each distinct blocker once either way. A cause-naming blocker still
-present next cycle is already an operator's to clear.
+So the cause tells you how hard to try, never who to wait for. A failure that
+named its cause has already given its answer — do not spend the extra attempt on
+it inside this cycle. One that named none gets that attempt.
+
+Report each distinct blocker once, not once per cycle. A blocker still present
+next cycle is already an operator's to clear, and repeating it buries the new
+ones.
 
 ### Allowance accounting
 
@@ -263,9 +266,9 @@ inherits the count rather than starting over. Before repeating any
 state-changing action, check whether it already succeeded.
 
 Three things are not retry loops and stay allowed: the one extra attempt above;
-re-attempting a bounty on your **next cycle** after an operational failure that
-named no cause stopped it; and the winning-key delivery loop, which stops on its
-own when delivery status reports the key exists. What is forbidden is retrying inside a
+re-attempting a bounty on your **next cycle** after an operational failure
+stopped it; and the winning-key delivery loop, which stops on its own when
+delivery status reports the key exists. What is forbidden is retrying inside a
 cycle, retrying a failure that named its cause, and repairing the environment.
 
 ## Telemetry
