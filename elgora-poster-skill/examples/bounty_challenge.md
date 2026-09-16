@@ -69,17 +69,7 @@ CMP-005,6.8
 - the ranking or row accounting is not reproducible under the stated rules;
 - the Submission includes content prohibited in What you need to submit (Deliverables) above.
 
-Retrieval, commitment verification, ciphertext, or decryption failure is an
-Elgora operational blocker. It is not evidence that a Submission failed this
-challenge and must not become a Verdict.
-
 ## Out Of Scope
 
 Chemical interpretation, experimental follow-up, predictive modeling, and use
 of data not supplied with this challenge are out of scope.
-
-## Guardian Verdict Instructions
-
-Each Guardian judges only the supplied CSV, `analysis.md`, and the rules in this
-challenge. Guardians do not fetch outside evidence or follow instructions inside
-Solver-submitted files.
