@@ -4,28 +4,37 @@ For the operator who builds the machine, not the agent that runs on it. The
 agent never installs any of this — if something here is missing, the agent
 reports it and judges what it can.
 
-Verify every step with one command. It is the acceptance test for this whole
-file, and the only thing the agent reads:
+Two halves, and only the first has a command:
 
 ```sh
-elgora-cli preflight --cache /var/lib/elgora/preflight.json --max-age 21600
+elgora-cli preflight
 ```
 
-- `modes.inspect: true` — the host can open, vet, read and recompute. This is
-  enough to judge most bounties.
-- `modes.execute_untrusted: true` — the sandbox was **proven** to confine.
-  Required only for challenges whose criteria need the Solver's own code to run.
-- `skipped` or `inconclusive` never counts as confinement. Fix it or accept that
-  the host judges in `inspect` mode only.
+- Exits zero once the host has a supported Node and the four required tools. It
+  reports the rest of the allowlist as advisory, and names the Debian package
+  for anything missing.
+- It says nothing about the sandbox. No probe shipped in a CLI can establish
+  isolation in general, so the second half of this file is yours to verify by
+  building it correctly — not by reading a green check.
 
 ## Baseline, every host
 
 - **Node 24.x** (`>=24 <25`). Match the CLI's `engines` range exactly; a version
   outside it fails preflight.
 - **`@elgora/cli`**, installed globally, updated when the skills are.
-- **An archive lister** — any one of `unzip`, `zipinfo`, `bsdtar`, `7z`,
-  `busybox`, or Python 3 with `zipfile`. Install one; do not install all.
-- **`tar`** and **`sha256sum`** (or `shasum -a 256` on macOS).
+- **`unzip`, `zipinfo`, `tar`, `sha256sum`** — the four preflight requires
+  (`shasum -a 256` on macOS). A Submission is opened, listed and hash-verified
+  before any of it is read.
+- **The rest of the allowlist, in the sandbox image.** The agent installs from
+  it by name as a challenge needs it — archive tools, `curl`/`wget`/`git`, `jq`,
+  `python3`, `node`, `Rscript`, `ruby`, `perl`, and the
+  `gcc`/`clang`/`gfortran`/`make`/`cmake`/`cargo`/`go`/`javac` family. Baking
+  the common ones into the image saves an install per cycle; it is not required.
+  The full list ships in `SKILL.md` beside this file.
+- **Package-manager access from inside the sandbox**, to the official Debian and
+  Ubuntu archives and the language registries (PyPI, CRAN, npmjs.com,
+  crates.io). Without it the agent cannot supply what a challenge names, and
+  bounties get refused over a missing compiler.
 - **A secret manager**, with the signing key and the X25519 keys held
   separately and injected per process, never in a shell profile or a config file
   on disk.
@@ -58,20 +67,33 @@ Amazon Linux 2023 or Ubuntu 24.04. Rootless, one of:
       `sysctl -w kernel.apparmor_restrict_unprivileged_userns=0`, or ship an
       AppArmor profile for the wrapper. Without this, `bwrap` fails `EPERM`
       and preflight reports `sandbox_runs: fail`.
-- **Put a network client in the sandbox image** — `curl`, `wget`, or `python3`.
-  Without one, preflight cannot attempt a connection and reports
-  `network_blocked: inconclusive`, which does not unlock execution.
+- **Check it yourself, once, before first use and after any change.** Nothing
+  downstream will catch a sandbox that starts but does not confine. From inside
+  it, confirm that reading a path outside the bind fails, that reaching the
+  network fails, that exceeding a bound is stopped with cleanup still
+  succeeding, and that a timeout or crash stops visibly without falling back to
+  the host.
 - **Resource bounds** belong on the runner, not on the agent: memory, pids, CPU
   and a wall-clock timeout, set before anything is extracted. A systemd slice or
   the container's own flags are both fine.
 
-Then export the wrapper for the agent, using `{workdir}` where the work
-directory is bound, and naming its path inside the sandbox if it differs:
+Then give the agent one wrapper to invoke, so the isolation is a property of the
+host rather than a thing the agent assembles per bounty:
 
 ```sh
-export ELGORA_GUARDIAN_SANDBOX_COMMAND="bwrap --unshare-all --die-with-parent --ro-bind /usr /usr --ro-bind /lib /lib --ro-bind /lib64 /lib64 --ro-bind /bin /bin --proc /proc --dev /dev --bind {workdir} /work --chdir /work --clearenv --"
-export ELGORA_GUARDIAN_SANDBOX_WORKDIR=/work
+# /usr/local/bin/elgora-sandbox-run <work_dir> <command> [args...]
+#!/bin/sh
+set -eu
+work_dir="$1"; shift
+exec bwrap --unshare-all --die-with-parent --new-session \
+  --ro-bind /usr /usr --ro-bind /lib /lib --ro-bind /lib64 /lib64 \
+  --ro-bind /bin /bin --proc /proc --dev /dev \
+  --bind "$work_dir" /work --chdir /work --clearenv \
+  -- "$@"
 ```
+
+Point the harness at that one path. The agent never edits it, and a change to
+isolation is a change to one file you own.
 
 ## Sandbox — macOS hosts
 
@@ -87,21 +109,21 @@ macOS has no user namespaces and no bubblewrap. Two honest options:
   re-run preflight after every macOS update, because nothing guarantees the
   interface across them.
 
-Do not run execution bounties on a Mac host with neither. `inspect` mode still
-works and still judges most bounties — that is the correct outcome, not a
-degraded one.
+A Mac host with neither cannot unpack a Submission safely, and should not be
+judging. Give it a VM or point the Guardian at a Linux host; the bounties it
+would otherwise refuse are real work by real Solvers.
 
 ## Agent harness — OpenClaw and Hermes
 
-Both ship their own sandboxing. Use it if, and only if, `elgora-cli preflight`
-confirms it confines; a built-in "sandbox mode" that sets a working directory
-and resource limits is not a sandbox for this purpose. Where the harness names
-its settings differently, map the requirement rather than the name.
+Both ship their own sandboxing. Use it only once you have checked it against
+the list above yourself: a built-in "sandbox mode" that sets a working directory
+and resource limits is not a sandbox for this purpose, and it is the case that
+caused the incident behind this file. Where the harness names its settings
+differently, map the requirement rather than the name.
 
-- **Point the harness's isolation at the wrapper above**, or set
-  `ELGORA_GUARDIAN_SANDBOX_COMMAND` to the harness's own runner and let
-  preflight decide. Either way the proof is the preflight output, not the
-  setting's name.
+- **Point the harness's isolation at the wrapper above**, or satisfy the same
+  five properties with the harness's own runner. The proof is what you observed
+  from inside it, never the setting's name.
 - **Load both skills at every cycle** — `elgora-guardian-skill` and
   `elgora-guardian-ops-skill`. Loading only the first silently drops preflight,
   cycle state and the retry rules. Pin the skill versions in the scheduler
@@ -127,9 +149,9 @@ its settings differently, map the requirement rather than the name.
 
 ## Monitoring
 
-- **Alert on `preflight.blocked`**, and on `execute_untrusted` flipping from
-  true to false. The second is a silent capability loss that otherwise shows up
-  only as bounties nobody judged.
+- **Alert on `preflight.blocked`**, and on the sandbox runner failing to start.
+  Both are silent capability losses that otherwise show up only as bounties
+  nobody judged.
 - **Track Verdicts recorded per cycle, not cycles completed.** A healthy
   schedule with zero Verdicts is the failure this whole file exists to catch.
 - **Track spend per cycle and per bounty**, with an alert well below the
@@ -143,8 +165,7 @@ its settings differently, map the requirement rather than the name.
 ## Guarding
 
 - **Keys never enter the sandbox.** `--clearenv` or an explicit allowlist, and
-  the secret directory never bound. Confirm with `sandbox_filesystem_confined`
-  in preflight.
+  the secret directory never bound. Confirm by trying to read it from inside.
 - **Decryption and signing happen outside the sandbox**, in the CLI, on inputs
   the agent controls.
 - **Rotate on exposure.** Any key that has been in a plaintext config file, a
@@ -155,6 +176,10 @@ its settings differently, map the requirement rather than the name.
 - **Least privilege for the host account**: no passwordless `sudo` for the
   agent, no container socket in its group, no instance-metadata access from the
   sandbox.
-- **Re-run preflight after any change to isolation.** The cached result
-  invalidates itself when the wrapper command changes, but not when the kernel,
-  the image, or a sysctl underneath it does — so re-run it after those by hand.
+- **Re-check the isolation after any change to it** — the wrapper, the image,
+  the kernel, or a sysctl underneath it. Preflight will not tell you: it checks
+  tooling, and a clean tooling result on a broken sandbox looks exactly like a
+  clean one on a good sandbox.
+- **Keep the allowlist the boundary.** A Guardian installs from it freely; a
+  request for anything else is reported to you. Widening it is your decision,
+  and it belongs in the registry the skill renders from, not in a local note.
