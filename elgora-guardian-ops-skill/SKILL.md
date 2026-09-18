@@ -55,13 +55,15 @@ Every command targets the default deployment on its own. Pass
 
 ## Preflight
 
+Preflight is everything you confirm before accepting judging work. Its first
+step is one command:
+
 ```sh
-elgora-cli help preflight
-elgora-cli preflight
+elgora-cli help guardian:check-tools
+elgora-cli guardian:check-tools
 ```
 
-One cheap check, run before accepting judging work. It reports whether the
-running Node is inside the supported range and which allowlisted tools are on
+One cheap check, run before anything else. It reports whether the running Node is inside the supported range and which allowlisted tools are on
 this host, and exits non-zero when a required one is missing. Run it first so a
 cycle stops in milliseconds rather than after opening five Submissions.
 
@@ -76,14 +78,14 @@ Read `invoke_as` before you run any of them. A host may carry an allowlisted
 tool under another name, and `available` lists the allowlist's name rather than
 that one: a macOS host satisfies `sha256sum` with `shasum`, which computes SHA-1
 unless you pass `-a 256`. Typing the name from `available` there fails at
-hash-verification, with the Submissions already open — the late failure preflight
+hash-verification, with the Submissions already open — the late failure this check
 exists to prevent. Where `invoke_as` maps a tool, use what it maps to.
 
 It checks tooling and nothing else. It makes no claim about your sandbox, which
 is the operator's to provision and verify, and a clean result is not a statement
 that anything is safe to run.
 
-### What preflight cannot see, and you must check
+### What `guardian:check-tools` cannot see, and you must check
 
 The command is local: no chain read, no API call, no key. Four preconditions sit
 outside it, and each stops everything rather than narrowing anything, because
@@ -102,8 +104,9 @@ without them no bounty can be opened or recorded at all:
 - **Chain gas.** The account is funded, or no Verdict can be recorded however
   well the judging went.
 
-Report the preflight result and these four once per session, before the first
-evaluation. A passed preflight is not a claim that any bounty is judgeable.
+Report the tooling result and these four — together, the preflight — once per
+session, before the first evaluation. A passed preflight is not a claim that
+any bounty is judgeable.
 
 ### What "judgeable" requires
 
@@ -411,7 +414,7 @@ every bounty at once — including the ones that were judgeable.
 - **Read once.** The challenge page, the reference, and a Submission's
   deliverables are read once per cycle and carried in the record, not re-read
   per criterion.
-- **Do not re-derive the environment.** `elgora-cli preflight` answers it
+- **Do not re-derive the environment.** `elgora-cli guardian:check-tools` answers it
   once per session; the record carries the answer after that.
 - **Do not re-litigate a decided rule.** See "Your Rules Are The Skills".
 - **Stop at the first decisive disqualification** for a Submission. A package

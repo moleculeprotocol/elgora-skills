@@ -42,7 +42,8 @@ splitting, provider credentials and tool installation are in
 run its preflight before accepting judging work. This skill judges; that one
 runs the machine.
 
-Preflight is one cheap check for the tooling judging needs, and a missing tool
+Preflight starts with `elgora-cli guardian:check-tools`, one cheap check for the
+tooling judging needs, and a missing tool
 on its allowlist is installed rather than worked around — a bounty is never
 refused for a compiler you could have supplied. What it does not check is the
 sandbox, and the sandbox is where the work happens: a Submission is unpacked and

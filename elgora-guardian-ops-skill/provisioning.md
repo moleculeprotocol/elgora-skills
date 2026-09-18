@@ -7,7 +7,7 @@ reports it and judges what it can.
 Two halves, and only the first has a command:
 
 ```sh
-elgora-cli preflight
+elgora-cli guardian:check-tools
 ```
 
 - Exits zero once the host has a supported Node and the four required tools. It
@@ -20,9 +20,9 @@ elgora-cli preflight
 ## Baseline, every host
 
 - **Node 24.x** (`>=24 <25`). Match the CLI's `engines` range exactly; a version
-  outside it fails preflight.
+  outside it fails `guardian:check-tools`.
 - **`@elgora/cli`**, installed globally, updated when the skills are.
-- **`unzip`, `zipinfo`, `tar`, `sha256sum`** — the four preflight requires
+- **`unzip`, `zipinfo`, `tar`, `sha256sum`** — the four `guardian:check-tools` requires
   (`shasum -a 256` on macOS). A Submission is opened, listed and hash-verified
   before any of it is read.
 - **The rest of the allowlist, in the sandbox image.** The agent installs from
@@ -39,8 +39,8 @@ elgora-cli preflight
   separately and injected per process, never in a shell profile or a config file
   on disk.
 - **Writable state directory** (for example `/var/lib/elgora/`) that survives a
-  restart, for the preflight cache and the per-bounty records. Without it every
-  cycle starts over.
+  restart, for the recorded preflight result and the per-bounty records.
+  Without it every cycle starts over.
 
 ## Sandbox — Linux (AWS EC2)
 
@@ -51,7 +51,8 @@ Amazon Linux 2023 or Ubuntu 24.04. Rootless, one of:
     --user 1000:1000 --memory 2g --pids-limit 256 --cap-drop ALL
     --security-opt no-new-privileges -v <workdir>:/work:rw -w /work <image>`.
   - `--network none` is the netns; `--read-only` plus a single bind is the
-    mount namespace. Both are needed — one alone fails preflight.
+    mount namespace. Both are needed — one alone fails the confinement check
+    below.
   - Never mount the container socket, `/var/run`, the host root, or the secret
     directory. Never pass the Guardian's environment through.
 - **Bubblewrap ≥ 0.8** — lighter, no daemon.
@@ -66,7 +67,7 @@ Amazon Linux 2023 or Ubuntu 24.04. Rootless, one of:
     - Ubuntu 24.04: also
       `sysctl -w kernel.apparmor_restrict_unprivileged_userns=0`, or ship an
       AppArmor profile for the wrapper. Without this, `bwrap` fails `EPERM`
-      and preflight reports `sandbox_runs: fail`.
+      and the wrapper cannot start.
 - **Check it yourself, once, before first use and after any change.** Nothing
   downstream will catch a sandbox that starts but does not confine. From inside
   it, confirm that reading a path outside the bind fails, that reaching the
@@ -105,8 +106,8 @@ macOS has no user namespaces and no bubblewrap. Two honest options:
 - **`sandbox-exec` with an SBPL profile** — present on every macOS, formally
   deprecated, no longer documented by Apple. A `(deny default)` profile with
   `(deny network*)` and a single `(allow file-read* file-write*
-  (subpath "<workdir>"))` does satisfy preflight. Treat it as a stopgap and
-  re-run preflight after every macOS update, because nothing guarantees the
+  (subpath "<workdir>"))` does pass the confinement check above. Treat it as a stopgap
+  and repeat that check after every macOS update, because nothing guarantees the
   interface across them.
 
 A Mac host with neither cannot unpack a Submission safely, and should not be
@@ -149,7 +150,7 @@ differently, map the requirement rather than the name.
 
 ## Monitoring
 
-- **Alert on `preflight.blocked`**, and on the sandbox runner failing to start.
+- **Alert on `guardian_check_tools.missing`**, and on the sandbox runner failing to start.
   Both are silent capability losses that otherwise show up only as bounties
   nobody judged.
 - **Track Verdicts recorded per cycle, not cycles completed.** A healthy
@@ -177,8 +178,8 @@ differently, map the requirement rather than the name.
   agent, no container socket in its group, no instance-metadata access from the
   sandbox.
 - **Re-check the isolation after any change to it** — the wrapper, the image,
-  the kernel, or a sysctl underneath it. Preflight will not tell you: it checks
-  tooling, and a clean tooling result on a broken sandbox looks exactly like a
+  the kernel, or a sysctl underneath it. `guardian:check-tools` will not tell you:
+  it checks tooling, and a clean tooling result on a broken sandbox looks exactly like a
   clean one on a good sandbox.
 - **Keep the allowlist the boundary.** A Guardian installs from it freely; a
   request for anything else is reported to you. Widening it is your decision,
