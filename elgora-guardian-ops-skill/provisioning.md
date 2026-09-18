@@ -21,14 +21,15 @@ shipped in a CLI can establish isolation in general.
   keep asking for — saves an install per cycle. Pin it by digest.
 - **Package-manager access from inside the sandbox**, to the official
   distribution archives and the language registries (PyPI, CRAN, Bioconductor,
-  conda-forge and Bioconda, npmjs.com, crates.io). Without it the agent cannot supply what a challenge names, and
-  bounties get refused over a missing compiler.
-- **Two network phases, not one.** Setting the sandbox up — installing tools and
-  libraries, pulling the base image, fetching a challenge-named input — needs
-  the network. Running the Submission's own code must not have it: a solution
-  that downloads part of itself at run time can be changed after the Verdict is
-  recorded. Build the per-bounty environment with the network on, then run the
-  Submission in it with the network off.
+  conda-forge and Bioconda, npmjs.com, crates.io), at any point during judging.
+  Without it the agent cannot supply what a challenge names, and bounties get
+  refused over a missing compiler.
+- **Network on, except while Submission code executes.** The agent's own work
+  in the sandbox — installing, fetching challenge-named inputs, its own analysis
+  and recomputation — keeps the network throughout, and may install more at any
+  point. Only commands that execute the Submission's own code (its build, its
+  tests, its entry point) run offline. See "Why Submission code runs offline"
+  below.
 - **A secret manager**, with the signing key and the X25519 keys held
   separately and injected per process, never in a shell profile or a config file
   on disk. The signing key goes only to commands that sign, as
@@ -49,12 +50,34 @@ shipped in a CLI can establish isolation in general.
 ## The model: the agent on the host, one sandbox per bounty
 
 The agent, the CLI and the keys run on the plain host. For each bounty the agent
-spawns its own sandbox through one wrapper you provide, in two kinds of call:
+spawns its own sandbox through one wrapper you provide, in two kinds of call,
+told apart by whose code runs, not by phase:
 
-- **setup** — network on, to install tools and libraries from public sources
-  and fetch inputs the challenge names. Only the agent's own commands run here;
-  nothing from a Submission ever runs with the network on;
-- **run** — network off, for everything that touches the Submission's own code.
+- **agent** — network on. The agent's own commands: installing tools and
+  libraries from public sources, fetching inputs the challenge names, and its
+  own analysis, checkers and recomputation — reading the Submission's files as
+  data is fine. Usable at any point, including between two Submission runs.
+- **submission** — network off. Any command that executes the Submission's own
+  code: its build, its tests, its entry point.
+
+### Why Submission code runs offline
+
+Not for the keys — they never enter the sandbox, network or not. Three reasons,
+each specific to the Submission's own code:
+
+- **The Verdict must rest on committed bytes.** Code that downloads something
+  while it runs is judged on content that can change after the Verdict is
+  recorded. Running offline is the one mechanical proof that a result came from
+  the package.
+- **Other Solvers' work sits in the same sandbox.** A bounty's sandbox holds
+  every Submission for that bounty; with the network on, one Solver's code could
+  send a competitor's sealed solution anywhere.
+- **The Guardian's network identity** is not the Solver's to use.
+
+Dependencies still get installed: the agent reads the Submission's manifest and
+imports, resolves the named packages itself from the public sources, and
+installs them with an `agent` call before the `submission` call — and again
+between runs if one turns out missing.
 
 The sandbox may persist across that bounty's runs, so a large bounty resumes
 without reinstalling, and is destroyed once its Verdict is recorded. What may
@@ -67,9 +90,9 @@ inside it.
 Amazon Linux 2023 or Ubuntu 24.04. Rootless, one of:
 
 - **Podman ≥ 4.9** — `dnf install -y podman` / `apt install -y podman`.
-  - Set up with the network on (`podman build`, or `podman run` without
-    `--network none` followed by `podman commit`), installing only from
-    official archives and registries. Pin the resulting image by digest and
+  - Run the agent's own commands with the network on (`podman build`, or
+    `podman run` without `--network none`, committing when worth caching),
+    installing only from official archives and registries. Pin the resulting image by digest and
     run it with `--pull never`, so the image you checked is the one that runs.
   - Run the Submission's own code as `podman run --rm --network none --read-only
     --user 1000:1000 --memory 2g --pids-limit 256 --cap-drop ALL
@@ -84,9 +107,8 @@ Amazon Linux 2023 or Ubuntu 24.04. Rootless, one of:
     --ro-bind /lib /lib --ro-bind /lib64 /lib64 --ro-bind /bin /bin
     --proc /proc --dev /dev --bind <workdir> /work --chdir /work --clearenv --`
   - `--unshare-all` covers the network and mount namespaces; `--clearenv` is
-    what keeps the Guardian's keys out. For the setup phase only, add
-    `--share-net` so installs can reach the archives and registries; never for
-    running the Submission.
+    what keeps the Guardian's keys out. Add `--share-net` for the agent's own
+    commands; never for a command that executes Submission code.
   - Needs unprivileged user namespaces enabled:
     - Amazon Linux 2023: `sysctl -w user.max_user_namespaces=15000`, persisted
       in `/etc/sysctl.d/`.
@@ -97,7 +119,7 @@ Amazon Linux 2023 or Ubuntu 24.04. Rootless, one of:
 - **Check it yourself, once, before first use and after any change.** Nothing
   downstream will catch a sandbox that starts but does not confine. From inside
   it, confirm that reading a path outside the bind fails, that reaching the
-  network fails in the run phase, that exceeding a bound is stopped with cleanup still
+  network fails in a `submission` call, that exceeding a bound is stopped with cleanup still
   succeeding, and that a timeout or crash stops visibly without falling back to
   the host.
 - **Resource bounds** belong on the runner, not on the agent: memory, pids, CPU
@@ -109,13 +131,13 @@ host rather than a thing the agent assembles per bounty:
 
 ```sh
 #!/bin/sh
-# /usr/local/bin/elgora-sandbox-run <setup|run> <work_dir> <command> [args...]
+# /usr/local/bin/elgora-sandbox-run <agent|submission> <work_dir> <command> [args...]
 set -eu
 mode="$1"; work_dir="$2"; shift 2
 case "$mode" in
-  setup) net="--share-net" ;;   # installs from public sources
-  run)   net="" ;;              # the Submission's own code: no network
-  *) echo "usage: elgora-sandbox-run <setup|run> <work_dir> <cmd>..." >&2; exit 64 ;;
+  agent)      net="--share-net" ;;  # installs, fetches, the agent's own analysis
+  submission) net="" ;;             # executes Submission code: offline
+  *) echo "usage: elgora-sandbox-run <agent|submission> <work_dir> <cmd>..." >&2; exit 64 ;;
 esac
 exec bwrap --unshare-all $net --die-with-parent --new-session \
   --ro-bind /usr /usr --ro-bind /lib /lib --ro-bind /lib64 /lib64 \
@@ -124,10 +146,10 @@ exec bwrap --unshare-all $net --die-with-parent --new-session \
   -- "$@"
 ```
 
-With bubblewrap the host's `/usr` is read-only, so setup installs land in the
-work directory (a virtualenv, a conda prefix, a user library path). For OS
+With bubblewrap the host's `/usr` is read-only, so installs land in the work
+directory (a virtualenv, a conda prefix, a user library path). For OS
 packages, build an image with Podman instead and have the wrapper call
-`podman run` with `--network none` for `run`. Point the harness at that one path.
+`podman run` with `--network none` for `submission`. Point the harness at that one path.
 The agent never edits it, and a change to isolation is a change to one file you
 own.
 
