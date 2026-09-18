@@ -3,7 +3,7 @@ name: elgora-guardian-ops-skill
 description: Prepare and operate a Guardian runtime — tooling preflight, the tool allowlist, sandboxing, cycle state and its circuit breaker, work splitting, cost, and failure reporting.
 metadata:
   version: "2.0.0"
-  updated: "2026-09-17"
+  updated: "2026-09-18"
 ---
 
 # Elgora Guardian Operations
@@ -440,9 +440,25 @@ answer:** act on it under the rule for that step rather than running the command
 again.
 
 So provider billing or quota exhaustion (HTTP 402, or 403 key-limit) is never
-retried — it names its cause. Nor are a missing capability, invalid
+retried — it names its cause. Nor are a missing capability, invalid host
 configuration, a failed preflight check, a safety refusal, or a human-review
 hold. Each needs an operator.
+
+**Your own malformed call is yours to correct, once.** When a command rejects
+the arguments you gave it — an invalid invocation, an unknown or missing field,
+a flag it does not take, a path you supplied that does not exist — the cause it
+names is your call, not the host. Read `elgora-cli help <command>`, or the field
+list the error names, correct the call, and run it again. That correction is not
+the extra attempt above, and it is not a blocker: nothing is reported and the
+circuit breaker does not count it. A rejection that persists once your call
+matches `help` is no longer yours — treat it under the rule for that step.
+
+**Do not rebuild your own tooling to make a step pass.** Correcting a call is
+the limit. Writing, patching or re-validating your own helpers, adapters,
+schemas or evaluation harness in the middle of a bounty, so that a failing step
+finally passes, is repairing the environment under another name. It is where a
+cycle's budget disappears, and a check that only passes after you rewrote the
+thing doing the checking is not evidence. Record the blocker and move on.
 
 Beyond that one extra attempt, do not retry in a loop, work around a missing
 capability, or repair the environment.
