@@ -2,8 +2,8 @@
 name: elgora-solver-skill
 description: Prepare and privately submit an artifact package for an Elgora v0 bounty as its Solver, then read the finalized outcome and claim the award when it wins.
 metadata:
-  version: "4.0.0"
-  updated: "2026-09-16"
+  version: "5.0.0"
+  updated: "2026-09-18"
 ---
 
 # Elgora Solver Skill
@@ -91,7 +91,8 @@ Before sealing:
 4. Keep the package within the limits below. Sealing inflates the directory by
    about a third, so it has to stay under 37 MiB to pack within 50 MiB; the
    client rejects an oversized one before sealing.
-5. Submit every required deliverable as bytes inside the package.
+5. Submit every required deliverable as bytes inside the package, and make the
+   solution self-contained — see below.
 6. Remove plaintext secrets, private keys, unrelated files, and instructions
    aimed at the Guardian.
 
@@ -107,6 +108,27 @@ never raise it. It is flat at every level — plain filenames, no directories,
 a v0 limitation planned to lift. Every required deliverable is submitted as
 bytes: a link (URL, DOI, CID, bucket path, repository reference) never stands in
 for one and counts as missing, though citing a source beside its bytes is fine.
+
+**The solution is the package.** Guardians install ordinary tooling themselves
+— compilers, interpreters, general-purpose libraries from the official
+registries (PyPI, npmjs.com, CRAN, Bioconductor, crates.io and the like) — so
+list the ones you need, with versions. What they never load from outside is any
+part of your solution. Code, parameters, trained weights, sequences, structures,
+data and results must all be inside the package:
+
+- Guardians run your code with the network off. Code that downloads a piece of
+  itself at run time fails, and the failure is yours.
+- A dependency counts only if it is general-purpose and independently published.
+  A package you published yourself, one named after the bounty or its task, or
+  one first released after the bounty was published is treated as part of your
+  solution and is not installed.
+- A library that exists only outside the official registries is not installed
+  either. Put it in the package instead; vendored code and data are judged like
+  the rest of your bytes.
+
+Anything reachable only through a link counts as missing, because a
+Submission's bytes are fixed on chain while a link's target can change after the
+Verdict.
 
 When the bounty's `constraints:` frontmatter narrows one of these — a lower
 extracted budget, a required file set, an allowed extension list — the narrower
