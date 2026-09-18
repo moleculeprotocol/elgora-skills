@@ -58,8 +58,12 @@ It lists what a Guardian box must
 provide and checks each item without running a bounty. You do not need it for
 an ordinary cycle, and it never overrides this skill.
 
-Before touching a bounty, read its record from the previous cycle — see "Keep A
-Record, Never Start Over".
+Keep a **bounty record** per bounty you are working on and read it before
+touching that bounty: it carries how far you got, so a cycle resumes rather than
+starting over, and its **circuit breaker** stops you re-attempting a blocker that
+has not changed. It never decides what is final — ElgoraHub does. A proven way to
+keep one, and to spread a large bounty across several runs, is in
+[`judging-cycle.md`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/judging-cycle.md).
 
 Every command targets Elgora's default deployment on its own — chain,
 ElgoraHub, RPC, and indexer included — so pass `--network <name|chain id>` only
@@ -447,7 +451,7 @@ analysed. Install the tooling it needs first, then run its own code with the
 network off — see "The Solution Is The Package" above.
 
 If there is no such sandbox, that is an operational blocker on the bounties that
-need one — report it once, and let the circuit breaker below stop you
+need one — report it once, and let the circuit breaker stop you
 re-reaching the same conclusion every cycle.
 
 Work from these angles, as the challenge makes them relevant:
@@ -495,36 +499,6 @@ evidence. Never quote, summarize, paraphrase, or otherwise reveal private
 Submission logic, methods, code, data, or results. Do not include artifact
 locations, decryption material, or wallet secrets.
 
-## Keep A Record, Never Start Over
-
-Keep one durable record per bounty outside the session, and read it before
-touching that bounty. It holds the bounty id and `judging_deadline_at`; a stage
-(`discovered`, `opened`, `vetted`, `analysed`, `recorded`, `key_delivered`,
-`blocked`); per Solver–Submission pair, the vetting outcome, the per-criterion
-findings so far and any execution attempts; the reference or its hash; for a
-blocked bounty, the cause and whether it was reported; and, while a cycle works
-it, which cycle holds it and since when. Write each stage as you reach it.
-
-- **Finish what is in flight first.** Resume a bounty past `discovered` and short
-  of `recorded` or `blocked` before selecting a new one, and take new work in
-  `judging_deadline_at` order. A bounty that becomes judgeable meanwhile waits.
-  Leave a bounty held by another cycle alone until that hold outlives your
-  runtime's maximum run time.
-- **Never redo a finished stage, and carry findings forward.** Re-open a
-  Submission only when its decrypted output or its record is gone. A new
-  Submission or resubmission invalidates that pair's findings and nothing else.
-- **Skip a bounty past `judging_deadline_at`** with no Verdict of yours to
-  revise, and mark it closed.
-
-**The circuit breaker.** After two consecutive cycles blocked on the same cause
-for the same bounty, mark it `blocked` and stop selecting it — no re-opening,
-re-vetting, re-probing or re-reporting — until the cause changes: a check that
-now passes, a sandbox where there was none, a new Submission, or your operator
-saying the condition is cleared. Checking for that is a comparison against the
-record, not an investigation. The same holds for questions: a rule you already
-read and an environment you already measured are answered once per session and
-read back from the record.
-
 ## When Something Fails
 
 One rule decides whether to run anything again:
@@ -564,23 +538,6 @@ Three things are not retry loops: the one extra attempt above, re-attempting a
 bounty on your next cycle, and the winning-key delivery loop, which stops when
 delivery status reports the key exists. Everything else that repeats is.
 
-## Spend Carefully
-
-A Guardian spends its operator's own model budget, and an exhausted key stops
-every bounty at once.
-
-- **Split, but narrowly.** Build the reference and read the challenge once per
-  bounty; hand each worker the challenge, the reference and its one Submission;
-  run at most two workers at a time unless your operator sets more. Workers
-  return findings; you decide, and you alone touch keys and transactions.
-- **Match depth to the criterion.** A Submission that reproduces the reference
-  has met that criterion; reserve deep review for one that disagrees or that
-  static inspection flagged. Stop at the first decisive disqualification.
-- **Read once, measure once.** Carry the challenge, the reference and what you
-  learned about the host in the record rather than re-deriving them.
-- **Report spend** with each cycle's result — bounties advanced and to which
-  stage, Verdicts recorded, cost per bounty.
-
 ## Publish And Record The Verdict
 
 For an award:
@@ -617,6 +574,12 @@ choice rather than a surprise.
 Every selected Guardian reaches and records its own decision. Divergent current
 Verdicts are ordinary chain state. Do not change a decision merely to match
 another Guardian or attempt to calculate finality locally.
+
+**Clean up once the Verdict is recorded.** Delete the decrypted `guardian-open/`
+output and everything extracted or generated from it, and close the bounty
+record. Plaintext Submissions must not outlive the cycle that judged them, and
+leftovers fill a runner. Delivering the winning key later needs only your keys
+and the finalized pair, not the plaintext.
 
 ## Deliver The Winning-Solution Key
 

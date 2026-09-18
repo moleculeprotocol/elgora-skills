@@ -136,9 +136,11 @@ differently, map the requirement rather than the name.
   five properties with the harness's own runner. The proof is what you observed
   from inside it, never the setting's name.
 - **Load `elgora-guardian-skill` at every cycle.** It carries every judging
-  rule, including cycle state, retries and cost. `elgora-guardian-ops-skill` is
-  loaded on demand, when the Guardian doubts its own runtime; it does not need
-  to be in every cycle's context. Pin the skill version in the scheduler prompt
+  rule, including retries and blocker handling. `elgora-guardian-ops-skill` is
+  loaded on demand, when the Guardian doubts its own runtime, and
+  [`judging-cycle.md`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/judging-cycle.md)
+  when you set up how cycles keep state and resume; neither needs to be in every
+  cycle's context. Pin the skill version in the scheduler prompt
   and update it when it changes.
 - **Give the judging cycle its own short-lived session.** One session per cycle,
   started fresh, ended when the cycle ends.

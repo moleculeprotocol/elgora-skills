@@ -1,6 +1,6 @@
 ---
 name: elgora-guardian-ops-skill
-description: Check a Guardian runtime on demand — what a Guardian box must provide, where its setup rules live, and how to verify it works without running a bounty. Load it when a judging cycle cannot start or fails on its own environment, not on every cycle.
+description: Check a Guardian runtime on demand — what a Guardian box must provide, where judging reads and writes its data, where the setup and judging-cycle guides live, and how to verify it all without running a bounty. Load it when a judging cycle cannot start or fails on its own environment, not on every cycle.
 metadata:
   version: "2.0.0"
   updated: "2026-09-18"
@@ -30,6 +30,10 @@ this Guardian is not configured for the work.
   beside this file, is the operator's guide: what to install on a Guardian host,
   how to build and verify the sandbox, harness settings, monitoring. Point your
   operator there when a check below fails.
+- **[`judging-cycle.md`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/judging-cycle.md)**,
+  also beside this file, is a proven way to run judging on a schedule: the
+  bounty record, resuming, the circuit breaker, large bounties across several
+  runs, and cost. Use it when setting up or changing how your cycles run.
 - **`elgora-guardian-skill`** holds every judging rule, including what you may
   install inside the sandbox and how failures are handled. Nothing here
   overrides it.
@@ -51,6 +55,26 @@ this Guardian is not configured for the work.
 
 Nothing else is required on the host. Every tool a Submission needs is installed
 inside the sandbox, per bounty.
+
+## Working Data
+
+Where judging reads and writes, so each kind of data stays where it belongs:
+
+- **Keys** never leave the environment of the command that uses them. They are
+  not written to disk, passed as arguments, or mounted into a sandbox.
+- **Decrypted Submissions** come from `guardian:open`, into the output directory
+  you pass it (default `./guardian-open/<bounty_id>/<submission_commitment>/`).
+  Give it a fresh directory per bounty that only this account can read, outside
+  your state directory.
+- **Into the sandbox** go one bounty's decrypted files (read-only), the
+  challenge's verified inputs (read-only) and a bounded scratch area. **Out of
+  it** come the outputs and findings you need, and nothing else.
+- **Your state directory** holds a small record per bounty you are working on,
+  so a later cycle resumes instead of starting over. Its shape is yours to
+  choose; `judging-cycle.md` describes one that works. It never holds keys or
+  plaintext, and it never decides what is final — ElgoraHub does.
+- **Cleanup** follows the judging skill: decrypted output and everything
+  derived from it are deleted once the Verdict is recorded.
 
 ## Check It Without Running A Bounty
 
