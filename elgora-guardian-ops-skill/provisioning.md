@@ -46,6 +46,22 @@ shipped in a CLI can establish isolation in general.
   restart, for the recorded runtime check and the per-bounty records.
   Without it every cycle starts over.
 
+## The model: the agent on the host, one sandbox per bounty
+
+The agent, the CLI and the keys run on the plain host. For each bounty the agent
+spawns its own sandbox through one wrapper you provide, in two kinds of call:
+
+- **setup** — network on, to install tools and libraries from public sources
+  and fetch inputs the challenge names. Only the agent's own commands run here;
+  nothing from a Submission ever runs with the network on;
+- **run** — network off, for everything that touches the Submission's own code.
+
+The sandbox may persist across that bounty's runs, so a large bounty resumes
+without reinstalling, and is destroyed once its Verdict is recorded. What may
+persist beyond one bounty is the image and package caches, never a container
+that held another bounty's plaintext. Decryption and signing never happen
+inside it.
+
 ## Sandbox — Linux (AWS EC2)
 
 Amazon Linux 2023 or Ubuntu 24.04. Rootless, one of:
@@ -92,19 +108,28 @@ Then give the agent one wrapper to invoke, so the isolation is a property of the
 host rather than a thing the agent assembles per bounty:
 
 ```sh
-# /usr/local/bin/elgora-sandbox-run <work_dir> <command> [args...]
 #!/bin/sh
+# /usr/local/bin/elgora-sandbox-run <setup|run> <work_dir> <command> [args...]
 set -eu
-work_dir="$1"; shift
-exec bwrap --unshare-all --die-with-parent --new-session \
+mode="$1"; work_dir="$2"; shift 2
+case "$mode" in
+  setup) net="--share-net" ;;   # installs from public sources
+  run)   net="" ;;              # the Submission's own code: no network
+  *) echo "usage: elgora-sandbox-run <setup|run> <work_dir> <cmd>..." >&2; exit 64 ;;
+esac
+exec bwrap --unshare-all $net --die-with-parent --new-session \
   --ro-bind /usr /usr --ro-bind /lib /lib --ro-bind /lib64 /lib64 \
   --ro-bind /bin /bin --proc /proc --dev /dev \
   --bind "$work_dir" /work --chdir /work --clearenv \
   -- "$@"
 ```
 
-Point the harness at that one path. The agent never edits it, and a change to
-isolation is a change to one file you own.
+With bubblewrap the host's `/usr` is read-only, so setup installs land in the
+work directory (a virtualenv, a conda prefix, a user library path). For OS
+packages, build an image with Podman instead and have the wrapper call
+`podman run` with `--network none` for `run`. Point the harness at that one path.
+The agent never edits it, and a change to isolation is a change to one file you
+own.
 
 ## Sandbox — macOS hosts
 
@@ -135,6 +160,13 @@ differently, map the requirement rather than the name.
 - **Point the harness's isolation at the wrapper above**, or satisfy the same
   five properties with the harness's own runner. The proof is what you observed
   from inside it, never the setting's name.
+- **Hermes:** keep `terminal.backend: local`, so the agent and CLI keep the keys
+  on the host, and have it call the wrapper. Its `backend: docker` routes every
+  command, the CLI included, into one container that is shared across sessions
+  and subagents by default and has a single static `docker_network` setting — it
+  cannot keep the keys out and the plaintext per bounty at the same time. If you
+  use it for other work, never list `ELGORA_GUARDIAN_*` in `docker_forward_env`
+  or `env_passthrough`, and set `container_persistent: false`.
 - **Load `elgora-guardian-skill` at every cycle.** It carries every judging
   rule, including retries and blocker handling. `elgora-guardian-ops-skill` is
   loaded on demand, when the Guardian doubts its own runtime, and

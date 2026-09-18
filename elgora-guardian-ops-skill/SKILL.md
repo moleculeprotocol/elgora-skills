@@ -50,7 +50,7 @@ this Guardian is not configured for the work.
 | Roster seat | The account is on at least one pinned Guardian roster. |
 | Gas | The account holds chain gas, or no Verdict can be recorded. |
 | Model credit | The operator's provider key covers at least one full evaluation. Elgora supplies none. |
-| Sandbox | Isolated from the agent's space (no keys, secrets or other bounties' plaintext), bounded in memory and disk, fresh per bounty, no host control interfaces, network available while setting up and off while Submission code runs. |
+| Sandbox | Isolated from the agent's space (no keys, secrets or other bounties' plaintext), bounded in memory and disk, one per bounty (it may persist across that bounty's runs and is destroyed once its Verdict is recorded), no host control interfaces, network available while setting up and off while Submission code runs. |
 | State directory | Writable and persistent across restarts, for the per-bounty records. |
 
 Nothing else is required on the host. Every tool a Submission needs is installed
