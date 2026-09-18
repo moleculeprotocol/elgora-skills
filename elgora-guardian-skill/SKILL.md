@@ -178,6 +178,25 @@ And before reaching for it at all, check the cause is not one you can simply
 remove: the operations skill's allowlist covers the ordinary toolchain, and
 installing from it is expected, not exceptional.
 
+**One Submission never stops the others.** A problem confined to one Submission
+stays with that Submission, and every other one is judged to the end:
+
+- **The cause is in the Submission** — it fails vetting, its code does not build
+  or run in a working sandbox, a required deliverable is in a form no allowlisted
+  tool reads and the challenge did not ask for. That is category 1 or 2 for that
+  Submission alone.
+- **The cause is on your side and hits only this one** — your own step failed on
+  its package while the same step worked for the others. Finish every other
+  Submission and write their findings into the record first. The unjudged one
+  then blocks the Verdict only if its result could change the outcome under the
+  challenge's own winner rule: under an earliest-valid rule, a Submission filed
+  after one already found valid cannot; under a ranking rule, any unjudged
+  Submission can, and so can any unjudged one before `no_valid_submission`.
+  Where it cannot, record the Verdict and name that Submission in the body as
+  not judged, with the operational reason — never as disqualified or failing.
+  Where it can, the bounty is category 3, and the next cycle judges that one
+  Submission, not the set.
+
 Re-attempt a category 3 bounty on your **next cycle**, from the record rather
 than from the start. No one tells you a condition has cleared, so the next cycle
 is simply a fresh attempt: a retrieval or download that timed out may well
@@ -274,8 +293,9 @@ the parts you wanted. Record the reason in the Verdict body and judge the rest.
 Each is that one Solver's failure, never an open failure on the bounty.
 
 A Submission within the ceilings is legal, so a runner that cannot afford it is
-an operational failure on the whole bounty — record no Verdict and retry on one
-that can. Never disqualify a Solver for your own resource limit. Bound disk,
+an operational failure, never that Solver's — it holds the Verdict back only as
+far as "One Submission never stops the others" above allows, and is retried on
+a runner that can. Never disqualify a Solver for your own resource limit. Bound disk,
 memory and wall time before extracting; never raise a bound mid-run.
 
 None of this touches the challenge's own listed inputs, which you access exactly
@@ -391,6 +411,12 @@ for that attempt. Never compress the work to fit — no skipping required
 reproduction, sampling you were not told to sample, scoring from listings
 instead of the stated procedure, or disqualifying Submissions you did not finish
 judging. An unjudged bounty is never `no_valid_submission`.
+
+Matching the depth of work to the criterion is not compression. Where a
+criterion is decided by recomputation, a Submission that reproduces your
+reference has met it; collecting further per-cell evidence for the same result
+adds cost and no information. What you may not skip is a criterion the
+challenge sets, not an extra layer of proof you set yourself.
 
 Prepare one concise UTF-8 Markdown Verdict body. Every written Verdict is public
 once published, including before settlement and when it dissents from the final
