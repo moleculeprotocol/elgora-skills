@@ -31,9 +31,19 @@ shipped in a CLI can establish isolation in general.
   Submission in it with the network off.
 - **A secret manager**, with the signing key and the X25519 keys held
   separately and injected per process, never in a shell profile or a config file
-  on disk.
+  on disk. The signing key goes only to commands that sign, as
+  `ELGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY`; the X25519 keys only to commands that
+  decrypt, as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`. Each X25519 entry uses the
+  Guardian account as its lowercase `key_id`, the suite
+  `hpke-dhkem-x25519-hkdf-sha256+hkdf-sha256+aes-256-gcm@1`, and the 32-byte
+  private key as unpadded base64url. **Retain old entries until every bounty
+  pinned to them is final** — the CLI tries each in turn, and overwriting one
+  on rotation makes those Submissions permanently unopenable.
+- **Chain gas and model credit.** Fund the Guardian account before a Verdict is
+  attempted, and give the agent its own provider key with a spend alert well
+  below its hard limit. Elgora supplies neither.
 - **Writable state directory** (for example `/var/lib/elgora/`) that survives a
-  restart, for the recorded preflight result and the per-bounty records.
+  restart, for the recorded runtime check and the per-bounty records.
   Without it every cycle starts over.
 
 ## Sandbox — Linux (AWS EC2)
@@ -125,10 +135,11 @@ differently, map the requirement rather than the name.
 - **Point the harness's isolation at the wrapper above**, or satisfy the same
   five properties with the harness's own runner. The proof is what you observed
   from inside it, never the setting's name.
-- **Load both skills at every cycle** — `elgora-guardian-skill` and
-  `elgora-guardian-ops-skill`. Loading only the first silently drops preflight,
-  cycle state and the retry rules. Pin the skill versions in the scheduler
-  prompt and update it when they change.
+- **Load `elgora-guardian-skill` at every cycle.** It carries every judging
+  rule, including cycle state, retries and cost. `elgora-guardian-ops-skill` is
+  loaded on demand, when the Guardian doubts its own runtime; it does not need
+  to be in every cycle's context. Pin the skill version in the scheduler prompt
+  and update it when it changes.
 - **Give the judging cycle its own short-lived session.** One session per cycle,
   started fresh, ended when the cycle ends.
 - **Never point heartbeats, polls, timers or webhooks at the session that
