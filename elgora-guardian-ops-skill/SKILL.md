@@ -72,6 +72,13 @@ is on the allowlist: a missing one is installed, not worked around and not
 reported as a Solver's problem. The rest of the output is advisory — a challenge
 naming a toolchain tells you which of them this bounty will need.
 
+Read `invoke_as` before you run any of them. A host may carry an allowlisted
+tool under another name, and `available` lists the allowlist's name rather than
+that one: a macOS host satisfies `sha256sum` with `shasum`, which computes SHA-1
+unless you pass `-a 256`. Typing the name from `available` there fails at
+hash-verification, with the Submissions already open — the late failure preflight
+exists to prevent. Where `invoke_as` maps a tool, use what it maps to.
+
 It checks tooling and nothing else. It makes no claim about your sandbox, which
 is the operator's to provision and verify, and a clean result is not a statement
 that anything is safe to run.
