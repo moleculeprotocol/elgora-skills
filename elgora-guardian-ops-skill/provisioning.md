@@ -4,36 +4,24 @@ For the operator who builds the machine, not the agent that runs on it. The
 agent never installs any of this — if something here is missing, the agent
 reports it and judges what it can.
 
-Two halves, and only the first has a command:
-
-```sh
-elgora-cli guardian:check-tools
-```
-
-- Exits zero once the host has a supported Node and the four required tools. It
-  reports the rest of the allowlist as advisory, and names the Debian package
-  for anything missing.
-- It says nothing about the sandbox. No probe shipped in a CLI can establish
-  isolation in general, so the second half of this file is yours to verify by
-  building it correctly — not by reading a green check.
+The host itself needs very little: a supported Node for the CLI, and a sandbox
+runtime. Everything a Submission needs is installed inside the sandbox, per
+bounty, from public sources. The CLI checks its own Node range on every command;
+the sandbox is yours to verify by building it correctly, because no probe
+shipped in a CLI can establish isolation in general.
 
 ## Baseline, every host
 
-- **Node 24.x** (`>=24 <25`). Match the CLI's `engines` range exactly; a version
-  outside it fails `guardian:check-tools`.
+- **Node 24.x** (`>=24 <25`). Match the CLI's `engines` range exactly; every
+  command refuses to start outside it.
 - **`@elgora/cli`**, installed globally, updated when the skills are.
-- **`unzip`, `zipinfo`, `tar`, `sha256sum`** — the four `guardian:check-tools` requires
-  (`shasum -a 256` on macOS). A Submission is opened, listed and hash-verified
-  before any of it is read.
-- **The rest of the allowlist, in the sandbox image.** The agent installs from
-  it by name as a challenge needs it — archive tools, `curl`/`wget`/`git`, `jq`,
-  `python3`, `node`, `Rscript`, `ruby`, `perl`, and the
-  `gcc`/`clang`/`gfortran`/`make`/`cmake`/`cargo`/`go`/`javac` family. Baking
-  the common ones into the image saves an install per cycle; it is not required.
-  The full list ships in `SKILL.md` beside this file.
-- **Package-manager access from inside the sandbox**, to the official Debian and
-  Ubuntu archives and the language registries (PyPI, CRAN, npmjs.com,
-  crates.io). Without it the agent cannot supply what a challenge names, and
+- **A base image for the sandbox.** Nothing is required in it: the agent
+  installs what each challenge needs. Baking in the common tools — archive
+  tools, `python3`, `Rscript`, a C toolchain, the domain tools your bounties
+  keep asking for — saves an install per cycle. Pin it by digest.
+- **Package-manager access from inside the sandbox**, to the official
+  distribution archives and the language registries (PyPI, CRAN, Bioconductor,
+  conda-forge and Bioconda, npmjs.com, crates.io). Without it the agent cannot supply what a challenge names, and
   bounties get refused over a missing compiler.
 - **Two network phases, not one.** Setting the sandbox up — installing tools and
   libraries, pulling the base image, fetching a challenge-named input — needs
@@ -54,8 +42,9 @@ Amazon Linux 2023 or Ubuntu 24.04. Rootless, one of:
 
 - **Podman ≥ 4.9** — `dnf install -y podman` / `apt install -y podman`.
   - Set up with the network on (`podman build`, or `podman run` without
-    `--network none` followed by `podman commit`), installing only from the
-    allowlist and official registries.
+    `--network none` followed by `podman commit`), installing only from
+    official archives and registries. Pin the resulting image by digest and
+    run it with `--pull never`, so the image you checked is the one that runs.
   - Run the Submission's own code as `podman run --rm --network none --read-only
     --user 1000:1000 --memory 2g --pids-limit 256 --cap-drop ALL
     --security-opt no-new-privileges -v <workdir>:/work:rw -w /work <image>`.
@@ -189,9 +178,9 @@ differently, map the requirement rather than the name.
   agent, no container socket in its group, no instance-metadata access from the
   sandbox.
 - **Re-check the isolation after any change to it** — the wrapper, the image,
-  the kernel, or a sysctl underneath it. `guardian:check-tools` will not tell you:
-  it checks tooling, and a clean tooling result on a broken sandbox looks exactly like a
-  clean one on a good sandbox.
-- **Keep the allowlist the boundary.** A Guardian installs from it freely; a
-  request for anything else is reported to you. Widening it is your decision,
-  and it belongs in the registry the skill renders from, not in a local note.
+  the kernel, or a sysctl underneath it. Nothing in the CLI will tell you: a
+  sandbox that starts but does not confine runs every command just as well as
+  one that does.
+- **Keep the sources the boundary.** A Guardian installs any tool freely, but
+  only from the public sources the skill names, and only inside the sandbox. A
+  tool with no such source is reported to you rather than fetched.

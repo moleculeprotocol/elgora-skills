@@ -42,8 +42,8 @@ never is.
 **Tools may come from the internet.** Judging a codebase, a pipeline or a
 biological descriptor usually needs software this host does not have — a
 compiler, an interpreter, a library, an aligner, a structure or sequence tool.
-Install it inside the sandbox, with the network on, from the allowlist and the
-official registries the operations skill names, at a version you pin. That is
+Install it inside the sandbox, with the network on, from the public sources the
+operations skill names, at a version you pin. That is
 ordinary Guardian work, and a bounty is never refused over a tool you could have
 installed.
 
@@ -85,12 +85,13 @@ splitting, provider credentials and tool installation are in
 run its preflight before accepting judging work. This skill judges; that one
 runs the machine.
 
-Preflight starts with `elgora-cli guardian:check-tools`, one cheap check for the
-tooling judging needs, and a missing tool
-on its allowlist is installed rather than worked around — a bounty is never
-refused for a compiler you could have supplied. What it does not check is the
-sandbox, and the sandbox is where the work happens: a Submission is unpacked and
-analysed inside one, in a work area isolated from the space this agent occupies.
+Preflight asks little of the host: a supported Node, a sandbox that starts,
+keys, roster membership, credit and gas. Everything a Submission needs is
+installed inside the sandbox instead, because the sandbox is where the work
+happens: a Submission is unpacked and analysed inside one, in a work area
+isolated from the space this agent occupies. A tool missing there is installed
+rather than worked around — a bounty is never refused for a compiler you could
+have supplied.
 
 Before touching a bounty, read its record from the previous cycle. A stage
 already finished is not redone, and a finding already reached is carried
@@ -204,8 +205,8 @@ solution needs a part that exists only outside the package.
 **3. No Verdict this cycle.** The bounty, not the Solver. Retrieval, ciphertext
 download and decryption failures, a runner that cannot afford a Submission that
 is legal under the ceiling, and a capability this runtime cannot supply — an
-absent sandbox, or a toolchain that is neither installed nor installable from
-the allowlist. Record no Verdict. Never the Solver's fault.
+absent sandbox, or a toolchain that is neither installed nor installable from a
+public source. Record no Verdict. Never the Solver's fault.
 
 Nothing about your own environment belongs in categories 1 or 2. A missing
 tool, an unproven sandbox, an exhausted model budget, a runner too small, a
@@ -220,15 +221,14 @@ Keep category 3 as narrow as the cause really is. A missing toolchain blocks
 the criteria that need it, not the bounty by reflex — where the remaining
 criteria still decide the outcome under the challenge's own rules, judge it.
 And before reaching for it at all, check the cause is not one you can simply
-remove: the operations skill's allowlist covers the ordinary toolchain, and
-installing from it is expected, not exceptional.
+remove: installing a tool from a public source is expected, not exceptional.
 
 **One Submission never stops the others.** A problem confined to one Submission
 stays with that Submission, and every other one is judged to the end:
 
 - **The cause is in the Submission** — it fails vetting, its code does not build
-  or run in a working sandbox, a required deliverable is in a form no allowlisted
-  tool reads and the challenge did not ask for. That is category 1 or 2 for that
+  or run in a working sandbox, a required deliverable is in a form no publicly
+  available tool reads and the challenge did not ask for. That is category 1 or 2 for that
   Submission alone.
 - **The cause is on your side and hits only this one** — your own step failed on
   its package while the same step worked for the others. Finish every other
@@ -302,8 +302,8 @@ tar -tvf <artifact>.tar.gz      # listing only; no -x
 ```
 
 Run these inside the sandbox, on the decrypted package, not on the host. A
-lister that is missing is installed from the operations skill's allowlist — it
-is ordinary tooling, and no bounty is refused over it.
+lister that is missing is installed into the sandbox from a public source — it is
+ordinary tooling, and no bounty is refused over it.
 
 Total the declared uncompressed sizes, add the unarchived files beside them, and
 decide before anything reaches disk. **Disqualify that one Submission** —

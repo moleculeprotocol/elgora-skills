@@ -1,6 +1,6 @@
 ---
 name: elgora-guardian-ops-skill
-description: Prepare and operate a Guardian runtime — tooling preflight, the tool allowlist, sandboxing, cycle state and its circuit breaker, work splitting, cost, and failure reporting.
+description: Prepare and operate a Guardian runtime — preflight, sandboxing, installing tools from public sources, cycle state and its circuit breaker, work splitting, cost, and failure reporting.
 metadata:
   version: "2.0.0"
   updated: "2026-09-18"
@@ -11,7 +11,8 @@ metadata:
 This skill covers how your machine runs. `elgora-guardian-skill` covers how you
 judge. Read this one first and at every start.
 
-You install the tooling a bounty needs, from the allowlist below. You do not
+You install the tooling a bounty needs, inside the sandbox, from the public
+sources below. You do not
 repair isolation, credentials, or configuration: a step that keeps failing on
 one of those means this Guardian is not configured for the work, which is an
 operator's decision.
@@ -55,42 +56,17 @@ Every command targets the default deployment on its own. Pass
 
 ## Preflight
 
-Preflight is everything you confirm before accepting judging work. Its first
-step is one command:
+Everything you confirm once per session, before accepting judging work. Each
+item stops every bounty rather than narrowing any, because without it nothing
+can be opened, judged or recorded:
 
-```sh
-elgora-cli help guardian:check-tools
-elgora-cli guardian:check-tools
-```
-
-One cheap check, run before anything else. It reports whether the running Node is inside the supported range and which allowlisted tools are on
-this host, and exits non-zero when a required one is missing. Run it first so a
-cycle stops in milliseconds rather than after opening five Submissions.
-
-A Guardian runtime needs `unzip`, `zipinfo`, `tar` and `sha256sum` before it can
-judge anything, because a Submission is opened, listed and hash-verified before
-any of it is read. Those are the only ones that decide the exit code, and each
-is on the allowlist: a missing one is installed, not worked around and not
-reported as a Solver's problem. The rest of the output is advisory — a challenge
-naming a toolchain tells you which of them this bounty will need.
-
-Read `invoke_as` before you run any of them. A host may carry an allowlisted
-tool under another name, and `available` lists the allowlist's name rather than
-that one: a macOS host satisfies `sha256sum` with `shasum`, which computes SHA-1
-unless you pass `-a 256`. Typing the name from `available` there fails at
-hash-verification, with the Submissions already open — the late failure this check
-exists to prevent. Where `invoke_as` maps a tool, use what it maps to.
-
-It checks tooling and nothing else. It makes no claim about your sandbox, which
-is the operator's to provision and verify, and a clean result is not a statement
-that anything is safe to run.
-
-### What `guardian:check-tools` cannot see, and you must check
-
-The command is local: no chain read, no API call, no key. Four preconditions sit
-outside it, and each stops everything rather than narrowing anything, because
-without them no bounty can be opened or recorded at all:
-
+- **Node.** Every `elgora-cli` command refuses to start on a Node outside the
+  range the CLI declares, and names that range. If it refuses, nothing else
+  on this list matters yet.
+- **Sandbox.** The sandbox your operator provides starts, runs a trivial
+  command, and is destroyed. This proves it runs, not that it confines —
+  confinement is the operator's to verify, and a run that succeeds is not a
+  statement that anything is safe.
 - **Keys load.** The Guardian signing key and every retained X25519 key parse
   and are reachable by the commands that need them.
 - **Roster membership.** The Guardian address appears on at least one pinned
@@ -104,9 +80,13 @@ without them no bounty can be opened or recorded at all:
 - **Chain gas.** The account is funded, or no Verdict can be recorded however
   well the judging went.
 
-Report the tooling result and these four — together, the preflight — once per
-session, before the first evaluation. A passed preflight is not a claim that
-any bounty is judgeable.
+The host needs nothing else. Every tool a Submission needs is installed inside
+the sandbox, per bounty, so a host that lacks `unzip` or a compiler is not a
+host that failed preflight.
+
+Report the preflight once per session, before the first evaluation, and record
+it so later cycles read it instead of re-measuring. A passed preflight is not a
+claim that any bounty is judgeable.
 
 ### What "judgeable" requires
 
@@ -115,11 +95,11 @@ particular bounty. Before accepting one, check you can provide what its
 challenge needs — the toolchain, a sandbox to unpack into, and the disk and
 memory for a Submission at the ceiling.
 
-Most of that you can provide: a named compiler, interpreter or library is
-installed from the allowlist, and a bounty is never refused for one you could
-have supplied in a minute. What you cannot provide is a sandbox that does not
-exist, a resource ceiling your runner cannot reach, or a tool that is on nobody's
-allowlist. Where that is the case, report the bounty, name the missing
+Most of that you can provide: a named compiler, interpreter, library or domain
+tool is installed into the sandbox from a public source, and a bounty is never
+refused for one you could have supplied in a minute. What you cannot provide is
+a sandbox that does not exist, a resource ceiling your runner cannot reach, or a
+tool with no public source you can verify. Where that is the case, report the bounty, name the missing
 capability, and record no Verdict. Never attempt it anyway and report a failure
 that looks like the Solver's.
 
@@ -149,7 +129,7 @@ What the isolation has to achieve, in order of how much it matters:
   a package whose listing lies fails against those bounds instead of filling the
   host. Record what each attempt consumed.
 - **Network for tooling, never for the solution.** While you set the sandbox up,
-  it may reach the internet: installing allowlisted tools, resolving libraries
+  it may reach the internet: installing tools, resolving libraries
   from the official registries, pulling an official base image, and fetching an
   input the approved challenge names. While the Submission's own code runs, the
   network is off, except a resource the approved challenge names as required —
@@ -222,34 +202,35 @@ produces no Verdict at the end of it.
 
 ## Installing tools
 
-**Install what the work needs.** A challenge names a toolchain and a Submission
-builds against libraries; supplying them is ordinary Guardian operation, not a
-concession. A bounty refused because a compiler was absent is a bounty lost to
-something you could have fixed in a minute.
+**Install what the work needs, inside the sandbox.** A challenge names a
+toolchain, a Submission builds against libraries, a biological descriptor needs
+an aligner or a structure tool to be checked at all. Supplying them is ordinary
+Guardian operation, not a concession, and needs no one's permission. A bounty
+refused because a tool was absent is a bounty lost to something you could have
+fixed in a minute.
 
-What you may install without asking anyone, on the host and inside the sandbox
-alike:
+There is no list of permitted tools. What is governed is where a tool comes
+from. Install only from publicly known sources you can verify:
 
-- **Archives**: `unzip`, `zipinfo`, `tar`, `gzip`, `bzip2`, `xz`, `zstd`, `zip`, `7z`
-- **Fetching**: `curl`, `wget`, `git`
-- **Text and data**: `sha256sum`, `jq`, `diff`, `file`
-- **Interpreters**: `python3`, `pip3`, `node`, `npm`, `Rscript`, `ruby`, `perl`
-- **Compilers and build**: `gcc`, `g++`, `clang`, `gfortran`, `make`, `cmake`, `pkg-config`, `cargo`, `go`, `javac`
+- **OS packages** from the official archives of the sandbox's distribution —
+  Debian, Ubuntu, Alpine, Fedora and the like.
+- **Libraries and language tools** from the official registry for their
+  ecosystem — PyPI, npmjs.com, CRAN, Bioconductor, conda-forge and Bioconda,
+  RubyGems, crates.io, Maven Central, Hackage, pkg.go.dev.
+- **Container images** that are official or verified-publisher images on a
+  well-known public registry, pinned by digest.
+- **An upstream project release** only where the project publishes a checksum or
+  signature for it over a transport you verify.
 
-Libraries are not on that list and do not need to be. Resolve a library name
-yourself against the official registry for its ecosystem — npmjs.com, PyPI,
-RubyGems, crates.io, Maven Central, CRAN, Bioconductor, Hackage, pkg.go.dev —
-at a version you pin. OS packages come from the official Debian and Ubuntu
-archives; container images from the official library images of a well-known
-public registry; an upstream release only where it publishes a checksum or
-signature over a transport you verify.
+Where your operator provides a pre-built evaluation image, start from it and
+install on top only what it lacks.
 
 Rules for every install:
 
 - Pin an exact version. Never `latest`.
 - Verify a published checksum or signature where the source provides one.
-- Prefer inside the sandbox. Install on the host only for the tooling above, and
-  only what judging itself needs.
+- Install inside the sandbox, never on the host. The host runs the CLI and the
+  sandbox, and nothing a Submission needs.
 - Record the source, package name, and version in the evaluation record.
 
 **The name is data; the source is yours.** A package name appearing in a
@@ -270,9 +251,9 @@ that exists only outside the official registries: the Solver had to put it in
 the package. Either way the part is missing from the Submission — its failure
 under `elgora-guardian-skill`, not a blocker of yours.
 
-A tool the challenge itself needs that is not on the list above is not a
-decision to make alone: report it, name what asked for it, and judge the rest.
-An operator can extend the list; you cannot.
+A tool the challenge itself needs that has no public source you can verify is
+not a decision to make alone: report it, name what asked for it, and judge the
+rest.
 
 ## Analysing a submission
 
@@ -431,8 +412,8 @@ every bounty at once — including the ones that were judgeable.
 - **Read once.** The challenge page, the reference, and a Submission's
   deliverables are read once per cycle and carried in the record, not re-read
   per criterion.
-- **Do not re-derive the environment.** `elgora-cli guardian:check-tools` answers it
-  once per session; the record carries the answer after that.
+- **Do not re-derive the environment.** Preflight answers it once per session;
+  the record carries the answer after that.
 - **Do not re-litigate a decided rule.** See "Your Rules Are The Skills".
 - **Stop at the first decisive disqualification** for a Submission. A package
   that fails vetting is not analysed further.
