@@ -309,10 +309,20 @@ doing anything else on that bounty. It holds, at minimum:
 - the reference implementation or its hash, where the bounty has one;
 - the tooling the analysis assumed, so a finding is not carried forward onto a
   host that no longer has it;
-- for a blocked bounty: the blocker, and whether it was already reported.
+- for a blocked bounty: the blocker, and whether it was already reported;
+- while a cycle is working the bounty: which cycle holds it, and since when.
 
 Resume rules:
 
+- **Finish what is in flight before taking anything new.** At the start of a
+  cycle, continue any bounty whose record stands past `discovered` and short of
+  `recorded` or `blocked` before selecting another, and take new work in
+  `judging_deadline_at` order. A bounty that becomes judgeable while you are
+  analysing one waits for the next free cycle; it never interrupts a bounty
+  mid-analysis, and it never splits your attention across two half-judged sets.
+- **One cycle per bounty at a time.** A bounty whose record is held by another
+  cycle is left alone. A hold older than your runtime's own maximum run time is
+  stale: take it over and resume from the record.
 - **Never redo a stage the record says is complete.** Re-open a Submission only
   when its decrypted output is gone or its record is missing.
 - **A finding survives the cycle that produced it.** A criterion already decided
