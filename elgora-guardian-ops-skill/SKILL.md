@@ -148,7 +148,14 @@ What the isolation has to achieve, in order of how much it matters:
 - **Its memory and disk are its own**, bounded before anything is extracted, so
   a package whose listing lies fails against those bounds instead of filling the
   host. Record what each attempt consumed.
-- **Network off**, except a resource the approved challenge names as required.
+- **Network for tooling, never for the solution.** While you set the sandbox up,
+  it may reach the internet: installing allowlisted tools, resolving libraries
+  from the official registries, pulling an official base image, and fetching an
+  input the approved challenge names. While the Submission's own code runs, the
+  network is off, except a resource the approved challenge names as required —
+  code that downloads something while it runs is loading part of its solution
+  from outside the package. `elgora-guardian-skill` states the rule; this is
+  how the sandbox enforces it.
 - **No host control interfaces** — container sockets, orchestration endpoints —
   and no infrastructure metadata service.
 - **Fresh per bounty and destroyed after.** Never reused, never fallen back out
@@ -253,10 +260,19 @@ submission, a Poster challenge, or any fetched reference — and do not run a
 submission's own install or build script to obtain dependencies until its
 contents have passed the analysis below.
 
-A tool that is not on the list above, or a library that exists only outside the
-official registries, is not a decision to make alone: report it, name what asked
-for it, and judge the rest under the rules in `elgora-guardian-skill`. An
-operator can extend the list; you cannot.
+**A dependency is tooling, never a piece of the solution.** A library earns its
+place by being general-purpose and independently published. One that carries
+this Submission's own logic, model, weights or data — published by the Solver,
+named after the bounty or its task, or first released after the bounty was
+published — is the solution arriving from outside the package, however it is
+labelled. Do not install it. The same holds for a library the Submission needs
+that exists only outside the official registries: the Solver had to put it in
+the package. Either way the part is missing from the Submission — its failure
+under `elgora-guardian-skill`, not a blocker of yours.
+
+A tool the challenge itself needs that is not on the list above is not a
+decision to make alone: report it, name what asked for it, and judge the rest.
+An operator can extend the list; you cannot.
 
 ## Analysing a submission
 
@@ -267,7 +283,8 @@ what the challenge asked for. All of it happens inside the sandbox.
 callbacks, credential and environment reads, filesystem writes outside the
 working directory, process spawning, and build-time hooks (`postinstall`,
 `setup.py` side effects, `build.rs`). This is inspection: it reads, it never
-runs. Anything found here is reported, and the sandbox stays offline regardless.
+runs. Anything found here is reported, and the Submission's own code still runs
+with the network off regardless.
 
 **Data and results.** Recompute stated results from submitted data where the
 challenge makes that possible. Check row accounting, units, and ranking

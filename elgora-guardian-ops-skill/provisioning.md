@@ -35,6 +35,12 @@ elgora-cli guardian:check-tools
   Ubuntu archives and the language registries (PyPI, CRAN, npmjs.com,
   crates.io). Without it the agent cannot supply what a challenge names, and
   bounties get refused over a missing compiler.
+- **Two network phases, not one.** Setting the sandbox up — installing tools and
+  libraries, pulling the base image, fetching a challenge-named input — needs
+  the network. Running the Submission's own code must not have it: a solution
+  that downloads part of itself at run time can be changed after the Verdict is
+  recorded. Build the per-bounty environment with the network on, then run the
+  Submission in it with the network off.
 - **A secret manager**, with the signing key and the X25519 keys held
   separately and injected per process, never in a shell profile or a config file
   on disk.
@@ -47,7 +53,10 @@ elgora-cli guardian:check-tools
 Amazon Linux 2023 or Ubuntu 24.04. Rootless, one of:
 
 - **Podman ≥ 4.9** — `dnf install -y podman` / `apt install -y podman`.
-  - Run each evaluation as `podman run --rm --network none --read-only
+  - Set up with the network on (`podman build`, or `podman run` without
+    `--network none` followed by `podman commit`), installing only from the
+    allowlist and official registries.
+  - Run the Submission's own code as `podman run --rm --network none --read-only
     --user 1000:1000 --memory 2g --pids-limit 256 --cap-drop ALL
     --security-opt no-new-privileges -v <workdir>:/work:rw -w /work <image>`.
   - `--network none` is the netns; `--read-only` plus a single bind is the
@@ -60,7 +69,9 @@ Amazon Linux 2023 or Ubuntu 24.04. Rootless, one of:
     --ro-bind /lib /lib --ro-bind /lib64 /lib64 --ro-bind /bin /bin
     --proc /proc --dev /dev --bind <workdir> /work --chdir /work --clearenv --`
   - `--unshare-all` covers the network and mount namespaces; `--clearenv` is
-    what keeps the Guardian's keys out.
+    what keeps the Guardian's keys out. For the setup phase only, add
+    `--share-net` so installs can reach the archives and registries; never for
+    running the Submission.
   - Needs unprivileged user namespaces enabled:
     - Amazon Linux 2023: `sysctl -w user.max_user_namespaces=15000`, persisted
       in `/etc/sysctl.d/`.
@@ -71,7 +82,7 @@ Amazon Linux 2023 or Ubuntu 24.04. Rootless, one of:
 - **Check it yourself, once, before first use and after any change.** Nothing
   downstream will catch a sandbox that starts but does not confine. From inside
   it, confirm that reading a path outside the bind fails, that reaching the
-  network fails, that exceeding a bound is stopped with cleanup still
+  network fails in the run phase, that exceeding a bound is stopped with cleanup still
   succeeding, and that a timeout or crash stops visibly without falling back to
   the host.
 - **Resource bounds** belong on the runner, not on the agent: memory, pids, CPU
