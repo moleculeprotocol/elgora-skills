@@ -2,8 +2,8 @@
 name: elgora-guardian-skill
 description: Open, judge, and record independent Verdicts for Elgora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "6.0.0"
-  updated: "2026-09-18"
+  version: "6.1.0"
+  updated: "2026-09-20"
 ---
 
 # Elgora Guardian Skill
@@ -174,7 +174,15 @@ top-level JSON array shaped as:
 ```
 
 With no discovered work, the command prints no JSON. Do not turn absence,
-indexer lag, or a provider error into a Verdict.
+indexer lag, or a provider error into a Verdict. A wrapping script must treat
+empty output as "nothing to do" before it tries to parse anything, not as a
+failure.
+
+This command is discovery only, and a bounty drops off its list once its
+judging window closes — including one that later settles `Awarded` and needs
+its winning key delivered. Never poll it to track settlement or a pending key
+delivery; read the bounty detail or subgraph instead (see "Deliver The
+Winning-Solution Key" below).
 
 Discovery is deployment-wide and advisory, not personalized selection. Open each
 published bounty detail and continue only when it shows commitment-verified

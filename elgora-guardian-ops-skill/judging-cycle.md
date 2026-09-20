@@ -110,3 +110,14 @@ answered once and read back from the record.
 - **Re-deciding settled questions.** Re-reading the skills and re-measuring the
   host every run, and answering differently each time, is the most expensive
   loop a Guardian has — and it judges inconsistently.
+- **Tracking settlement with `guardian:judgeable`.** It is discovery-only, and
+  a bounty drops off its list once its judging window closes — including one
+  that later settles `Awarded` and now needs its winning key delivered. Track
+  a pending delivery from the bounty detail or the subgraph instead (see
+  "Deliver The Winning-Solution Key" in `elgora-guardian-skill`), never by
+  polling `guardian:judgeable` for the bounty to reappear there.
+- **Parsing `guardian:judgeable`'s output blindly.** Empty stdout means no
+  discovered work, not a malformed payload — a wrapping script must check for
+  that before it parses JSON, or it will crash on the common case rather than
+  the rare one. Treat a parse failure on genuinely non-empty output as your
+  own bug, never a reason to skip a cycle.
