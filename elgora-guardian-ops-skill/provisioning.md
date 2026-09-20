@@ -45,10 +45,17 @@ shipped in a CLI can establish isolation in general.
   separately and injected per process, never in a shell profile or a config file
   on disk. The signing key goes only to commands that sign, as
   `ELGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY`; the X25519 keys only to commands that
-  decrypt, as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`. Each X25519 entry uses the
-  Guardian account as its lowercase `key_id`, the suite
+  decrypt, as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`. Each X25519 entry's
+  `key_id` is this Guardian's own registered roster **name** — the exact,
+  case-sensitive string given to `roster:add-guardian`, **never its account
+  address** — with the suite
   `hpke-dhkem-x25519-hkdf-sha256+hkdf-sha256+aes-256-gcm@1`, and the 32-byte
-  private key as unpadded base64url. **Retain old entries until every bounty
+  private key as unpadded base64url. A Solver seals every private artifact
+  against that same name, read from the pinned roster; get it wrong and
+  `guardian:open` decrypts nothing for this Guardian — its failure now names
+  the key_id(s) the envelope expected against the key_id(s) configured, so
+  the mismatch is visible immediately rather than requiring a read of the
+  CLI's own source to diagnose. **Retain old entries until every bounty
   pinned to them is final** — the CLI tries each in turn, and overwriting one
   on rotation makes those Submissions permanently unopenable.
 - **Chain gas and model credit.** Fund the Guardian account before a Verdict is
