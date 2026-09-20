@@ -225,9 +225,9 @@ differently, map the requirement rather than the name.
   bounty one, and it is preventable. Preconfigure at least two providers
   (for example Anthropic and OpenAI, plus GLM or DeepSeek where your harness
   supports them) with a fallback order, rather than pointing the harness at a
-  single key. Hermes does this through its own [provider
-  routing](https://hermes-agent.nousresearch.com/docs/user-guide/features/provider-routing#configuration);
-  configure the equivalent in OpenClaw if it offers one. This is host
+  single key. Hermes does this through its own provider routing feature
+  (`hermes-agent.nousresearch.com`, User Guide → Features → Provider
+  Routing); configure the equivalent in OpenClaw if it offers one. This is host
   configuration, not a judging rule — `elgora-guardian-skill` decides what a
   Verdict is regardless of which provider reached it.
 - **Load `elgora-guardian-skill` at every cycle.** It carries every judging
