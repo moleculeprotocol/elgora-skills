@@ -2,7 +2,7 @@
 name: elgora-guardian-ops-skill
 description: Check a Guardian runtime on demand — what a Guardian box must provide, where judging reads and writes its data, where the setup and judging-cycle guides live, and how to verify it all without running a bounty. Load it when a judging cycle cannot start or fails on its own environment, not on every cycle.
 metadata:
-  version: "2.1.0"
+  version: "2.2.0"
   updated: "2026-09-20"
 ---
 

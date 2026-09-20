@@ -58,6 +58,18 @@ shipped in a CLI can establish isolation in general.
   CLI's own source to diagnose. **Retain old entries until every bounty
   pinned to them is final** — the CLI tries each in turn, and overwriting one
   on rotation makes those Submissions permanently unopenable.
+- **How the CLI actually receives these variables: never a location it
+  guesses.** `elgora-cli` resolves no default `.env` path of its own — not the
+  working directory, not this agent's home directory, nowhere a cron job's
+  `workdir` or a harness's launch directory might happen to put it. It reads
+  `process.env` as the caller set it, and loads a file only when the caller
+  sets `DOTENV_CONFIG_PATH` to it explicitly. Point that variable at wherever
+  this agent's own secret manager keeps its file, or export the
+  `ELGORA_GUARDIAN_*` variables directly into the process before it starts —
+  either way, that choice is the launcher's, not the CLI's. Before running any
+  command, the CLI checks that command's required variables against what it
+  was actually given and names every one that is missing; it never proceeds
+  partway and fails deep inside a network call instead.
 - **Chain gas and model credit.** Fund the Guardian account before a Verdict is
   attempted, and give the agent its own provider key with a spend alert well
   below its hard limit. Elgora supplies neither.
