@@ -56,9 +56,9 @@ because no probe shipped in a CLI can establish isolation in general.
   the reasoning are in "The model" and "Why Submission code runs offline" below.
 - **A secret manager, scoped to this agent, not the box.** A host running more
   than one Guardian (or Guardian alongside Solver or Poster automation) keeps
-  each agent's secrets under that agent's own home directory or account, never
-  a single shared path like `~/elgora-secrets` that every agent on the box can
-  read. The signing key and the X25519 keys are held
+  each agent's secrets inside that agent's own workspace, readable only by it,
+  never a single shared path like `~/elgora-secrets` that every agent on the
+  box could read. The signing key and the X25519 keys are held
   separately and injected per process, never in a shell profile or a config file
   on disk. The signing key goes only to commands that sign, as
   `ELGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY`; the X25519 keys only to commands that
@@ -90,9 +90,18 @@ because no probe shipped in a CLI can establish isolation in general.
 - **Chain gas and model credit.** Fund the Guardian account before a Verdict is
   attempted, and give the agent its own provider key with a spend alert well
   below its hard limit. Elgora supplies neither.
-- **Writable state directory** (for example `/var/lib/elgora/`) that survives a
-  restart, for the recorded runtime check and the per-bounty records.
-  Without it every cycle starts over.
+- **The agent's own workspace, and nothing outside it.** Every harness already
+  gives its agent a workspace — the directory its session starts in and is
+  meant to work in — so name no second path anywhere else on the box.
+  Everything this Guardian keeps on the host goes there: the state directory
+  with the per-bounty records, the `guardian:open` output directories, scratch,
+  and any wrapper script or note the agent writes for itself. Unless you
+  have given it a real secret manager, its secrets / environment variables will go 
+  there too, using the process that the respective agent harness prefers. The workspace should be persistent - it has
+  to survive a restarts;  leave the agent no
+  reason to create a directory of its own elsewhere, particularly not into places on its runtime environment's home folder. It can however store ephemeral data that's only used for temporary use (e.g. build artefacts or software libraries) in places the respective operating system it runs on would favor.
+  A workspace is where files live, but not isolation; the sandbox we're talking about below is still
+  what confines a Submission.
 
 ## The model: the agent on the host, one sandbox per bounty
 
@@ -289,6 +298,15 @@ differently, map the requirement rather than the name.
   records there rather than in the harness's memory or notes. Memory files are
   not a rule source, and an agent that reads its own notes as policy will make
   a different decision every cycle.
+- **Ensure that the agent stays in
+  its harness-typical workspace. ** A harness that snapshots or syncs a directory of its own — `~/.hermes`,
+  `~/.openclaw` — persists that path and nothing else, and a VM whose disk is
+  rebuilt on restart loses the rest. Verify by listing what reached the
+  destination, not by reading the setting that promised it. Say in the
+  harness's own instructions that judging writes only inside the workspace: an
+  agent told just "work here" still creates `~/something` the first time a task
+  does not obviously fit. The X25519 keys are what cannot be rebuilt — losing
+  one leaves every Submission pinned to it permanently unopenable.
 - **Let the cycle's bounty selector skip** blocked bounties, and past-deadline
   bounties this Guardian has already judged, so a refused one is not re-picked
   every 30 minutes. Do **not** skip on `judging_deadline_at` alone: ElgoraHub

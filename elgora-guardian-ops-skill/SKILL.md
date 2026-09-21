@@ -2,7 +2,7 @@
 name: elgora-guardian-ops-skill
 description: Check a Guardian runtime on demand — what a Guardian box must provide, where judging reads and writes its data, where the setup and judging-cycle guides live, and how to verify it all without running a bounty. Load it when a judging cycle cannot start or fails on its own environment, not on every cycle.
 metadata:
-  version: "2.5.0"
+  version: "2.6.0"
   updated: "2026-09-21"
 ---
 
@@ -51,7 +51,7 @@ this Guardian is not configured for the work.
 | Gas | The account holds chain gas, or no Verdict can be recorded. |
 | Model credit | The operator's provider key covers at least one full evaluation. Elgora supplies none. |
 | Sandbox | Isolated from the agent's space (no keys, secrets or other bounties' plaintext), bounded in memory and disk, one per bounty (it may persist across that bounty's runs and is destroyed once its Verdict is recorded), no host control interfaces, network on for your own installs and analysis, off only while Submission code executes. |
-| State directory | Writable and persistent across restarts, for the per-bounty records. |
+| Workspace | The agent's own working directory, writable and persistent across restarts, holding its state directory of per-bounty records and everything else judging writes on the host. |
 
 Nothing else is required on the host. Every tool a Submission needs is installed
 inside the sandbox, per bounty.
@@ -60,19 +60,26 @@ inside the sandbox, per bounty.
 
 Where judging reads and writes, so each kind of data stays where it belongs:
 
+- **Your workspace holds all of it.** Work inside the workspace your harness
+  started you in, and create nothing outside it — no new directory in your home,
+  nothing in the harness's own folders, not userspace data in `/tmp`. Everything below is
+  a subdirectory of that one workspace. Files spread across a box are the ones
+  missed when a Guardian is backed up, moved or updated, and on a host that
+  rebuilds its disk between runs they are simply gone.
 - **Keys** never leave the environment of the command that uses them. They are
   not written to disk, passed as arguments, or mounted into a sandbox.
 - **Decrypted Submissions** come from `guardian:open`, into the output directory
   you pass it (default `./guardian-open/<bounty_id>/<submission_commitment>/`).
-  Give it a fresh directory per bounty that only this account can read, outside
-  your state directory.
+  Give it a fresh directory per bounty that only this account can read, inside
+  your workspace and beside your state directory rather than within it.
 - **Into the sandbox** go one bounty's decrypted files (read-only), the
   challenge's verified inputs (read-only) and a bounded scratch area. **Out of
   it** come the outputs and findings you need, and nothing else.
-- **Your state directory** holds a small record per bounty you are working on,
-  so a later cycle resumes instead of starting over. Its shape is yours to
-  choose; `judging-cycle.md` describes one that works. It never holds keys or
-  plaintext, and it never decides what is final — ElgoraHub does.
+- **Your state directory**, inside that workspace, holds a small record per
+  bounty you are working on, so a later cycle resumes instead of starting over.
+  Its shape is yours to choose; `judging-cycle.md` describes one that works. It
+  never holds keys or plaintext, and it never decides what is final — ElgoraHub
+  does.
 - **Cleanup** follows the judging skill: decrypted output and everything
   derived from it are deleted once the Verdict is recorded.
 
@@ -81,14 +88,18 @@ Where judging reads and writes, so each kind of data stays where it belongs:
 Each check is cheap, touches no Submission, and records nothing on chain. Run
 them in order and stop at the first failure.
 
-1. **CLI, Node and discovery.** `elgora-cli guardian:judgeable
+1. **Workspace.** The workspace you started in is writable and still holds the
+   records your last cycle wrote. Missing or empty on a box that judged
+   yesterday means the host did not persist it: report that before starting a
+   cycle, because this cycle's work would be lost the same way.
+2. **CLI, Node and discovery.** `elgora-cli guardian:judgeable
    --guardian-address <address>`. Needs no key, records nothing, and is the
    first command that runs the CLI's guards, so it is the Node check too.
    Diagnose from its actual error: an unsupported Node is refused by name with
    the range it needs, a missing variable is named before anything is sent,
    anything else is network or indexer. `elgora-cli --version` is not this
    check — `--version` and `help` answer on any Node by design.
-2. **Both keys, end to end.** Prepare a proof for yourself, answer it, check
+3. **Both keys, end to end.** Prepare a proof for yourself, answer it, check
    it — all local, nothing sent anywhere:
 
    ```sh
@@ -99,14 +110,14 @@ them in order and stop at the first failure.
 
    Proving decrypts with your X25519 key and signs with your account key, so a
    pass shows both load and match the address. Delete the three files after.
-3. **Roster seat.** An open bounty's detail (`/api/bounties/<id>`) lists your
+4. **Roster seat.** An open bounty's detail (`/api/bounties/<id>`) lists your
    address in its pinned roster. No seat means no work — a configuration answer,
    not a per-bounty blocker.
-4. **Gas.** The account's balance on the deployment's chain is non-zero and
+5. **Gas.** The account's balance on the deployment's chain is non-zero and
    covers a few transactions.
-5. **Model credit.** Your provider's key or credits endpoint shows remaining
+6. **Model credit.** Your provider's key or credits endpoint shows remaining
    budget for at least one full evaluation (on OpenRouter, `GET /api/v1/key`).
-6. **Sandbox.** Start one, run a trivial command, destroy it. Then, from a
+7. **Sandbox.** Start one, run a trivial command, destroy it. Then, from a
    fresh one, run the confinement probes `provisioning.md` lists. A sandbox
    that runs is not proven to confine; these probes are evidence for your
    operator, not a certificate.

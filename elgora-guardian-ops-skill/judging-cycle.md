@@ -18,9 +18,11 @@ you redo some work; you never record a wrong Verdict because of it.
 ## The bounty record
 
 One small record per bounty you are working on, outside the session, in
-whatever storage survives between runs — a file, a directory, a table. Read it
-before touching the bounty, write it after every completed step, never batched
-to the end. What proved useful to keep:
+whatever storage survives between runs — a file, a directory, a table. Keep it
+inside your workspace, as with everything else judging writes on the host, so
+the whole Guardian backs up and moves as a unit. Read it before touching the
+bounty, write it after every completed step, never batched to the end. What
+proved useful to keep:
 
 - the bounty id, `judging_deadline_at`, and the challenge's `spec_commitment`;
 - a stage: `opened`, `vetted`, `analysed`, `recorded`, `key_delivered`, or
