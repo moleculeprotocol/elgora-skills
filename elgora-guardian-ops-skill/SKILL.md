@@ -51,7 +51,7 @@ this Guardian is not configured for the work.
 | Gas | The account holds chain gas, or no Verdict can be recorded. |
 | Model credit | The operator's provider key covers at least one full evaluation. Elgora supplies none. |
 | Sandbox | Isolated from the agent's space (no keys, secrets or other bounties' plaintext), bounded in memory and disk, one per bounty (it may persist across that bounty's runs and is destroyed once its Verdict is recorded), no host control interfaces, network on for your own installs and analysis, off only while Submission code executes. |
-| Workspace | The agent's own working directory, writable and persistent across restarts, holding one directory per bounty and everything else judging writes on the host. Never the account's home directory. |
+| Workspace | The directory the harness starts this agent in and calls its workspace: writable, persisted across restarts, holding one directory per bounty and everything else judging writes on the host. |
 
 Nothing else is required on the host. Every tool a Submission needs is installed
 inside the sandbox, per bounty.
@@ -61,14 +61,14 @@ inside the sandbox, per bounty.
 Where judging reads and writes, so each kind of data stays where it belongs:
 
 - **Your workspace holds all of it, one directory per bounty.** Work inside the
-  workspace your harness started you in and create nothing outside it — not in
-  the account's home directory, not in the harness's own folders, not in `/tmp`.
-  The one exception is scratch you could rebuild from nothing: build outputs,
-  downloaded tooling, temporary files. Files spread across a box are the ones
-  missed when a Guardian is backed up, moved or updated, and on a host that
-  rebuilds its disk between runs they are simply gone.
-- **Keys** never leave the environment of the command that uses them. They are
-  not written to disk, passed as arguments, or mounted into a sandbox.
+  workspace your harness started you in and create nothing outside it. The one
+  exception is scratch you could rebuild from nothing: build outputs, downloaded
+  tooling, temporary files. The workspace is what the host persists and backs
+  up; anything written elsewhere is what gets missed when a Guardian is moved or
+  updated, and on a host that rebuilds its disk between runs it is simply gone.
+- **Keys** reach a command through its environment, never as an argument and
+  never into a sandbox. Where your harness keeps them between runs is its own
+  business, and this skill has no opinion about it.
 - **Decrypted Submissions** come from `guardian:open`, into the output directory
   you pass it (default `./guardian-open/<bounty_id>/<submission_commitment>/`).
   Put them inside that bounty's directory, one per Submission, readable only by
