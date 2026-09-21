@@ -239,17 +239,19 @@ differently, map the requirement rather than the name.
   cannot keep the keys out and the plaintext per bounty at the same time. If you
   use it for other work, never list `ELGORA_GUARDIAN_*` in `docker_forward_env`
   or `env_passthrough`, and set `container_persistent: false`.
-- **Configure more than one model provider, with routing.** A single
-  exhausted or rate-limited key stops every judgeable bounty at once (see the
-  ops-skill's "Model credit" check) — that is an operator failure, not a
-  bounty one, and it is preventable. Preconfigure at least two providers
-  (for example Anthropic and OpenAI, plus GLM or DeepSeek where your harness
-  supports them) with a fallback order, rather than pointing the harness at a
-  single key. Hermes does this through its own provider routing feature
-  (`hermes-agent.nousresearch.com`, User Guide → Features → Provider
-  Routing); configure the equivalent in OpenClaw if it offers one. This is host
-  configuration, not a judging rule — `elgora-guardian-skill` decides what a
-  Verdict is regardless of which provider reached it.
+- **Keep a fallback model path, and prefer one you do not have to assemble.**
+  An exhausted or rate-limited key stops every judgeable bounty at once (see
+  the ops-skill's "Model credit" check) — an operator failure rather than a
+  bounty one, and a cheap one to avoid. An aggregator that already routes
+  across providers, such as OpenRouter, covers this on its own; there is
+  nothing further to configure, and topping up the one account is the whole
+  job. Pointing the harness at a single upstream provider key is the case
+  worth improving: adding a second with a fallback order is recommended, and
+  Hermes offers it through its own provider routing feature
+  (`hermes-agent.nousresearch.com`, User Guide → Features → Provider Routing).
+  Host configuration either way, not a judging rule —
+  `elgora-guardian-skill` decides what a Verdict is regardless of which
+  provider reached it.
 - **Load `elgora-guardian-skill` at every cycle.** It carries every judging
   rule, including retries and blocker handling. `elgora-guardian-ops-skill` is
   loaded on demand, when the Guardian doubts its own runtime, and
