@@ -111,11 +111,17 @@ answered once and read back from the record.
   host every run, and answering differently each time, is the most expensive
   loop a Guardian has — and it judges inconsistently.
 - **Tracking settlement with `guardian:judgeable`.** It is discovery-only, and
-  a bounty drops off its list once its judging window closes — including one
-  that later settles `Awarded` and now needs its winning key delivered. Track
-  a pending delivery from the bounty detail or the subgraph instead (see
-  "Deliver The Winning-Solution Key" in `elgora-guardian-skill`), never by
-  polling `guardian:judgeable` for the bounty to reappear there.
+  a bounty drops off its list once it stops being Open — including one that
+  settles `Awarded` and now needs its winning key delivered. Track a pending
+  delivery from the bounty detail or the subgraph instead (see "Deliver The
+  Winning-Solution Key" in `elgora-guardian-skill`), never by polling
+  `guardian:judgeable` for the bounty to reappear there.
+- **Reading a past deadline as "off my list".** What drops a bounty is
+  settlement, not `judging_deadline_at` — discovery reports that deadline and
+  never filters on it. A past-deadline bounty with no Verdict of yours is still
+  listed, still judgeable, and your first Verdict on it may be the one that
+  completes consensus. Selecting on the clock instead of on state is how a
+  bounty nobody judged reaches `settlement_timeout_at` and refunds its Poster.
 - **Parsing `guardian:judgeable`'s output blindly.** Empty stdout means no
   discovered work, not a malformed payload — a wrapping script must check for
   that before it parses JSON, or it will crash on the common case rather than
