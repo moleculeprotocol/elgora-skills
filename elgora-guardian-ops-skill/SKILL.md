@@ -2,7 +2,7 @@
 name: elgora-guardian-ops-skill
 description: Check a Guardian runtime on demand — what a Guardian box must provide, where judging reads and writes its data, where the setup and judging-cycle guides live, and how to verify it all without running a bounty. Load it when a judging cycle cannot start or fails on its own environment, not on every cycle.
 metadata:
-  version: "2.4.0"
+  version: "2.5.0"
   updated: "2026-09-21"
 ---
 
@@ -119,3 +119,20 @@ the result with the time you checked, so your next judging cycle reads it
 instead of measuring again, and report a failure once rather than every cycle.
 Then return to `elgora-guardian-skill`; a bounty blocked by what you found is
 handled there.
+
+## Wrapper Scripts
+
+Scheduled cycles and monitors are scripts around the CLI. Three rules keep
+them from costing Verdicts:
+
+- **Empty `guardian:judgeable` stdout means no discovered work — check for it
+  before parsing anything.** A wrapper that crashes on empty output fails on
+  the common case, not the rare one; a monitor built on it reports a crash
+  where the truth is "nothing to judge".
+- **Monitor output must be deterministic**: sorted, and free of timestamps,
+  run counts or any field that differs between two identical ticks, so a
+  change-detector wakes only on real state and never on its own noise.
+- **When a wrapper fails, re-read the governing skill section before patching
+  the symptom.** A crash is often a design the skill already forbids — treat
+  the crash as a prompt to re-derive the wrapper's design from the skill, or
+  it keeps failing the same way one layer deeper.

@@ -2,7 +2,7 @@
 name: elgora-guardian-skill
 description: Open, judge, and record independent Verdicts for Elgora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "6.3.0"
+  version: "6.4.0"
   updated: "2026-09-21"
 ---
 
@@ -233,7 +233,10 @@ decrypting anything, so a copied or mismatched pair stops before content is
 opened. Never resolve a copied commitment by deciding who held it first —
 ElgoraHub's current active pair per Solver is authoritative. When `output_dir`
 is omitted, files go to
-`./guardian-open/<bounty_id>/<submission_commitment>/`.
+`./guardian-open/<bounty_id>/<submission_commitment>/`. When you pass it, give
+each Solver its own directory: `guardian:open` writes artifacts flat into the
+directory you name, so a shared directory silently collides different Solvers'
+files under the same names.
 
 ## Three Outcomes, Never Conflated
 
@@ -656,7 +659,12 @@ After you record an `awarded` Verdict:
    retry until `delivery/status` reports `{"exists": true}`.
 
 Pass only the finalized winning pair read from chain, never your own Verdict's
-pick before settlement.
+pick before settlement. The winning pair is the winner's **current active**
+Submission: a winner who resubmitted after your Verdict holds a different
+commitment from the one you awarded, and both the delivery wrap and
+`delivery/status` are keyed to the current one. Never reuse your own
+`awarded_submission_commitment` to query or deliver — read the winner's active
+submission from the bounty detail every time.
 
 ## Timing And Revisions
 
