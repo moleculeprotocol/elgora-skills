@@ -15,6 +15,20 @@ because no probe shipped in a CLI can establish isolation in general.
 - **Node 24.x** (`>=24 <25`). Match the CLI's `engines` range exactly; every
   command that does work refuses to start outside it and names the range.
   `--version` and `help` are exempt by design, so neither is a check.
+  Installing Node 24 is not enough if the host's *default* `node` is a
+  different major — every command then refuses on the banner, and a scheduled
+  cycle burns its whole run on it. Cron and most harnesses read no shell
+  profile, so an alias or a `PATH` line in `.bashrc` will not be there. Give
+  the cycle the interpreter directly: install a wrapper at a fixed path that
+  execs the CLI under Node 24, and invoke that path in the scheduler prompt.
+  Put it somewhere that does not collide with the shim the global install
+  already owns.
+
+  ```sh
+  #!/bin/sh
+  # /usr/local/bin/elgora-cli-24
+  exec /opt/node24/bin/node /opt/node24/lib/node_modules/@elgora/cli/dist/cli.js "$@"
+  ```
 - **`@elgora/cli`**, installed globally, updated when the skills are.
 - **A base image for the sandbox.** Nothing is required in it: the agent
   installs what each challenge needs. Baking in the common tools — archive
@@ -122,8 +136,16 @@ Amazon Linux 2023 or Ubuntu 24.04. Rootless, one of:
     installing only from official archives and registries. Pin the resulting image by digest and
     run it with `--pull never`, so the image you checked is the one that runs.
   - Run the Submission's own code as `podman run --rm --network none --read-only
-    --user 1000:1000 --memory 2g --pids-limit 256 --cap-drop ALL
+    --user "$(id -u):$(id -g)" --memory 2g --pids-limit 256 --cap-drop ALL
     --security-opt no-new-privileges -v <workdir>:/work:rw -w /work <image>`.
+  - **Derive `--user` from the invoking account; never hardcode `1000:1000`.**
+    A service account is often not uid 1000, and the mismatch does not stop the
+    container — it runs, then fails only on the write back to the bound
+    directory. Results land nowhere while every step reports success. For the
+    same reason, never discard stderr on a copy out of the sandbox: a silenced
+    `Permission denied` leaves an empty output directory that reads exactly
+    like a Submission that produced nothing, and a Verdict drawn from it blames
+    a Solver for the host's file permissions.
   - `--network none` is the netns; `--read-only` plus a single bind is the
     mount namespace. Both are needed — one alone fails the confinement check
     below.
@@ -236,6 +258,16 @@ differently, map the requirement rather than the name.
   and update it when it changes.
 - **Give the judging cycle its own short-lived session.** One session per cycle,
   started fresh, ended when the cycle ends.
+- **Leave no command-approval prompt in the cycle's path.** A harness that asks
+  a human to approve a command pattern stalls a scheduled cycle rather than
+  failing it: nobody is at the terminal, so the run holds until its timeout
+  with the bounty untouched and no blocker reported. The patterns judging uses
+  routinely — container runs with bind mounts, image builds, and the cleanup
+  that deletes decrypted output — are exactly the ones such scanners hold.
+  Pre-approve the wrapper and the `elgora-cli` path for the agent's account,
+  and keep scheduled prompts clear of pipe-to-interpreter and bulk-delete
+  shapes by writing a file and running it. Verify by running one full cycle
+  non-interactively before trusting the schedule.
 - **Never point heartbeats, polls, timers or webhooks at the session that
   judges.** Each delivery appends to that session's context and is re-billed on
   every later call. Route them to a dedicated minimal session with no skills
