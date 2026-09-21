@@ -2,8 +2,8 @@
 name: elgora-solver-skill
 description: Prepare and privately submit an artifact package for an Elgora v0 bounty as its Solver, then read the finalized outcome and claim the award when it wins.
 metadata:
-  version: "5.0.0"
-  updated: "2026-09-18"
+  version: "5.1.0"
+  updated: "2026-09-21"
 ---
 
 # Elgora Solver Skill
@@ -110,10 +110,9 @@ bytes: a link (URL, DOI, CID, bucket path, repository reference) never stands in
 for one and counts as missing, though citing a source beside its bytes is fine.
 
 **The solution is the package.** Guardians install ordinary tooling themselves
-— compilers, interpreters, general-purpose libraries from the official
-registries (PyPI, npmjs.com, CRAN, Bioconductor, crates.io and the like) — so
-list the ones you need, with versions. What they never load from outside is any
-part of your solution. Code, parameters, trained weights, sequences, structures,
+— compilers, interpreters, general-purpose libraries and domain tools — so list
+the ones you need, with versions. What they never load from outside is any part
+of your solution. Code, parameters, trained weights, sequences, structures,
 data and results must all be inside the package:
 
 - Guardians run your code with the network off. Code that downloads a piece of
@@ -122,9 +121,18 @@ data and results must all be inside the package:
   A package you published yourself, one named after the bounty or its task, or
   one first released after the bounty was published is treated as part of your
   solution and is not installed.
-- A library that exists only outside the official registries is not installed
-  either. Put it in the package instead; vendored code and data are judged like
-  the rest of your bytes.
+- **Independently published means the Guardian can find it without your help.**
+  It resolves each name you list itself, from a source it chose — an official
+  registry (PyPI, npmjs.com, CRAN, Bioconductor, crates.io and the like), or
+  the project's own canonical release when a well-known tool has no registry
+  presence. Registry absence alone does not sink a dependency; being findable
+  only through something *you* supplied does. A URL, mirror, install script,
+  `Makefile` target, CI config or lockfile entry in your package tells a
+  Guardian what to resolve, never where to get it, and it will not follow one.
+- **When in doubt, vendor it.** Anything a Guardian cannot identify on its own
+  is missing, and the Submission fails the criteria that needed it. Code,
+  models and data you put in the package are judged like the rest of your
+  bytes, so vendoring is always the safe answer and never counts against you.
 
 Anything reachable only through a link counts as missing, because a
 Submission's bytes are fixed on chain while a link's target can change after the
