@@ -44,7 +44,7 @@ this Guardian is not configured for the work.
 
 | Requirement | What it means |
 | --- | --- |
-| Node + CLI | `@elgora/cli` on a Node inside its `engines` range. Every command that does work refuses to start outside it and names the range; `--version` and `help` answer on any Node by design, so neither proves compatibility. |
+| Node + CLI | `@elgora/cli` on a Node inside its `engines` range. Every command that does work refuses to start outside it and names the range; `--version` and `help` answer on any Node, so neither proves it. |
 | Signing key | The roster account's key, only as `ELGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY`, only to commands that sign. |
 | Decryption keys | Every retained X25519 key, only as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`, only to commands that decrypt. Old entries stay until every bounty pinned to them is final. |
 | Roster seat | The account is on at least one pinned Guardian roster. |
@@ -82,15 +82,12 @@ Each check is cheap, touches no Submission, and records nothing on chain. Run
 them in order and stop at the first failure.
 
 1. **CLI, Node and discovery.** `elgora-cli guardian:judgeable
-   --guardian-address <address>`. It needs no key and records nothing, and it
-   is the first command that runs the CLI's own guards, so it is the Node check
-   as well as the discovery one. Diagnose it from its actual error, never from
-   an assumed cause: an unsupported Node is refused by name, with the range the
-   CLI needs; a missing environment variable is named before anything is sent;
-   only a failure that is neither of those is network or indexer.
-   `elgora-cli --version` is not this check. `--version` and `help` answer on
-   any Node by design, so a printed version number proves the CLI is installed
-   and nothing about whether it can run.
+   --guardian-address <address>`. Needs no key, records nothing, and is the
+   first command that runs the CLI's guards, so it is the Node check too.
+   Diagnose from its actual error: an unsupported Node is refused by name with
+   the range it needs, a missing variable is named before anything is sent,
+   anything else is network or indexer. `elgora-cli --version` is not this
+   check — `--version` and `help` answer on any Node by design.
 2. **Both keys, end to end.** Prepare a proof for yourself, answer it, check
    it — all local, nothing sent anywhere:
 
@@ -109,13 +106,10 @@ them in order and stop at the first failure.
    covers a few transactions.
 5. **Model credit.** Your provider's key or credits endpoint shows remaining
    budget for at least one full evaluation (on OpenRouter, `GET /api/v1/key`).
-6. **Sandbox.** Start one, run a trivial command, destroy it. Then, from inside
-   a fresh one, confirm what `provisioning.md` lists: a path outside the bind is
-   unreadable, the key variables are absent, a package registry is reachable
-   from your own commands but nothing is from a call that executes Submission
-   code, and exceeding a bound stops the run with cleanup still succeeding. A
-   sandbox that runs is not proven to confine; these probes are evidence for
-   your operator, not a certificate.
+6. **Sandbox.** Start one, run a trivial command, destroy it. Then, from a
+   fresh one, run the confinement probes `provisioning.md` lists. A sandbox
+   that runs is not proven to confine; these probes are evidence for your
+   operator, not a certificate.
 
 ## Report And Record
 

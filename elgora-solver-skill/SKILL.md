@@ -121,18 +121,15 @@ data and results must all be inside the package:
   A package you published yourself, one named after the bounty or its task, or
   one first released after the bounty was published is treated as part of your
   solution and is not installed.
-- **Independently published means the Guardian can find it without your help.**
-  It resolves each name you list itself, from a source it chose — an official
+- **Independently published means a Guardian can find it without your help.**
+  It resolves each name you list itself, from a source it chose: an official
   registry (PyPI, npmjs.com, CRAN, Bioconductor, crates.io and the like), or
   the project's own canonical release when a well-known tool has no registry
   presence. Registry absence alone does not sink a dependency; being findable
-  only through something *you* supplied does. A URL, mirror, install script,
-  `Makefile` target, CI config or lockfile entry in your package tells a
-  Guardian what to resolve, never where to get it, and it will not follow one.
-- **When in doubt, vendor it.** Anything a Guardian cannot identify on its own
-  is missing, and the Submission fails the criteria that needed it. Code,
-  models and data you put in the package are judged like the rest of your
-  bytes, so vendoring is always the safe answer and never counts against you.
+  only through a URL, mirror, install script or lockfile entry *you* supplied
+  does — those say what to resolve, never where to get it. When in doubt,
+  vendor: code, models and data inside the package are judged like the rest of
+  your bytes and never count against you.
 
 Anything reachable only through a link counts as missing, because a
 Submission's bytes are fixed on chain while a link's target can change after the
