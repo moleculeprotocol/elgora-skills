@@ -2,7 +2,7 @@
 name: elgora-solver-skill
 description: Prepare and privately submit an artifact package for an Elgora v0 bounty as its Solver, then read the finalized outcome and claim the award when it wins.
 metadata:
-  version: "5.1.0"
+  version: "5.2.0"
   updated: "2026-09-21"
 ---
 
@@ -141,8 +141,23 @@ value governs. Validate against it before sealing.
 
 Compress into an archive to fit a large result, and pack the archive flat.
 Guardians check this after decrypting and delete a non-conforming package rather
-than extract it, so a directory entry, an unexplained expansion ratio, or an
+than extract it, so a nested path, an unexplained expansion ratio, or an
 absolute or `..` path anywhere inside costs the Submission.
+
+`solver:submit` validates your artifact directory, never the inside of an
+archive you put there, so nothing warns you about this before you seal. Name
+the files explicitly rather than packing a directory:
+
+```sh
+tar -czf results.tar.gz -C <dir> file1.csv file2.csv   # flat members
+tar -czf results.tar.gz <dir>/                         # WRONG: dir/file1.csv
+tar -czf results.tar.gz .                              # ./ entries; see below
+```
+
+A leading `./` on every member, which `tar -czf results.tar.gz .` produces, is
+tolerated — it extracts to the same flat layout. Nothing else is. Confirm with
+`tar -tf results.tar.gz` before sealing: every line must be a plain filename,
+or that filename behind a single `./`.
 
 The flat rule holds when the challenge asks for a folder: `solver:submit`
 rejects any subdirectory, and a published challenge cannot be changed. Put every
