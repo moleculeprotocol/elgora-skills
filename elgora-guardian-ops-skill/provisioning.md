@@ -252,9 +252,16 @@ differently, map the requirement rather than the name.
   records there rather than in the harness's memory or notes. Memory files are
   not a rule source, and an agent that reads its own notes as policy will make
   a different decision every cycle.
-- **Let the cycle's bounty selector skip** bounties past `judging_deadline_at`
-  and bounties marked blocked, so a refused bounty is not re-picked every 30
-  minutes until it times out.
+- **Let the cycle's bounty selector skip** bounties marked blocked, and
+  past-deadline bounties this Guardian has *already* recorded a Verdict on, so
+  a refused bounty is not re-picked every 30 minutes until it times out. Do
+  **not** skip on `judging_deadline_at` alone: ElgoraHub rejects a *revision*
+  after that deadline but accepts this Guardian's *first* Verdict while the
+  bounty is still Open, and that Verdict may be the one that completes
+  consensus. Select on the bounty's state — Open, no Verdict of this
+  Guardian's, not blocked, `settlement_timeout_at` not yet reached — rather
+  than on the clock. Keeping a refused bounty out of the selector is
+  `blocked`'s job, not the deadline's.
 
 ## Monitoring
 
