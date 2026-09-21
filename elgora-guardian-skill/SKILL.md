@@ -2,7 +2,7 @@
 name: elgora-guardian-skill
 description: Open, judge, and record independent Verdicts for Elgora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "6.3.0"
+  version: "6.6.0"
   updated: "2026-09-21"
 ---
 
@@ -50,6 +50,15 @@ to start outside its `engines` range), your signing and decryption keys exposed
 to the commands that use them, a funded roster account, model credit, a sandbox,
 and a place to keep per-bounty records. Everything a Submission needs is
 installed inside the sandbox, per bounty.
+
+**Everything you write on the host stays inside your workspace** — the directory
+your harness started you in. Give each bounty its own directory there and keep
+everything about that bounty inside it: its record, and each Submission you open
+in a subdirectory of its own. Scratch you could rebuild from nothing — build
+outputs, downloaded tooling, temporary files — may live wherever the operating
+system puts such things. Nothing else may. Delete a bounty's directory once you
+are finished with that bounty; anything you left anywhere else is gone the next
+time the host is reprovisioned.
 
 **If a cycle cannot start, or fails on its own environment rather than on a
 bounty, load
@@ -233,7 +242,11 @@ decrypting anything, so a copied or mismatched pair stops before content is
 opened. Never resolve a copied commitment by deciding who held it first —
 ElgoraHub's current active pair per Solver is authoritative. When `output_dir`
 is omitted, files go to
-`./guardian-open/<bounty_id>/<submission_commitment>/`.
+`./guardian-open/<bounty_id>/<submission_commitment>/` — relative to whichever
+directory the command happened to run in, which is reason enough to pass the
+path yourself: a subdirectory of this bounty's own directory in your workspace,
+one per Submission. `guardian:open` writes artifacts flat into the directory you
+name, so two Submissions sharing one directory overwrite each other's files.
 
 ## Three Outcomes, Never Conflated
 
@@ -576,8 +589,9 @@ the Submission's own code. Record it in that pair's entry at that moment; a retr
 never resets it, and a restarted worker inherits the count from the record.
 
 Three things are not retry loops: the one extra attempt above, re-attempting a
-bounty on your next cycle, and the winning-key delivery loop, which stops when
-delivery status reports the key exists. Everything else that repeats is.
+bounty on your next cycle, and the winning-key follow-up, which stops as soon as
+the bounty has settled — delivered, or settled with no winner to deliver for.
+Everything else that repeats is.
 
 ## Publish And Record The Verdict
 
@@ -616,90 +630,84 @@ Every selected Guardian reaches and records its own decision. Divergent current
 Verdicts are ordinary chain state. Do not change a decision merely to match
 another Guardian or attempt to calculate finality locally.
 
-**Clean up once the Verdict is recorded.** Delete the decrypted `guardian-open/`
-output and everything extracted or generated from it, and close the bounty
-record. Plaintext Submissions must not outlive the cycle that judged them, and
-leftovers fill a runner. Delivering the winning key later needs only your keys
-and the finalized pair, not the plaintext.
-
-## Deliver The Winning-Solution Key
-
-Recording an `awarded` Verdict does not hand the work to the Poster. That is a
-separate step, and the winner is only known once ElgoraHub settles the bounty.
-After you record an `awarded` Verdict:
-
-1. Schedule an asynchronous follow-up — a wake-up timer, heartbeat, or
-   crontab entry — and expect to run it several times. Settlement is a
-   transaction the coordinator sends on a periodic sweep once the roster has
-   agreed; it happens at no fixed time, and the result is not readable here
-   until the settling block is finalized. Do not key the schedule to
-   `settlement_timeout_at`: past that point `settle` reverts and the bounty
-   can only be timed out, which delivers nothing.
-2. On each follow-up, read the bounty from chain — the subgraph or the bounty
-   detail. If it is still open, reschedule. If it settled without a winner
-   (`no_valid_submission`, `timed_out`), stop — nothing to deliver. Once it is
-   finalized `Awarded`, take the winning `solver` and `submission_commitment`
-   and check for an existing wrap:
-
-   ```http
-   GET /api/bounties/<bounty_id>/delivery/status?submission_commitment=<winning_commitment>
-   ```
-3. If it answers `{"exists": false}`, wrap and deliver your key:
-
-   ```sh
-   elgora-cli guardian:deliver-key <bounty_id> <solver> <submission_commitment>
-   ```
-
-   For roughly ten to twenty minutes after settlement this returns `503`: the
-   API takes the wrap only once the settled block is behind the chain's
-   finalized tag. Treat any failure as "not delivered yet" — reschedule and
-   retry until `delivery/status` reports `{"exists": true}`.
-
-Pass only the finalized winning pair read from chain, never your own Verdict's
-pick before settlement.
+**Clean up once the Verdict is recorded.** Delete the decrypted output and
+everything extracted or generated from it. Plaintext Submissions must not
+outlive the cycle that judged them, and leftovers fill a runner. Keep only the
+small bounty record, and only until the bounty settles: delivering the winning
+key later needs your keys and the settled pair, not the plaintext.
 
 ## Timing And Revisions
 
 Before judging, check this bounty's `guardian_verdict` from `guardian:judgeable`:
 
 - No `guardian_verdict`: judge normally and record this Guardian's first
-  Verdict, before or after `judging_deadline_at`, while the bounty remains
-  Open.
-- A `guardian_verdict` that already says what this Guardian would say:
-  nothing to do; a rerun of `guardian:verdict` is a harmless no-op.
+  Verdict. ElgoraHub accepts a first Verdict at any point while the bounty is
+  Open, before or after `judging_deadline_at`.
+- A `guardian_verdict` that already says what this Guardian would say: nothing
+  to do; a rerun of `guardian:verdict` is a harmless no-op.
 - A `guardian_verdict` this Guardian has genuinely changed its mind about, or
   whose report body needs only a wording correction: call `guardian:verdict`
-  again with the new outcome or body. ElgoraHub itself accepts a revision only
-  before `judging_deadline_at` and rejects one after; the command does not
-  apply a separate policy or need a flag, so let that rejection, if it
-  happens, stand as the answer rather than retrying.
+  again with the new outcome or body. ElgoraHub accepts a revision only before
+  `judging_deadline_at`. After it your Verdict is frozen, and the rejection is
+  the answer rather than something to retry.
 
-`consensusReachedAt`, when displayed, records the first historical threshold
-crossing. It does not prove the current Verdicts still match or that the bounty
-is final. ElgoraHub derives the result when settlement is called. A configured
-coordinator may have the first call window, but that creates no Guardian action
-or extra consensus rule.
+`consensusReachedAt`, where you see it, records the first historical threshold
+crossing, not that the bounty is final. ElgoraHub derives the result itself when
+settlement is called.
 
-## Missed Key Delivery
+## Deliver The Winning-Solution Key
 
-Key delivery is idempotent. If every Guardian missed the step above and you
-are later asked for the winning work, just deliver your key again:
+An `awarded` Verdict hands nothing to the Poster. The work is still sealed, and
+which Submission won is not decided until ElgoraHub settles the bounty. So one
+thing is still owed after an `awarded` Verdict: your key, for whichever
+Submission actually won.
 
-```sh
-elgora-cli help guardian:deliver-key
-elgora-cli guardian:deliver-key <bounty_id> <solver> <submission_commitment>
-```
+Settlement is a transaction someone else sends, at no fixed time, once
+`judging_deadline_at` has passed and the roster's Verdicts agree. Schedule a
+follow-up — a wake-up timer, heartbeat, or crontab entry — and expect it to fire
+a few times. Never schedule past `settlement_timeout_at`: after that `settle`
+reverts, the bounty can only be timed out, and there is nothing to deliver.
 
-Any pinned Guardian can run this for the finalized winner. Running it again,
-or when another Guardian already delivered the same pair, is a harmless no-op.
-ElgoraHub decides whether the pair is the finalized winner and the API rejects
-any other; never redirect a key to a different Solver or commitment.
+Each time it fires, read the bounty from chain — the bounty detail or the
+subgraph — and do one of three things:
 
-Deliver again as well if a Poster reports retrieval failing while
-`delivery/status` still says `{"exists": true}`. That check only confirms a
-wrap row exists, not that it opens with the deployment's current delivery key
-— for example after a key rotation — and re-delivering stores a fresh wrap
-under the current key.
+- **Still Open.** Reschedule, and nothing else.
+- **`no_valid_submission` or `timed_out`.** There is nothing to deliver. Delete
+  the schedule and the bounty's directory; you are finished with this bounty.
+- **`Awarded`.** Take `winner` and that Solver's `submission_commitment` from
+  the bounty detail, and ask whether a key is already stored for it:
+
+  ```http
+  GET /api/bounties/<bounty_id>/delivery/status?submission_commitment=<winning_commitment>
+  ```
+
+  On `{"exists": true}` a Guardian already delivered, and you are finished —
+  delete the schedule and the bounty's directory. On `{"exists": false}`,
+  deliver yours:
+
+  ```sh
+  elgora-cli help guardian:deliver-key
+  elgora-cli guardian:deliver-key <bounty_id> <winner> <winning_commitment>
+  ```
+
+  It works from your keys and that pair alone, not from the plaintext you
+  already deleted. For roughly ten to twenty minutes after settlement it returns
+  `503`, because the API takes a wrap only once the settled block is behind the
+  chain's finalized tag. Treat any failure as "not delivered yet" and
+  reschedule. Once `delivery/status` answers `{"exists": true}`, delete the
+  schedule and the bounty's directory; you are finished with this bounty.
+
+**The winner is whoever ElgoraHub settled on, which need not be the Solver you
+picked.** Your Verdict is one of several and may have lost. Read both halves of
+the winning pair off the settled bounty rather than out of your own Verdict, and
+never point a key at any other Solver or commitment — the API rejects it anyway.
+
+Delivering twice is harmless. Any pinned Guardian may run the command, and a
+repeat — or one after another Guardian already delivered the same pair — is a
+no-op. So deliver again if a Poster reports retrieval failing while
+`delivery/status` still says `{"exists": true}`: that check confirms a wrap
+exists, not that it still opens with the deployment's current delivery key after
+a rotation, and re-delivering stores a fresh one.
 
 ## Final Results
 
