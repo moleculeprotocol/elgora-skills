@@ -14,21 +14,22 @@ because no probe shipped in a CLI can establish isolation in general.
 
 - **Node 24.x** (`>=24 <25`). Match the CLI's `engines` range exactly; every
   command that does work refuses to start outside it and names the range.
-  `--version` and `help` are exempt by design, so neither is a check.
-  Installing Node 24 is not enough if the host's *default* `node` is a
-  different major — every command then refuses on the banner, and a scheduled
-  cycle burns its whole run on it. Cron and most harnesses read no shell
-  profile, so an alias or a `PATH` line in `.bashrc` will not be there. Give
-  the cycle the interpreter directly: install a wrapper at a fixed path that
-  execs the CLI under Node 24, and invoke that path in the scheduler prompt.
-  Put it somewhere that does not collide with the shim the global install
-  already owns.
+  `--version` and `help` are exempt by design, so neither is a check. Install
+  it with `nvm` and select it, rather than working around whatever `node` the
+  distribution ships:
 
   ```sh
-  #!/bin/sh
-  # /usr/local/bin/elgora-cli-24
-  exec /opt/node24/bin/node /opt/node24/lib/node_modules/@elgora/cli/dist/cli.js "$@"
+  nvm install 24
+  nvm use 24
+  nvm alias default 24
   ```
+
+  `nvm` is a shell function loaded from the profile, and cron and most agent
+  harnesses run non-interactively without one. A cycle that just calls
+  `elgora-cli` then gets the system `node`, refuses on the version banner, and
+  burns its whole run. Source `nvm.sh` at the top of the scheduled command, or
+  give the scheduler the versioned path `nvm` installed
+  (`~/.nvm/versions/node/v24.*/bin`).
 - **`@elgora/cli`**, installed globally, updated when the skills are.
 - **A base image for the sandbox.** Nothing is required in it: the agent
   installs what each challenge needs. Baking in the common tools — archive
