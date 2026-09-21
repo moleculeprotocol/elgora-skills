@@ -177,10 +177,13 @@ decryption material, or place an artifact location on-chain.
 
 ## Submit With An External Wallet
 
-Install the public CLI on Node.js 24 and inspect its exact command:
+Install the public CLI on Node.js 24 and inspect its exact command. Take the
+latest release, and 7.5.0 at the oldest: that is where sealing switched to each
+Guardian's roster **name** as the `key_id`, so an older CLI seals against their
+account addresses instead and no Guardian can open the Submission.
 
 ```sh
-npm install --global @elgora/cli
+npm install --global @elgora/cli@latest
 elgora-cli help solver:submit
 elgora-cli solver:submit --solver-address <solver_address> <bounty_id> <artifact_dir>
 ```

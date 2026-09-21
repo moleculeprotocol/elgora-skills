@@ -30,7 +30,12 @@ because no probe shipped in a CLI can establish isolation in general.
   burns its whole run. Source `nvm.sh` at the top of the scheduled command, or
   give the scheduler the versioned path `nvm` installed
   (`~/.nvm/versions/node/v24.*/bin`).
-- **`@elgora/cli`**, installed globally, updated when the skills are.
+- **`@elgora/cli` 7.5.0 or newer**, installed globally, updated when the skills
+  are — `npm install --global @elgora/cli@latest`. 7.5.0 is where each X25519
+  `key_id` became this Guardian's roster **name** rather than its account
+  address; the two sides have to agree, so a Solver sealing from an older CLI
+  produces an envelope this Guardian cannot open, and the decrypt error names
+  both sets of key_ids.
 - **A base image for the sandbox.** Nothing is required in it: the agent
   installs what each challenge needs. Baking in the common tools — archive
   tools, `python3`, `Rscript`, a C toolchain, the domain tools your bounties
