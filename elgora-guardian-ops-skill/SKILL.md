@@ -2,7 +2,7 @@
 name: elgora-guardian-ops-skill
 description: Check a Guardian runtime on demand — what a Guardian box must provide, where judging reads and writes its data, where the setup and judging-cycle guides live, and how to verify it all without running a bounty. Load it when a judging cycle cannot start or fails on its own environment, not on every cycle.
 metadata:
-  version: "2.6.0"
+  version: "2.7.0"
   updated: "2026-09-21"
 ---
 
@@ -51,7 +51,7 @@ this Guardian is not configured for the work.
 | Gas | The account holds chain gas, or no Verdict can be recorded. |
 | Model credit | The operator's provider key covers at least one full evaluation. Elgora supplies none. |
 | Sandbox | Isolated from the agent's space (no keys, secrets or other bounties' plaintext), bounded in memory and disk, one per bounty (it may persist across that bounty's runs and is destroyed once its Verdict is recorded), no host control interfaces, network on for your own installs and analysis, off only while Submission code executes. |
-| Workspace | The agent's own working directory, writable and persistent across restarts, holding its state directory of per-bounty records and everything else judging writes on the host. |
+| Workspace | The agent's own working directory, writable and persistent across restarts, holding one directory per bounty and everything else judging writes on the host. Never the account's home directory. |
 
 Nothing else is required on the host. Every tool a Submission needs is installed
 inside the sandbox, per bounty.
@@ -60,38 +60,40 @@ inside the sandbox, per bounty.
 
 Where judging reads and writes, so each kind of data stays where it belongs:
 
-- **Your workspace holds all of it.** Work inside the workspace your harness
-  started you in, and create nothing outside it — no new directory in your home,
-  nothing in the harness's own folders, not userspace data in `/tmp`. Everything below is
-  a subdirectory of that one workspace. Files spread across a box are the ones
+- **Your workspace holds all of it, one directory per bounty.** Work inside the
+  workspace your harness started you in and create nothing outside it — not in
+  the account's home directory, not in the harness's own folders, not in `/tmp`.
+  The one exception is scratch you could rebuild from nothing: build outputs,
+  downloaded tooling, temporary files. Files spread across a box are the ones
   missed when a Guardian is backed up, moved or updated, and on a host that
   rebuilds its disk between runs they are simply gone.
 - **Keys** never leave the environment of the command that uses them. They are
   not written to disk, passed as arguments, or mounted into a sandbox.
 - **Decrypted Submissions** come from `guardian:open`, into the output directory
   you pass it (default `./guardian-open/<bounty_id>/<submission_commitment>/`).
-  Give it a fresh directory per bounty that only this account can read, inside
-  your workspace and beside your state directory rather than within it.
+  Put them inside that bounty's directory, one per Submission, readable only by
+  this account.
 - **Into the sandbox** go one bounty's decrypted files (read-only), the
   challenge's verified inputs (read-only) and a bounded scratch area. **Out of
   it** come the outputs and findings you need, and nothing else.
-- **Your state directory**, inside that workspace, holds a small record per
-  bounty you are working on, so a later cycle resumes instead of starting over.
-  Its shape is yours to choose; `judging-cycle.md` describes one that works. It
-  never holds keys or plaintext, and it never decides what is final — ElgoraHub
-  does.
-- **Cleanup** follows the judging skill: decrypted output and everything
-  derived from it are deleted once the Verdict is recorded.
+- **The bounty record** sits in that same directory and says how far this
+  Guardian got, so a later cycle resumes instead of starting over. Its shape is
+  yours to choose; `judging-cycle.md` describes one that works. It never holds
+  keys or plaintext, and it never decides what is final — ElgoraHub does.
+- **Cleanup** follows the judging skill: decrypted output goes once the Verdict
+  is recorded, and the bounty's whole directory once the bounty has settled.
 
 ## Check It Without Running A Bounty
 
 Each check is cheap, touches no Submission, and records nothing on chain. Run
 them in order and stop at the first failure.
 
-1. **Workspace.** The workspace you started in is writable and still holds the
-   records your last cycle wrote. Missing or empty on a box that judged
-   yesterday means the host did not persist it: report that before starting a
-   cycle, because this cycle's work would be lost the same way.
+1. **Workspace.** The workspace you started in is writable, and any bounty your
+   last cycle left unfinished still has its directory there. Coming back empty
+   while a bounty was still in progress means the host did not persist it:
+   report that before starting a cycle, because this cycle's work would be lost
+   the same way. An empty workspace after a cycle that finished everything is
+   normal.
 2. **CLI, Node and discovery.** `elgora-cli guardian:judgeable
    --guardian-address <address>`. Needs no key, records nothing, and is the
    first command that runs the CLI's guards, so it is the Node check too.
@@ -130,20 +132,3 @@ the result with the time you checked, so your next judging cycle reads it
 instead of measuring again, and report a failure once rather than every cycle.
 Then return to `elgora-guardian-skill`; a bounty blocked by what you found is
 handled there.
-
-## Wrapper Scripts
-
-Scheduled cycles and monitors are scripts around the CLI. Three rules keep
-them from costing Verdicts:
-
-- **Empty `guardian:judgeable` stdout means no discovered work — check for it
-  before parsing anything.** A wrapper that crashes on empty output fails on
-  the common case, not the rare one; a monitor built on it reports a crash
-  where the truth is "nothing to judge".
-- **Monitor output must be deterministic**: sorted, and free of timestamps,
-  run counts or any field that differs between two identical ticks, so a
-  change-detector wakes only on real state and never on its own noise.
-- **When a wrapper fails, re-read the governing skill section before patching
-  the symptom.** A crash is often a design the skill already forbids — treat
-  the crash as a prompt to re-derive the wrapper's design from the skill, or
-  it keeps failing the same way one layer deeper.
