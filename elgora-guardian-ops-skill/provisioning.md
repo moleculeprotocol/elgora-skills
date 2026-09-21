@@ -6,14 +6,16 @@ reports it and judges what it can.
 
 The host itself needs very little: a supported Node for the CLI, and a sandbox
 runtime. Everything a Submission needs is installed inside the sandbox, per
-bounty, from public sources. The CLI checks its own Node range on every command;
-the sandbox is yours to verify by building it correctly, because no probe
-shipped in a CLI can establish isolation in general.
+bounty, from public sources. The CLI checks its own Node range on every command
+that does work; the sandbox is yours to verify by building it correctly,
+because no probe shipped in a CLI can establish isolation in general.
 
 ## Baseline, every host
 
 - **Node 24.x** (`>=24 <25`). Match the CLI's `engines` range exactly; every
-  command refuses to start outside it.
+  command that does work refuses to start outside it and names the range.
+  `elgora-cli --version` and `elgora-cli help` are deliberately exempt so a
+  broken host can still be identified, so neither is a compatibility check.
 - **`@elgora/cli`**, installed globally, updated when the skills are.
 - **A base image for the sandbox.** Nothing is required in it: the agent
   installs what each challenge needs. Baking in the common tools — archive

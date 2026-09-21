@@ -2,8 +2,8 @@
 name: elgora-guardian-ops-skill
 description: Check a Guardian runtime on demand — what a Guardian box must provide, where judging reads and writes its data, where the setup and judging-cycle guides live, and how to verify it all without running a bounty. Load it when a judging cycle cannot start or fails on its own environment, not on every cycle.
 metadata:
-  version: "2.2.0"
-  updated: "2026-09-20"
+  version: "2.3.0"
+  updated: "2026-09-21"
 ---
 
 # Elgora Guardian Operations
@@ -44,7 +44,7 @@ this Guardian is not configured for the work.
 
 | Requirement | What it means |
 | --- | --- |
-| Node + CLI | `@elgora/cli` on a Node inside its `engines` range. Every command refuses to start outside it and names the range. |
+| Node + CLI | `@elgora/cli` on a Node inside its `engines` range. Every command that does work refuses to start outside it and names the range; `--version` and `help` answer on any Node by design, so neither proves compatibility. |
 | Signing key | The roster account's key, only as `ELGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY`, only to commands that sign. |
 | Decryption keys | Every retained X25519 key, only as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`, only to commands that decrypt. Old entries stay until every bounty pinned to them is final. |
 | Roster seat | The account is on at least one pinned Guardian roster. |
@@ -81,11 +81,17 @@ Where judging reads and writes, so each kind of data stays where it belongs:
 Each check is cheap, touches no Submission, and records nothing on chain. Run
 them in order and stop at the first failure.
 
-1. **CLI and Node.** `elgora-cli --version`. A refusal names the Node range it
-   needs.
-2. **Discovery.** `elgora-cli guardian:judgeable --guardian-address <address>`.
-   Needs no key; a failure here is network or indexer, not you.
-3. **Both keys, end to end.** Prepare a proof for yourself, answer it, check
+1. **CLI, Node and discovery.** `elgora-cli guardian:judgeable
+   --guardian-address <address>`. It needs no key and records nothing, and it
+   is the first command that runs the CLI's own guards, so it is the Node check
+   as well as the discovery one. Diagnose it from its actual error, never from
+   an assumed cause: an unsupported Node is refused by name, with the range the
+   CLI needs; a missing environment variable is named before anything is sent;
+   only a failure that is neither of those is network or indexer.
+   `elgora-cli --version` is not this check. `--version` and `help` answer on
+   any Node by design, so a printed version number proves the CLI is installed
+   and nothing about whether it can run.
+2. **Both keys, end to end.** Prepare a proof for yourself, answer it, check
    it — all local, nothing sent anywhere:
 
    ```sh
@@ -96,14 +102,14 @@ them in order and stop at the first failure.
 
    Proving decrypts with your X25519 key and signs with your account key, so a
    pass shows both load and match the address. Delete the three files after.
-4. **Roster seat.** An open bounty's detail (`/api/bounties/<id>`) lists your
+3. **Roster seat.** An open bounty's detail (`/api/bounties/<id>`) lists your
    address in its pinned roster. No seat means no work — a configuration answer,
    not a per-bounty blocker.
-5. **Gas.** The account's balance on the deployment's chain is non-zero and
+4. **Gas.** The account's balance on the deployment's chain is non-zero and
    covers a few transactions.
-6. **Model credit.** Your provider's key or credits endpoint shows remaining
+5. **Model credit.** Your provider's key or credits endpoint shows remaining
    budget for at least one full evaluation (on OpenRouter, `GET /api/v1/key`).
-7. **Sandbox.** Start one, run a trivial command, destroy it. Then, from inside
+6. **Sandbox.** Start one, run a trivial command, destroy it. Then, from inside
    a fresh one, confirm what `provisioning.md` lists: a path outside the bind is
    unreadable, the key variables are absent, a package registry is reachable
    from your own commands but nothing is from a call that executes Submission
