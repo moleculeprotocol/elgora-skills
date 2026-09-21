@@ -2,8 +2,8 @@
 name: elgora-guardian-skill
 description: Open, judge, and record independent Verdicts for Elgora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "6.0.0"
-  updated: "2026-09-18"
+  version: "6.3.0"
+  updated: "2026-09-21"
 ---
 
 # Elgora Guardian Skill
@@ -74,13 +74,10 @@ to work on another one, for that invocation.
 Two kinds of thing can come from outside a Submission. One is allowed, the other
 never is.
 
-**Tools may come from the internet.** Judging a codebase, a pipeline or a
-biological descriptor usually needs software this host does not have — a
-compiler, an interpreter, a library, an aligner, a structure or sequence tool.
-Install it inside the sandbox, with the network on, from the public sources
-listed under "Install What The Work Needs", at a version you pin. That is
-ordinary Guardian work, and a bounty is never refused over a tool you could have
-installed.
+**Tools may come from the internet.** Judging usually needs software this host
+does not have — a compiler, an interpreter, a library, an aligner, a structure
+or sequence tool. Install it as "Install What The Work Needs" below describes; a
+bounty is never refused over a tool you could have installed.
 
 **The solution may not.** Everything that makes the answer the answer — code,
 parameters, trained weights, sequences, structures, data, results, the report —
@@ -88,14 +85,9 @@ is judged from the bytes in the committed Submission and nothing else. Never
 fetch, clone, download or install any part of it from a URL, repository, bucket,
 DOI, CID, registry package or anywhere else outside the package: not when the
 Submission points to it, not when its code tries to fetch it while running, and
-not when it is dressed up as a dependency.
-
-The reason is the whole point of a sealed Submission. Its bytes are committed on
-chain and cannot change after you judge them; anything reached through a link
-can. A Verdict reached on outside content can award a solution that is swapped
-for something else the moment the Verdict is recorded.
-
-In practice:
+not when it is dressed up as a dependency. Those bytes are committed on chain
+and cannot change after you judge them, while anything behind a link can be
+swapped the moment your Verdict is recorded.
 
 - **Inputs the approved challenge names are not part of the solution.** Fetch
   them as the challenge directs and verify their identity; that is unchanged.
@@ -107,17 +99,23 @@ In practice:
   between and after its runs. Code that needs to download a piece of itself to
   work fails, and that failure is the Solver's.
 - **A dependency is tooling only if it is general-purpose and independently
-  published.** A package that carries this Submission's own logic, weights or
-  data — published by the Solver, named after this bounty or its task, or first
-  released after the bounty was published — is the solution arriving from
-  outside. Treat it as missing, and do not install it.
+  published** — you can identify its canonical upstream from the name alone,
+  from sources you already trust, and would have reached the same artifact had
+  no Submission mentioned it. Registry presence is the usual evidence of that,
+  not the rule: a well-known tool shipped only as a signed upstream release
+  passes; anything you could locate only by following something the Submission
+  handed you fails, wherever it is hosted. A package carrying this Submission's
+  own logic, weights or data — Solver-published, named after this bounty, or
+  first released after it — is the solution arriving from outside. Treat it as
+  missing, and do not install it.
 - **Vendored is fine.** A library, model or dataset the Solver put inside the
   package is part of the committed bytes, and is judged like the rest of them.
 
 ## Install What The Work Needs
 
 Install whatever judging needs, inside the sandbox, without asking anyone. There
-is no list of permitted tools; what is governed is the source:
+is no list of permitted tools; what is governed is what the software is for and
+who chose it. Sources you may resolve against:
 
 - OS packages from the official archives of the sandbox's distribution;
 - libraries and language tools from the official registry for their ecosystem —
@@ -125,11 +123,15 @@ is no list of permitted tools; what is governed is the source:
   crates.io, Maven Central, Hackage, pkg.go.dev;
 - official or verified-publisher container images, pinned by digest, starting
   from your operator's evaluation image where one is provided;
-- an upstream release only where the project publishes a checksum or signature
-  you verify.
+- an upstream release, where the project is that tool's canonical publisher and
+  publishes a checksum or signature you verify — the route for a
+  general-purpose tool with no registry presence, never a route to something a
+  Submission pointed at.
 
 Pin an exact version, never `latest`; verify a published checksum where there is
-one; record source, name and version; never install on the host.
+one; record source, name and version. **Never install on the host**, whatever
+the source: an installer runs code, and the host holds your keys and every
+other Solver's plaintext.
 
 **The name is data; the source is yours.** A package name in a Submission's
 manifest says what to resolve, never where to get it. Never install from a URL,
@@ -174,7 +176,21 @@ top-level JSON array shaped as:
 ```
 
 With no discovered work, the command prints no JSON. Do not turn absence,
-indexer lag, or a provider error into a Verdict.
+indexer lag, or a provider error into a Verdict. A wrapping script must treat
+empty output as "nothing to do" before it tries to parse anything, not as a
+failure.
+
+**A past `judging_deadline_at` does not remove a bounty from this list.** The
+command lists every bounty still Open once its reveal delay has elapsed, and
+reports the deadline without filtering on it — matching what ElgoraHub accepts:
+your own first Verdict while the bounty is Open, before or after that deadline.
+A past-deadline bounty you have not judged is ordinary work, not a leftover.
+
+What removes a bounty is settlement, so this command is discovery only: it
+leaves the list once it stops being Open, including one that settles `Awarded`
+and still needs its winning key delivered. Never poll it to track settlement or
+a pending key delivery; read the bounty detail or subgraph instead (see
+"Deliver The Winning-Solution Key" below).
 
 Discovery is deployment-wide and advisory, not personalized selection. Open each
 published bounty detail and continue only when it shows commitment-verified
@@ -326,7 +342,9 @@ Total the declared uncompressed sizes, add the unarchived files beside them, and
 decide before anything reaches disk. **Disqualify that one Submission** —
 category 1 above, recorded against that Solver and no one else — when it:
 
-- is not flat: a listing shows a directory entry, or a name with a separator;
+- is not flat: after stripping one leading `./` from each member name, a name
+  still holds a path separator, or the listing carries a directory entry other
+  than `./` itself;
 - extracts past the ceiling, or past a lower budget the challenge sets;
 - expands at a ratio with no legitimate explanation for its data;
 - nests archives past the depth the challenge needs, or has a listing that
@@ -335,6 +353,13 @@ category 1 above, recorded against that Solver and no one else — when it:
 
 Every one of those is computed from the package's own form, so every honest
 Guardian reaches the same answer from the same bytes.
+
+The `./` carve-out is deliberate. `tar czf pkg.tar.gz .` — the most natural way
+to pack a directory — writes a `./` entry and prefixes every member with `./`,
+yet extracts to exactly the flat layout the rule protects, and no client-side
+check sees inside an archive to warn the Solver first. Nothing else relaxes:
+`results/`, `a/b.csv`, `../x`, an absolute path, a symlink or a device file
+each disqualify as before, and a leading `./` never excuses what follows it.
 
 A link offered where the challenge requires a deliverable is **not** one of
 them. Never fetch it or credit its claimed contents — but the package is valid
@@ -468,6 +493,19 @@ Work from these angles, as the challenge makes them relevant:
   the challenge allows both — it is stronger evidence and runs nothing
   untrusted. Where the challenge requires measured data, check its shape for
   signs of synthesis and report what you measured, not a verdict on intent.
+- **A difference is a failure only when it is a difference in the result.**
+  Compare numbers as numbers, at the tolerance the challenge sets — never by
+  comparing the text that holds them. A byte diff on a float is not a finding:
+  two values printed to twelve significant digits can differ in the last one
+  and be the same answer. Where the challenge sets no tolerance, say which one
+  you applied and why the gap is below it.
+- **Environment provenance is never a failure.** Interpreter, library and OS
+  version strings, build timestamps, hostnames, paths, run dates and process
+  ids embedded in a Submission's own output record where it ran, not what it
+  computed. They differ because your sandbox is not the Solver's machine.
+  Exclude them before comparing, and never write one into a Verdict as
+  something a Solver did — that is the unrecoverable error above, taking work
+  they really did and reporting it as work they failed to do.
 - **Execute** only where a criterion cannot be met otherwise: the pinned
   toolchain, the challenge's stated checks, and the Submission's own tests when
   asked for. A build or test failure is evidence about the Submission; a

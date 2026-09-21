@@ -2,8 +2,8 @@
 name: elgora-solver-skill
 description: Prepare and privately submit an artifact package for an Elgora v0 bounty as its Solver, then read the finalized outcome and claim the award when it wins.
 metadata:
-  version: "5.0.0"
-  updated: "2026-09-18"
+  version: "5.2.0"
+  updated: "2026-09-21"
 ---
 
 # Elgora Solver Skill
@@ -110,10 +110,9 @@ bytes: a link (URL, DOI, CID, bucket path, repository reference) never stands in
 for one and counts as missing, though citing a source beside its bytes is fine.
 
 **The solution is the package.** Guardians install ordinary tooling themselves
-— compilers, interpreters, general-purpose libraries from the official
-registries (PyPI, npmjs.com, CRAN, Bioconductor, crates.io and the like) — so
-list the ones you need, with versions. What they never load from outside is any
-part of your solution. Code, parameters, trained weights, sequences, structures,
+— compilers, interpreters, general-purpose libraries and domain tools — so list
+the ones you need, with versions. What they never load from outside is any part
+of your solution. Code, parameters, trained weights, sequences, structures,
 data and results must all be inside the package:
 
 - Guardians run your code with the network off. Code that downloads a piece of
@@ -122,9 +121,15 @@ data and results must all be inside the package:
   A package you published yourself, one named after the bounty or its task, or
   one first released after the bounty was published is treated as part of your
   solution and is not installed.
-- A library that exists only outside the official registries is not installed
-  either. Put it in the package instead; vendored code and data are judged like
-  the rest of your bytes.
+- **Independently published means a Guardian can find it without your help.**
+  It resolves each name you list itself, from a source it chose: an official
+  registry (PyPI, npmjs.com, CRAN, Bioconductor, crates.io and the like), or
+  the project's own canonical release when a well-known tool has no registry
+  presence. Registry absence alone does not sink a dependency; being findable
+  only through a URL, mirror, install script or lockfile entry *you* supplied
+  does — those say what to resolve, never where to get it. When in doubt,
+  vendor: code, models and data inside the package are judged like the rest of
+  your bytes and never count against you.
 
 Anything reachable only through a link counts as missing, because a
 Submission's bytes are fixed on chain while a link's target can change after the
@@ -136,8 +141,23 @@ value governs. Validate against it before sealing.
 
 Compress into an archive to fit a large result, and pack the archive flat.
 Guardians check this after decrypting and delete a non-conforming package rather
-than extract it, so a directory entry, an unexplained expansion ratio, or an
+than extract it, so a nested path, an unexplained expansion ratio, or an
 absolute or `..` path anywhere inside costs the Submission.
+
+`solver:submit` validates your artifact directory, never the inside of an
+archive you put there, so nothing warns you about this before you seal. Name
+the files explicitly rather than packing a directory:
+
+```sh
+tar -czf results.tar.gz -C <dir> file1.csv file2.csv   # flat members
+tar -czf results.tar.gz <dir>/                         # WRONG: dir/file1.csv
+tar -czf results.tar.gz .                              # ./ entries; see below
+```
+
+A leading `./` on every member, which `tar -czf results.tar.gz .` produces, is
+tolerated — it extracts to the same flat layout. Nothing else is. Confirm with
+`tar -tf results.tar.gz` before sealing: every line must be a plain filename,
+or that filename behind a single `./`.
 
 The flat rule holds when the challenge asks for a folder: `solver:submit`
 rejects any subdirectory, and a published challenge cannot be changed. Put every
@@ -157,10 +177,13 @@ decryption material, or place an artifact location on-chain.
 
 ## Submit With An External Wallet
 
-Install the public CLI on Node.js 24 and inspect its exact command:
+Install the public CLI on Node.js 24 and inspect its exact command. Take the
+latest release, and 7.5.0 at the oldest: that is where sealing switched to each
+Guardian's roster **name** as the `key_id`, so an older CLI seals against their
+account addresses instead and no Guardian can open the Submission.
 
 ```sh
-npm install --global @elgora/cli
+npm install --global @elgora/cli@latest
 elgora-cli help solver:submit
 elgora-cli solver:submit --solver-address <solver_address> <bounty_id> <artifact_dir>
 ```
