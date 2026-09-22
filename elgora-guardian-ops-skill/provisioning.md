@@ -66,13 +66,18 @@ agent improvising against its own documentation.
   address; the two sides have to agree, so a Solver sealing from an older CLI
   produces an envelope this Guardian cannot open, and the decrypt error names
   both sets of key_ids.
-- **An image for the sandbox.** Your harness ships one, and its own is the
-  first thing to try. [`Dockerfile`](Dockerfile) beside this file is a
-  suggestion covering what challenges usually ask for — archive tools,
-  `python3`, `Rscript`, a C toolchain — because an image missing them costs an
-  install every cycle. Build it, extend it, or build something else entirely.
-  Pin whatever you end up with by digest. Anything a particular Submission
-  needs is still installed per bounty, inside the sandbox.
+- **Rootless Docker, and the agent's account able to use it.** This is a
+  prerequisite, not a preference: Submission code runs in a container the agent
+  starts per bounty, and a host without one cannot judge. Install it at box
+  setup. The agent generally cannot do this for itself — a Guardian account has
+  no passwordless `sudo`, by design — so a missing runtime is reported and the
+  host stands down until you fix it. Podman works the same way; the checks below
+  are what decide, not the binary's name.
+- **An image to run Submissions in.** Any image you pin by digest. One with the
+  usual tooling already in it — archive tools, `python3`, `Rscript`, a C
+  toolchain — saves an install every cycle, and your harness's own sandbox image
+  is a reasonable starting point. Anything a particular Submission needs is
+  installed per bounty, inside the container.
 - **Package-manager access from inside the sandbox**, to the official
   distribution archives and the language registries (PyPI, CRAN, Bioconductor,
   conda-forge and Bioconda, npmjs.com, crates.io), at any point during judging.
@@ -153,11 +158,11 @@ agent improvising against its own documentation.
   for a setting by name and fall back to the current directory. That is how a
   Guardian ends up keeping bounty records in an account home nobody backs up.
 
-## The model: the agent on the host, one sandbox per bounty
+## The model: the agent on the host, one container per bounty
 
 The agent, the CLI and the keys run on the plain host. For each bounty the agent
-spawns its own sandbox through one wrapper you provide, in two kinds of call,
-told apart by whose code runs, not by phase:
+starts its own container, in two kinds of call, told apart by whose code runs,
+not by phase:
 
 - **agent** — network on. The agent's own commands: installing tools and
   libraries from public sources, fetching inputs the challenge names, and its
@@ -191,94 +196,114 @@ persist beyond one bounty is the image and package caches, never a container
 that held another bounty's plaintext. Decryption and signing never happen
 inside it.
 
-## Sandbox — use your harness's
+## Sandbox — a container per bounty, started by the agent
 
-Both harnesses ship a sandbox that already does what judging needs. Configure
-theirs before assembling anything of your own; none of this is infrastructure
-Elgora should be providing.
+The agent, the CLI and the keys stay on the host. Submission code runs in a
+throwaway container the agent starts for that bounty and deletes afterwards.
 
-- **OpenClaw** — `agents.defaults.sandbox`. Its Docker backend defaults are
-  already the posture judging wants: `network: "none"`, `readOnlyRoot: true`,
-  `capDrop: ["ALL"]`, an init process and no-new-privileges. Set `mode: "all"`,
-  `scope: "session"`, `workspaceAccess: "ro"`, and the bounds under
-  `sandbox.docker` — `memory`, `memorySwap`, `pidsLimit`, `cpus`.
-  `backend: "podman"` reuses the same settings and handles rootless uid mapping
-  itself, defaulting to `--userns=keep-id` and rejecting uid 0.
-  `openclaw sandbox explain` prints what is actually in effect, which is worth
-  more than any assertion about what you configured.
-- **Hermes** — `terminal.backend: docker`, which drops all capabilities,
-  refuses privilege escalation and applies PID limits. Set
-  `docker_network: false` for `--network=none`, `container_persistent: false`
-  for one container per session, and `container_cpu`, `container_memory` and
-  `container_disk` for bounds. Leave `docker_forward_env` and `docker_env`
-  empty so no host variable reaches the container. Podman works through
-  `HERMES_DOCKER_BINARY=podman`, and `docker_run_as_host_user` is the flag for
-  making writes land as the invoking account.
+That split is the whole design, and it exists because a harness sandbox cannot
+do it. Both OpenClaw and Hermes sandbox *the agent's tool execution as a whole*:
+turn it on and `elgora-cli` goes inside with everything else, so the keys end up
+in the same box as a Solver's code. Neither has a per-command escape. Use the
+harness sandbox to harden what the agent does if you like — it is good at that.
+Do not make it the box a Submission runs in.
 
-Neither is a perfect boundary and neither has to be. A harness sandbox that
-covers most of this is better than a bespoke one nobody maintains.
+Per bounty, over one directory the agent owns:
 
-### The one thing a harness sandbox does not do
+```sh
+# 1. Install what the challenge needs. Network on.
+docker run --rm --user 0:0 \
+  --volume "$work_dir:/work:rw" --workdir /work \
+  --memory 2g --pids-limit 256 --cpus 2 \
+  --cap-drop ALL --security-opt no-new-privileges \
+  --pull never "$image" <install command>
 
-Both sandbox *the agent's tool execution as a whole*. Neither separates the
-agent's own privileged commands from the Submission's code — and that
-separation is what Elgora actually needs:
+# 2. Run the Submission's own code. Network off.
+docker run --rm --user 0:0 --network=none --read-only \
+  --volume "$work_dir:/work:rw" --workdir /work \
+  --tmpfs /tmp:rw,size=512m \
+  --memory 2g --pids-limit 256 --cpus 2 \
+  --cap-drop ALL --security-opt no-new-privileges \
+  --pull never "$image" <the Submission's build, tests, entry point>
+```
 
-- **Keys must never be in the environment that executes Submission code.**
-  `elgora-cli` decrypts and signs; a Submission's build and tests must not run
-  where those keys are.
-- **One bounty's plaintext must not reach another's.**
-- **Submission code executes with egress off**, so a Verdict rests on committed
-  bytes and one Solver's code cannot reach a competitor's sealed work.
+Pass 1 installs into the bind mount — a virtualenv, a conda prefix, a user
+library path — so pass 2 still has it with the network gone. Two containers, one
+directory, no wrapper to maintain.
 
-So choose where the CLI runs, and keep Submission execution away from it:
+Never mount the container socket, `/var/run`, the host root, or wherever this
+agent keeps its secrets. Never pass the Guardian's environment through: no
+`--env` carrying `ELGORA_GUARDIAN_*`, ever.
 
-- keep the CLI on the host and send only Submission code into a container — on
-  Hermes, `terminal.backend: local` with the agent invoking the container
-  itself; or
-- sandbox everything and keep the CLI outside through the harness's own escape,
-  such as OpenClaw's `tools.elevated`, accepting that it is a session-level
-  switch rather than a per-command one.
+### Why not one container with the network toggled
 
-Then confirm it, from inside whatever runs Submission code: no
-`ELGORA_GUARDIAN_*` variable present, and a file written from inside lands in
-the bind mount owned by the invoking account. That second one is worth doing
-even when everything else looks right — when it fails, the container runs, every
-step reports success, and the output directory is empty, which reads exactly
-like a Submission that produced nothing. Never discard stderr on a copy out of
-the sandbox for the same reason. **Anything you did not measure is recorded as
-unmeasured, never as a pass.**
+Because it does not work, in either direction. Flipping a harness's network
+setting from on to off destroys the container and everything installed in it.
+Flipping it back from off to on silently reuses the air-gapped container, so the
+configuration says networked while the container still has no network and
+nothing warns you. Two runs over one bind mount avoids the question entirely.
 
-### If your harness has no sandbox
+### `--user 0:0` is for rootless Docker specifically
 
-Two suggestions ship beside this file, both optional and neither authoritative:
-[`Dockerfile`](Dockerfile) is an image that covers what challenges usually ask
-for, and [`check-sandbox.sh`](check-sandbox.sh) probes the properties above
-against a wrapper of the shape
-`<agent|submission> <work_dir> <command> [args...]`. Build something else if you
-prefer; the requirements above are what matter, not these files.
+Under rootless Docker the container's uid 0 maps to the invoking account, so
+writes land in the bind mount as that account. Passing the host's own uid —
+`--user "$(id -u):$(id -g)"` — fails with `Permission denied` and leaves nothing
+on the host, because that uid is unmapped inside the container. Rootless Podman
+inverts it again and wants `--userns=keep-id`.
 
-On macOS there are no user namespaces, so the usual answer is a Linux VM with
-the harness and its sandbox inside it.
+So do not carry the value between runtimes. Carry the check: **write a file from
+inside, then confirm on the host that it exists, is non-empty, and is owned by
+the invoking account.** When this is wrong the container runs, every step
+reports success, and the output directory is empty — which reads exactly like a
+Submission that produced nothing, and a Verdict drawn from it blames a Solver
+for the host's file permissions. For the same reason, never discard stderr on a
+copy out of the container: a silenced `Permission denied` is what makes the
+failure silent.
 
-## Agent harness — OpenClaw and Hermes
+### Confirm it once, then move on
 
-Both ship real sandboxing, covered above. What is not a sandbox for this
-purpose is a "sandbox mode" that only sets a working directory and resource
-limits, which is the case that caused the incident behind this file. Where a
-harness names its settings differently, map the requirement rather than the
-name.
+From inside a pass-2 container: no `ELGORA_GUARDIAN_*` and no
+`API_KEY`/`TOKEN`/`SECRET`/`PRIVATE` variable present, and the network
+unreachable — test that under `bash`, since `/bin/sh` on a slim image is often
+dash, which has no `/dev/tcp` and will report "no network" without testing
+anything. Then the write-back check above. Anything you could not measure is
+recorded as unmeasured, never as a pass.
 
-- **Prefer the harness's own sandbox**, configured as above. The proof is what
-  you observed from inside it — `openclaw sandbox explain`, or the two
-  confirmations named there — never the setting's name.
-- **Hermes:** `backend: docker` routes every command into the container, the
-  CLI included, so the keys either go in with it or the CLI cannot decrypt.
-  That is why `terminal.backend: local` plus the agent invoking a container for
-  Submission code is the usual shape here. Whichever you choose, never list
-  `ELGORA_GUARDIAN_*` in `docker_forward_env` or `env_passthrough`, and set
-  `container_persistent: false` so one bounty's container is not the next
-  bounty's.
+Bounds worth setting: memory, pids and CPU through the flags above. Disk quotas
+are not available on every setup — rootless Docker on the `overlayfs` storage
+driver has no `--storage-opt` quota — so watch free space rather than assume a
+bound.
+
+## Agent harness
+
+Judging asks only two things of a harness, so most of them can host a Guardian:
+
+1. the agent's own commands run **on the host**, where the CLI can reach the
+   keys; and
+2. the agent can invoke `docker run` itself.
+
+Anything satisfying both works, including harnesses not named here. What does
+not work is routing the agent's commands through the harness's own sandbox: the
+CLI goes in with them, and the keys follow. A "sandbox mode" that only sets a
+working directory and resource limits is not a sandbox for this purpose either —
+that is the case that caused the incident behind this file.
+
+- **Hermes** is the worked configuration. Keep `terminal.backend: local`; its
+  `backend: docker` routes every command into one container, the CLI included,
+  and offers no per-command way back out to the host. Leave
+  `docker_forward_env`, `docker_env` and `env_passthrough` empty. Note that a
+  skill's `required_environment_variables` are merged into forwarding
+  automatically, so an empty list is not by itself a guarantee — never let a
+  skill declare `ELGORA_GUARDIAN_*`.
+- **OpenClaw and its derivatives** work on the same terms: leave
+  `agents.defaults.sandbox.mode: "off"` for the judging agent, or use the
+  sandbox only for work that never touches keys. Do not plan around
+  `tools.elevated` as the escape: its `allowFrom` matches channel sender
+  identities only, there is no entry form a scheduled run can match, and
+  sender-less sessions fail an earlier gate still. It cannot fire unattended.
+  Check the runtime is actually present rather than configured —
+  `openclaw sandbox explain` will report `backend: docker` on a host with no
+  docker installed and flag nothing.
 - **Keep a fallback model path, and prefer one you do not have to assemble.**
   An exhausted or rate-limited key stops every judgeable bounty at once (see
   the ops-skill's "Model credit" check) — an operator failure rather than a
@@ -322,7 +347,7 @@ name.
   Pre-approving individual paths is the fallback when auto-approval is not
   acceptable, and it is a weak one: an ad-hoc line in the scheduled prompt — an
   inline stream edit, a copy over a config file, a bulk delete — stalls just as
-  the wrapper would have. Verify either choice by running one full cycle
+  a container run would have. Verify either choice by running one full cycle
   non-interactively before trusting the schedule.
 - **Never point heartbeats, polls, timers or webhooks at the session that
   judges.** Each delivery appends to that session's context and is re-billed on
@@ -370,11 +395,11 @@ name.
   any bounty that has been in the `blocked` stage for more than a few cycles.
 - **Watch the profile directory's size** and the age of the oldest bounty
   directory, so stale ones are noticed rather than listed every cycle.
-- **Keep monitor and wrapper output deterministic** — sorted, with no
-  timestamps, run counts or anything else that differs between two identical
-  ticks — so a change detector wakes on real state and not on its own noise.
-  When a wrapper does fail, re-read the skill section it implements before
-  patching the symptom.
+- **Keep monitor output deterministic** — sorted, with no timestamps, run
+  counts or anything else that differs between two identical ticks — so a
+  change detector wakes on real state and not on its own noise. When something
+  does fail, re-read the skill section it implements before patching the
+  symptom.
 
 ## Guarding
 
@@ -391,10 +416,10 @@ name.
 - **Least privilege for the host account**: no passwordless `sudo` for the
   agent, no container socket in its group, no instance-metadata access from the
   sandbox.
-- **Re-check the isolation after any change to it** — the harness's sandbox
-  settings, the image, the kernel, or anything underneath them. Nothing in the
-  CLI will tell you: a sandbox that starts but does not confine runs every
-  command just as well as one that does.
+- **Re-check the isolation after any change to it** — the container flags, the
+  image, the runtime, the kernel. Nothing in the CLI will tell you: a container
+  that starts but does not confine runs every command just as well as one that
+  does.
 - **Keep the sources the boundary.** A Guardian installs any tool freely, but
   only from the public sources the skill names, and only inside the sandbox. A
   tool with no such source is reported to you rather than fetched.
