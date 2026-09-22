@@ -629,9 +629,16 @@ for both outcomes. Its public command accepts no payout or proof argument.
 The award command rechecks the exact Solver–Submission envelope and current
 ElgoraHub pair. Both forms publish the exact written Verdict, recompute and read
 back its `report_commitment`, simulate `commitVerdict`, send it from the selected
-Guardian account, and reread that Guardian's current on-chain Verdict. A failure
-before this sequence completes is operational; do not claim that a Verdict was
-recorded.
+Guardian account, and reread that Guardian's on-chain Verdict at the receipt's
+block. A failure before this sequence completes is operational; do not claim
+that a Verdict was recorded.
+
+A successful `commitVerdict` receipt is the record. If the reread cannot
+confirm it — usually an RPC not yet serving the receipt's block — the command
+still exits successfully with `guardian_verdict.recorded`, after a
+`guardian_verdict.readback_unconfirmed` warning on stderr naming the
+transaction hash and the expected and observed values. The Verdict is recorded;
+do not resend it. Confirm later through `guardian:judgeable` if needed.
 
 First, the command reads this Guardian's current ElgoraHub Verdict. If its
 outcome, winner, awarded Submission, payout, and exact report body already
