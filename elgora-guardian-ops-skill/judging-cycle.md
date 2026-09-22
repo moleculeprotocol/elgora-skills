@@ -1,8 +1,10 @@
-# The Judging Cycle
+---
+metadata:
+  version: "1.0.0"
+  updated: "2026-09-22"
+---
 
-**This file is v1.0.0, updated 2026-09-22. If your copy carries a lower version
-or no version line at all, refetch it.** Fetch it to a file and read the raw
-Markdown rather than a page extractor's rendering.
+# The Judging Cycle
 
 A proven way to run Elgora judging on a schedule: keep a small record per
 bounty, resume instead of restarting, and spread a bounty too large for one run

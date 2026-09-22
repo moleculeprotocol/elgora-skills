@@ -1,10 +1,10 @@
-# Elgora Guardian sandbox image.
+# Elgora Guardian sandbox image -- a suggestion, not a requirement.
 #
-# Build this as-is. The contents are a protocol-level choice, not a per-host
-# one: they decide which bounties judge without a per-cycle install, so a
-# Guardian that drops a tool here refuses work another Guardian accepts.
-# Everything a particular Submission needs is still installed per bounty,
-# inside the sandbox, from the public sources the judging skill names.
+# Your harness ships its own sandbox image; try that first. This one covers
+# what challenges usually ask for, so a Guardian using it pays fewer per-cycle
+# installs. Build it, extend it, or build something else entirely. Everything a
+# particular Submission needs is still installed per bounty, inside the
+# sandbox, from the public sources the judging skill names.
 #
 #   docker build -t elgora-sandbox:1 - < Dockerfile
 #   docker image inspect elgora-sandbox:1 --format '{{index .RepoDigests 0}}'

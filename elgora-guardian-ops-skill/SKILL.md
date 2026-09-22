@@ -33,9 +33,10 @@ it may decide alone. Once judging starts, the rule above holds again.
 ## Where The Setup Rules Live
 
 - **[`provisioning.md`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/provisioning.md)**,
-  beside this file, is the operator's guide: what to install on a Guardian host,
-  how to build and verify the sandbox, harness settings, monitoring. Point your
-  operator there when a check below fails.
+  beside this file, is the setup guide: what to install on a Guardian host, how
+  to configure your harness's sandbox, harness settings, monitoring. Each file
+  beside this one carries its own version in its frontmatter; check those
+  against what you fetched. Point your operator there when a check below fails.
 - **[`judging-cycle.md`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/judging-cycle.md)**,
   also beside this file, is a proven way to run judging on a schedule: the
   bounty record, resuming, the circuit breaker, large bounties across several
@@ -45,24 +46,6 @@ it may decide alone. Once judging starts, the rule above holds again.
   overrides it.
 - The **protocol profile** the bounty pins is the authority for Submission
   limits.
-
-## This Bundle
-
-This skill is v3.0.0, updated 2026-09-22. These are its published files with the
-sha256 of the exact bytes. A copy that does not hash to its row is stale or was
-elided in transit — refetch it rather than acting on it, and fetch the raw
-Markdown to a file rather than reading a page extractor's rendering.
-
-<!-- manifest -->
-
-| File | sha256 of the published bytes |
-| --- | --- |
-| `Dockerfile` | `acfbf65983fd9821c8fa405c43cde4fc92776b363404f4ac08f8f14bb3c1715a` |
-| `check-sandbox.sh` | `24529940e5b318ca36460f067774b7fc14770101f261f7fe39811ece4fab1d55` |
-| `judging-cycle.md` | `bdaadb8aff7c6ae670936bdf40600adc733f6bbe6dc66f1f9fc49f940cb0f8d1` |
-| `provisioning.md` | `df1636d33cc79701995522f252efd111c6211b8876c25f234fff4a1efad189ff` |
-
-<!-- /manifest -->
 
 ## What A Guardian Box Provides
 
@@ -74,7 +57,7 @@ Markdown to a file rather than reading a page extractor's rendering.
 | Roster seat | The account is on at least one pinned Guardian roster. |
 | Gas | The account holds chain gas, or no Verdict can be recorded. |
 | Model credit | The operator's provider key covers at least one full evaluation. Elgora supplies none. |
-| Sandbox | Isolated from the agent's space (no keys, secrets or other bounties' plaintext), bounded in memory and disk, one per bounty (it may persist across that bounty's runs and is destroyed once its Verdict is recorded), no host control interfaces, network on for your own installs and analysis, off only while Submission code executes. `provisioning.md` tiers these: a Tier 1 miss means this host does not judge, a Tier 2 miss is recorded with whatever stands in for it. |
+| Sandbox | Your harness's own, configured per `provisioning.md` — OpenClaw's `agents.defaults.sandbox`, Hermes's Docker terminal backend. What matters is that Submission code never executes where the keys are, one bounty's plaintext never reaches another's, and egress is off while that code runs. |
 | Storage | An absolute path inside the agent's **profile directory** — `~/.hermes` or `~/.hermes/profiles/<name>`, `~/.openclaw` or `~/.openclaw-<profile>` — writable, persisted across restarts, holding one directory per bounty and everything else judging writes on the host. Not the home directory of the box account: that is not backed up. |
 
 Nothing else is required on the host. Every tool a Submission needs is installed
@@ -172,11 +155,13 @@ nothing exists yet:
    covers a few transactions.
 6. **Model credit.** Your provider's key or credits endpoint shows remaining
    budget for at least one full evaluation (on OpenRouter, `GET /api/v1/key`).
-7. **Sandbox.** Start one, run a trivial command, destroy it. Then run
-   [`check-sandbox.sh`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/check-sandbox.sh)
-   against the wrapper. A sandbox that runs is not proven to confine; what the
-   probes report is evidence for your operator, not a certificate. A property
-   the run could not measure is reported unmeasured — never as a pass.
+7. **Sandbox.** Start one, run a trivial command, destroy it. Then confirm two
+   things from inside whatever executes Submission code: no `ELGORA_GUARDIAN_*`
+   variable is present, and a file written from inside lands in the bind mount
+   owned by the invoking account. `openclaw sandbox explain` reports the
+   effective settings where it applies. A sandbox that runs is not proven to
+   confine, and anything you could not measure is recorded as unmeasured rather
+   than as a pass.
 
 **What a check must return.** Whatever wraps these, a scheduled cycle reads its
 exit code and must refuse to start on a non-zero one: pass, failed and blocked

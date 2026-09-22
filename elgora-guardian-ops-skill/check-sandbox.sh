@@ -5,9 +5,10 @@
 #   The wrapper defaults to $ELGORA_SANDBOX_RUN, then to elgora-sandbox-run on
 #   PATH. It is called as: <wrapper> <agent|submission> <work_dir> <cmd>...
 #
-# Prints one line per property:   <tier> <property> <pass|fail|unmeasured> <detail>
-# Exit: 0 every Tier 1 property measured and passing
-#       1 a Tier 1 property failed, or could not be measured
+# Prints one line per property:
+#   <REQUIRED|EXPECTED|OPTIONAL> <property> <pass|fail|unmeasured> <detail>
+# Exit: 0 every required property measured and passing
+#       1 a required property failed, or could not be measured
 #       2 the wrapper could not be run at all
 #
 # An unmeasured property is never reported as a pass. Every negative assertion
@@ -23,7 +24,7 @@
 set -uo pipefail
 
 WRAPPER="${1:-${ELGORA_SANDBOX_RUN:-elgora-sandbox-run}}"
-tier1_bad=0
+required_bad=0
 
 work_dir="$(mktemp -d)"
 canary_dir="$(mktemp -d)"
@@ -35,11 +36,11 @@ trap cleanup EXIT
 
 report() { printf '%s %s %s %s\n' "$1" "$2" "$3" "$4"; }
 
-# Tier 1 is what decides whether this host judges at all, so an unmeasured
-# Tier 1 property counts against it exactly as a failure does.
+# The required set decides whether this host judges at all, so an unmeasured
+# required property counts against it exactly as a failure does.
 record() {
   report "$@"
-  if [ "$1" = "TIER1" ] && [ "$3" != "pass" ]; then tier1_bad=1; fi
+  if [ "$1" = "REQUIRED" ] && [ "$3" != "pass" ]; then required_bad=1; fi
 }
 
 run_in() { # run_in <agent|submission> <command...>
@@ -56,7 +57,7 @@ if ! run_in agent /bin/bash -c 'exit 0' >/dev/null 2>&1; then
   exit 2
 fi
 
-# --- Tier 1 -----------------------------------------------------------------
+# --- Required -----------------------------------------------------------------
 
 # Keys absent. Checked in both call kinds: a wrapper that clears the
 # environment for one and not the other is the common mistake.
@@ -65,11 +66,11 @@ for mode in agent submission; do
     'env | grep -c -E "^(ELGORA_GUARDIAN_[^=]*|[^=]*(API_KEY|TOKEN|SECRET|PRIVATE|MNEMONIC)[^=]*)=" || true')"
   leaked="$(printf '%s' "$leaked" | tr -dc '0-9')"
   if [ -z "$leaked" ]; then
-    record TIER1 "keys-absent($mode)" unmeasured "could not enumerate the environment"
+    record REQUIRED "keys-absent($mode)" unmeasured "could not enumerate the environment"
   elif [ "$leaked" = "0" ]; then
-    record TIER1 "keys-absent($mode)" pass "no key-shaped variable inside"
+    record REQUIRED "keys-absent($mode)" pass "no key-shaped variable inside"
   else
-    record TIER1 "keys-absent($mode)" fail "$leaked key-shaped variables inside"
+    record REQUIRED "keys-absent($mode)" fail "$leaked key-shaped variables inside"
   fi
 done
 
@@ -77,13 +78,13 @@ done
 # canary that a process outside the sandbox can read. Probing with a file the
 # image also ships (/etc/shadow is the usual mistake) proves nothing.
 if ! grep -q "$canary_token" "$canary_file" 2>/dev/null; then
-  record TIER1 secrets-unreachable unmeasured "canary unreadable on the host; probe is broken"
+  record REQUIRED secrets-unreachable unmeasured "canary unreadable on the host; probe is broken"
 else
   seen="$(run_in submission /bin/bash -c "cat '$canary_file' 2>/dev/null || true")"
   if printf '%s' "$seen" | grep -q "$canary_token"; then
-    record TIER1 secrets-unreachable fail "read a host file outside the bind mount"
+    record REQUIRED secrets-unreachable fail "read a host file outside the bind mount"
   else
-    record TIER1 secrets-unreachable pass "host canary outside the bind is unreadable"
+    record REQUIRED secrets-unreachable pass "host canary outside the bind is unreadable"
   fi
 fi
 
@@ -95,9 +96,9 @@ found="$(run_in submission /bin/bash -c '
   true')"
 found="$(printf '%s' "$found" | tr -d '[:space:]')"
 if [ -n "$found" ]; then
-  record TIER1 no-host-control fail "control interface visible inside"
+  record REQUIRED no-host-control fail "control interface visible inside"
 else
-  record TIER1 no-host-control pass "no container socket or runtime endpoint inside"
+  record REQUIRED no-host-control pass "no container socket or runtime endpoint inside"
 fi
 
 # Results land. This is what replaces prescribing a uid/gid flag: no value is
@@ -108,17 +109,17 @@ marker="elgora-write-$$"
 write_err="$(run_in submission /bin/bash -c "printf '%s\n' '$marker' > /work/elgora-write-probe" 2>&1)"
 landed="$work_dir/elgora-write-probe"
 if [ ! -f "$landed" ]; then
-  record TIER1 results-land fail "nothing arrived in the bind mount: ${write_err:-no stderr}"
+  record REQUIRED results-land fail "nothing arrived in the bind mount: ${write_err:-no stderr}"
 elif [ ! -s "$landed" ]; then
-  record TIER1 results-land fail "file arrived empty: ${write_err:-no stderr}"
+  record REQUIRED results-land fail "file arrived empty: ${write_err:-no stderr}"
 elif ! grep -q "$marker" "$landed"; then
-  record TIER1 results-land fail "file arrived with unexpected contents"
+  record REQUIRED results-land fail "file arrived with unexpected contents"
 else
   owner="$(stat -c '%u' "$landed" 2>/dev/null || stat -f '%u' "$landed" 2>/dev/null)"
   if [ "$owner" = "$(id -u)" ]; then
-    record TIER1 results-land pass "written from inside, owned by uid $owner on the host"
+    record REQUIRED results-land pass "written from inside, owned by uid $owner on the host"
   else
-    record TIER1 results-land fail "owned by uid $owner on the host, not $(id -u)"
+    record REQUIRED results-land fail "owned by uid $owner on the host, not $(id -u)"
   fi
 fi
 
@@ -128,12 +129,12 @@ start="$(date +%s)"
 run_in submission /bin/bash -c 'sleep 120' >/dev/null 2>&1
 elapsed=$(( $(date +%s) - start ))
 if [ "$elapsed" -lt 115 ]; then
-  record TIER1 wall-clock pass "a 120s command was stopped after ${elapsed}s"
+  record REQUIRED wall-clock pass "a 120s command was stopped after ${elapsed}s"
 else
-  record TIER1 wall-clock unmeasured "no timeout observed in ${elapsed}s; the wrapper must enforce one"
+  record REQUIRED wall-clock unmeasured "no timeout observed in ${elapsed}s; the wrapper must enforce one"
 fi
 
-# --- Tier 2 -----------------------------------------------------------------
+# --- Expected -----------------------------------------------------------------
 
 # Network off during submission. The positive control is the whole point: the
 # identical check must succeed in an agent call. Without it a probe using a
@@ -144,22 +145,22 @@ net_probe='
   true'
 control="$(run_in agent /bin/bash -c "$net_probe")"
 if ! printf '%s' "$control" | grep -q -E 'REACHED|RESOLVED'; then
-  report TIER2 network-off unmeasured "positive control failed in an agent call; probe or host network is broken"
+  report EXPECTED network-off unmeasured "positive control failed in an agent call; probe or host network is broken"
 else
   offline="$(run_in submission /bin/bash -c "$net_probe")"
   if printf '%s' "$offline" | grep -q -E 'REACHED|RESOLVED'; then
-    report TIER2 network-off fail "reached the network while running Submission code"
+    report EXPECTED network-off fail "reached the network while running Submission code"
   else
-    report TIER2 network-off pass "control reached the network, submission call did not"
+    report EXPECTED network-off pass "control reached the network, submission call did not"
   fi
 fi
 
 # Mount namespace.
 home_listing="$(run_in submission /bin/bash -c 'ls -A /home 2>/dev/null | head -5; true')"
 if [ -n "$(printf '%s' "$home_listing" | tr -d '[:space:]')" ]; then
-  report TIER2 mount-namespace fail "host /home is visible inside"
+  report EXPECTED mount-namespace fail "host /home is visible inside"
 else
-  report TIER2 mount-namespace pass "/home is empty inside"
+  report EXPECTED mount-namespace pass "/home is empty inside"
 fi
 
 # Resource bounds, read from the kernel's own accounting rather than inferred
@@ -172,33 +173,33 @@ bounds="$(run_in submission /bin/bash -c '
   true')"
 case "$bounds" in
   *unreadable*|"")
-    report TIER2 resource-bounds unmeasured "cgroup accounting not readable inside: $bounds" ;;
+    report EXPECTED resource-bounds unmeasured "cgroup accounting not readable inside: $bounds" ;;
   *"memory.max=max"*|*"pids.max=max"*)
-    report TIER2 resource-bounds fail "a bound is unset: $bounds" ;;
+    report EXPECTED resource-bounds fail "a bound is unset: $bounds" ;;
   *)
-    report TIER2 resource-bounds pass "$bounds" ;;
+    report EXPECTED resource-bounds pass "$bounds" ;;
 esac
 
 # Capabilities.
 capeff="$(run_in submission /bin/bash -c 'grep ^CapEff /proc/self/status 2>/dev/null | tr -d "[:space:]"; true')"
 case "$capeff" in
-  "")                report TIER2 capabilities unmeasured "CapEff not readable inside" ;;
-  *0000000000000000) report TIER2 capabilities pass "CapEff is empty" ;;
-  *)                 report TIER2 capabilities fail "$capeff" ;;
+  "")                report EXPECTED capabilities unmeasured "CapEff not readable inside" ;;
+  *0000000000000000) report EXPECTED capabilities pass "CapEff is empty" ;;
+  *)                 report EXPECTED capabilities fail "$capeff" ;;
 esac
 
-# --- Tier 3 -----------------------------------------------------------------
+# --- Optional -----------------------------------------------------------------
 
 uidmap="$(run_in submission /bin/bash -c 'cat /proc/self/uid_map 2>/dev/null | tr -s " "; true')"
 if [ -z "$uidmap" ]; then
-  report TIER3 user-namespace unmeasured "uid_map not readable inside"
+  report OPTIONAL user-namespace unmeasured "uid_map not readable inside"
 else
-  report TIER3 user-namespace pass "uid_map:$uidmap"
+  report OPTIONAL user-namespace pass "uid_map:$uidmap"
 fi
 
-if [ "$tier1_bad" -ne 0 ]; then
-  printf 'RESULT fail a Tier 1 property failed or could not be measured\n'
+if [ "$required_bad" -ne 0 ]; then
+  printf 'RESULT fail a required property failed or could not be measured\n'
   exit 1
 fi
-printf 'RESULT pass every Tier 1 property measured and passing\n'
+printf 'RESULT pass every required property measured and passing\n'
 exit 0
