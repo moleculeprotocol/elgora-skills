@@ -62,7 +62,7 @@ fi
 # environment for one and not the other is the common mistake.
 for mode in agent submission; do
   leaked="$(run_in "$mode" /bin/bash -c \
-    'env | grep -c -E "^(ELGORA_GUARDIAN_|.*(API_KEY|TOKEN|SECRET|PRIVATE|MNEMONIC))" || true')"
+    'env | grep -c -E "^(ELGORA_GUARDIAN_[^=]*|[^=]*(API_KEY|TOKEN|SECRET|PRIVATE|MNEMONIC)[^=]*)=" || true')"
   leaked="$(printf '%s' "$leaked" | tr -dc '0-9')"
   if [ -z "$leaked" ]; then
     record TIER1 "keys-absent($mode)" unmeasured "could not enumerate the environment"

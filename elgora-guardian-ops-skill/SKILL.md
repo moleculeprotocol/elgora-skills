@@ -58,7 +58,7 @@ Markdown to a file rather than reading a page extractor's rendering.
 | File | sha256 of the published bytes |
 | --- | --- |
 | `Dockerfile` | `acfbf65983fd9821c8fa405c43cde4fc92776b363404f4ac08f8f14bb3c1715a` |
-| `check-sandbox.sh` | `d09ab62fdf54636e0a3b9992e8e5b0cd7ab30a84bc5c859bc5efe5123ce073fb` |
+| `check-sandbox.sh` | `24529940e5b318ca36460f067774b7fc14770101f261f7fe39811ece4fab1d55` |
 | `judging-cycle.md` | `bdaadb8aff7c6ae670936bdf40600adc733f6bbe6dc66f1f9fc49f940cb0f8d1` |
 | `provisioning.md` | `df1636d33cc79701995522f252efd111c6211b8876c25f234fff4a1efad189ff` |
 
