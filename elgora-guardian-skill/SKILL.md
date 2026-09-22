@@ -2,7 +2,7 @@
 name: elgora-guardian-skill
 description: Open, judge, and record independent Verdicts for Elgora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "6.7.0"
+  version: "6.8.0"
   updated: "2026-09-22"
 ---
 
@@ -118,7 +118,10 @@ swapped the moment your Verdict is recorded.
 - **The Submission's own code runs with the network off** — only while it
   executes. Your own installs, fetches and analysis keep the network, before,
   between and after its runs. Code that needs to download a piece of itself to
-  work fails, and that failure is the Solver's.
+  work fails, and that failure is the Solver's. How this host carries that out —
+  the two kinds of call and the exact invocation — is in
+  `elgora-guardian-ops-skill`; use whatever your operator put in front of you
+  first.
 - **A dependency is tooling only if it is general-purpose and independently
   published** — you can identify its canonical upstream from the name alone,
   from sources you already trust, and would have reached the same artifact had

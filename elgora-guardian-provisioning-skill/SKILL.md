@@ -176,121 +176,70 @@ agent improvising against its own documentation.
   for a setting by name and fall back to the current directory. That is how a
   Guardian ends up keeping bounty records in an account home nobody backs up.
 
-## The model: the agent on the host, one container per bounty
+## Why Submission code runs offline
 
-The agent, the CLI and the keys run on the plain host. For each bounty the agent
-starts its own container, in two kinds of call, told apart by whose code runs,
-not by phase:
-
-- **agent** — network on. The agent's own commands: installing tools and
-  libraries from public sources, fetching inputs the challenge names, and its
-  own analysis, checkers and recomputation — reading the Submission's files as
-  data is fine. Usable at any point, including between two Submission runs.
-- **submission** — network off. Any command that executes the Submission's own
-  code: its build, its tests, its entry point.
-
-### Why Submission code runs offline
-
-Not for the keys — they never enter the sandbox, network or not. Three reasons,
-each specific to the Submission's own code:
+Not for the keys — they never enter the container, network or not. Three
+reasons, each specific to the Submission's own code, and each a reason not to
+cut this corner when a host makes it awkward:
 
 - **The Verdict must rest on committed bytes.** Code that downloads something
   while it runs is judged on content that can change after the Verdict is
   recorded. Running offline is the one mechanical proof that a result came from
   the package.
-- **Other Solvers' work sits in the same sandbox.** A bounty's sandbox holds
+- **Other Solvers' work sits in the same container.** A bounty's container holds
   every Submission for that bounty; with the network on, one Solver's code could
   send a competitor's sealed solution anywhere.
 - **The Guardian's network identity** is not the Solver's to use.
 
-Dependencies still get installed: the agent reads the Submission's manifest and
-imports, resolves the named packages itself from the public sources, and
-installs them with an `agent` call before the `submission` call — and again
-between runs if one turns out missing.
+`elgora-guardian-skill` states the rule this serves, and
+`elgora-guardian-ops-skill` carries the invocation that implements it. What
+follows is only what you have to build.
 
-The sandbox may persist across that bounty's runs, so a large bounty resumes
-without reinstalling, and is destroyed once its Verdict is recorded. What may
-persist beyond one bounty is the image and package caches, never a container
-that held another bounty's plaintext. Decryption and signing never happen
-inside it.
-
-## Sandbox — a container per bounty, started by the agent
+## What the host must let the agent do
 
 The agent, the CLI and the keys stay on the host. Submission code runs in a
-throwaway container the agent starts for that bounty and deletes afterwards.
+throwaway container the agent starts per bounty and deletes afterwards. So the
+host has to support two runs over one directory the agent owns: one with the
+network on, to install what a challenge needs, and one with it off, to execute
+the Submission's own code. Your job is a host where that works, and one
+verification that it does.
 
-That split is the whole design, and it exists because a harness sandbox cannot
-do it. Both OpenClaw and Hermes sandbox *the agent's tool execution as a whole*:
-turn it on and `elgora-cli` goes inside with everything else, so the keys end up
-in the same box as a Solver's code. Neither has a per-command escape. Use the
-harness sandbox to harden what the agent does if you like — it is good at that.
-Do not make it the box a Submission runs in.
+**A harness sandbox cannot be that container.** Both OpenClaw and Hermes sandbox
+*the agent's tool execution as a whole*: turn it on and `elgora-cli` goes inside
+with everything else, so the keys end up in the same box as a Solver's code, and
+neither has a per-command escape. Use the harness sandbox to harden what the
+agent does if you like — it is good at that. Do not make it the box a Submission
+runs in.
 
-Per bounty, over one directory the agent owns:
+**Do not plan on toggling one container's network** instead of running two. It
+fails in both directions: on to off destroys the container and everything
+installed in it, and off to on silently reuses the air-gapped container while
+the configuration reads networked, with nothing warning you.
 
-```sh
-# 1. Install what the challenge needs. Network on.
-docker run --rm --user 0:0 \
-  --volume "$work_dir:/work:rw" --workdir /work \
-  --memory 2g --pids-limit 256 --cpus 2 \
-  --cap-drop ALL --security-opt no-new-privileges \
-  --pull never "$image" <install command>
+### Verify it once, at build time
 
-# 2. Run the Submission's own code. Network off.
-docker run --rm --user 0:0 --network=none --read-only \
-  --volume "$work_dir:/work:rw" --workdir /work \
-  --tmpfs /tmp:rw,size=512m \
-  --memory 2g --pids-limit 256 --cpus 2 \
-  --cap-drop ALL --security-opt no-new-privileges \
-  --pull never "$image" <the Submission's build, tests, entry point>
-```
+Run both calls yourself over one directory before handing the host over —
+install something in the first, use it in the second — and then run check 7 of
+`elgora-guardian-ops-skill` against the result. It is the same check the agent
+makes, and it is where the confirmations and their traps are written down; a
+host that passes it for you passes it for the agent.
 
-Pass 1 installs into the bind mount — a virtualenv, a conda prefix, a user
-library path — so pass 2 still has it with the network gone. Two containers, one
-directory, no wrapper to maintain.
+The one that catches the most is the write-back: a file written from inside must
+land on the host, non-empty, owned by the invoking account. When that is wrong
+the container runs, every step reports success, and the output directory is
+empty — which reads exactly like a Submission that produced nothing, and a
+Verdict drawn from it blames a Solver for your file permissions. Never discard
+stderr on a copy out of the container for the same reason.
 
-Never mount the container socket, `/var/run`, the host root, or wherever this
-agent keeps its secrets. Never pass the Guardian's environment through: no
-`--env` carrying `ELGORA_GUARDIAN_*`, ever.
+Then put the working invocation in front of the agent — in the harness's own
+instructions, beside the image digest you pinned — so a cycle does not have to
+derive it. Never mount the container socket, `/var/run`, the host root, or
+wherever this agent keeps its secrets, and never pass the Guardian's environment
+through.
 
-### Why not one container with the network toggled
-
-Because it does not work, in either direction. Flipping a harness's network
-setting from on to off destroys the container and everything installed in it.
-Flipping it back from off to on silently reuses the air-gapped container, so the
-configuration says networked while the container still has no network and
-nothing warns you. Two runs over one bind mount avoids the question entirely.
-
-### `--user 0:0` is for rootless Docker specifically
-
-Under rootless Docker the container's uid 0 maps to the invoking account, so
-writes land in the bind mount as that account. Passing the host's own uid —
-`--user "$(id -u):$(id -g)"` — fails with `Permission denied` and leaves nothing
-on the host, because that uid is unmapped inside the container. Rootless Podman
-inverts it again and wants `--userns=keep-id`.
-
-So do not carry the value between runtimes. Carry the check: **write a file from
-inside, then confirm on the host that it exists, is non-empty, and is owned by
-the invoking account.** When this is wrong the container runs, every step
-reports success, and the output directory is empty — which reads exactly like a
-Submission that produced nothing, and a Verdict drawn from it blames a Solver
-for the host's file permissions. For the same reason, never discard stderr on a
-copy out of the container: a silenced `Permission denied` is what makes the
-failure silent.
-
-### Confirm it once, then move on
-
-From inside a pass-2 container: no `ELGORA_GUARDIAN_*` and no
-`API_KEY`/`TOKEN`/`SECRET`/`PRIVATE` variable present, and the network
-unreachable — test that under `bash`, since `/bin/sh` on a slim image is often
-dash, which has no `/dev/tcp` and will report "no network" without testing
-anything. Then the write-back check above. Anything you could not measure is
-recorded as unmeasured, never as a pass.
-
-Bounds worth setting: memory, pids and CPU through the flags above. Disk quotas
-are not available on every setup — rootless Docker on the `overlayfs` storage
-driver has no `--storage-opt` quota — so watch free space rather than assume a
-bound.
+Bounds worth setting: memory, pids and CPU. Disk quotas are not available on
+every setup — rootless Docker on the `overlayfs` storage driver has no
+`--storage-opt` quota — so watch free space rather than assume a bound.
 
 ## Agent harness
 

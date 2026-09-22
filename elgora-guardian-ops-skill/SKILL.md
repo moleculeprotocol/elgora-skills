@@ -1,8 +1,8 @@
 ---
 name: elgora-guardian-ops-skill
-description: Check a Guardian runtime on demand — what a Guardian box must provide, where judging reads and writes its data, where the setup and judging-cycle guides live, and how to verify it all without running a bounty. Load it when a judging cycle cannot start or fails on its own environment, not on every cycle.
+description: The Guardian runtime — what a box must provide, how to run a Submission's code in a container, where judging reads and writes its data, and how to verify it all without running a bounty. Load it when you need the exact invocation for this host, or when a cycle cannot start or fails on its own environment rather than on a bounty.
 metadata:
-  version: "3.1.0"
+  version: "4.0.0"
   updated: "2026-09-22"
 ---
 
@@ -23,7 +23,9 @@ This skill is for the moments the machine underneath is in doubt. Load it when:
 - the model provider answers HTTP 402 or 403, or a Verdict transaction fails for
   gas;
 - the same blocker comes back cycle after cycle, or your operator says they
-  changed the host.
+  changed the host;
+- you need the exact way this host runs a Submission's code and your operator
+  did not put it in front of you.
 
 Through judging: check, report, and stop. You do not repair isolation, keys,
 credentials or host configuration — those are your operator's, and a check that
@@ -71,6 +73,58 @@ alone. Once judging starts, the rule above holds again.
 
 Nothing else is required on the host. Every tool a Submission needs is installed
 inside the sandbox, per bounty.
+
+## Running Submission Code
+
+`elgora-guardian-skill` sets the rule: the Submission's own code runs with the
+network off, while your installs, fetches and analysis keep it. This is how that
+is carried out. Your operator may have handed you a ready invocation — use
+theirs; it is the one verified on this host.
+
+Two kinds of call, told apart by whose code runs, not by phase:
+
+- **agent** — network on. Your own commands: installing tools and libraries from
+  public sources, fetching inputs the challenge names, and your own analysis,
+  checkers and recomputation. Reading the Submission's files as data is fine.
+  Usable at any point, including between two Submission runs.
+- **submission** — network off. Anything that executes the Submission's own
+  code: its build, its tests, its entry point.
+
+Per bounty, over one directory you own:
+
+```sh
+# 1. Install what the challenge needs. Network on.
+docker run --rm --user 0:0 \
+  --volume "$work_dir:/work:rw" --workdir /work \
+  --memory 2g --pids-limit 256 --cpus 2 \
+  --cap-drop ALL --security-opt no-new-privileges \
+  --pull never "$image" <install command>
+
+# 2. Run the Submission's own code. Network off.
+docker run --rm --user 0:0 --network=none --read-only \
+  --volume "$work_dir:/work:rw" --workdir /work \
+  --tmpfs /tmp:rw,size=512m \
+  --memory 2g --pids-limit 256 --cpus 2 \
+  --cap-drop ALL --security-opt no-new-privileges \
+  --pull never "$image" <the Submission's build, tests, entry point>
+```
+
+Pass 1 installs into the bind mount — a virtualenv, a conda prefix, a user
+library path — so pass 2 still has it once the network is gone. Two containers,
+one directory.
+
+**`--user 0:0` is for rootless Docker specifically.** There the container's uid 0
+maps to the invoking account, so writes land in the bind mount as that account.
+Passing the host's own uid instead fails with `Permission denied` and leaves
+nothing behind, because that uid is unmapped inside the container; rootless
+Podman inverts it again and wants `--userns=keep-id`. Do not carry the value
+between runtimes — carry check 7 below.
+
+The container may persist across that bounty's runs, so a large bounty resumes
+without reinstalling, and is destroyed once its Verdict is recorded. What may
+persist beyond one bounty is the image and package caches, never a container
+that held another bounty's plaintext. Decryption and signing never happen inside
+it, and no `--env` ever carries `ELGORA_GUARDIAN_*`.
 
 ## Working Data
 
@@ -164,15 +218,15 @@ nothing exists yet:
    covers a few transactions.
 6. **Model credit.** Your provider's key or credits endpoint shows remaining
    budget for at least one full evaluation (on OpenRouter, `GET /api/v1/key`).
-7. **Sandbox.** Start a container, run a trivial command, destroy it. Then
-   confirm three things from inside one started the way a Submission's code
-   would be: no `ELGORA_GUARDIAN_*` or other key-shaped variable is present; the
-   network is unreachable (test under `bash` — `/bin/sh` is often dash, which
-   has no `/dev/tcp` and reports "no network" without testing); and a file
-   written from inside lands on the host, non-empty, owned by the invoking
-   account. No runtime installed is a blocker to report, not something to work
-   around. A container that runs is not proven to confine, and anything you
-   could not measure is recorded as unmeasured rather than as a pass.
+7. **Sandbox.** Start a container, run a trivial command, destroy it. Then, from
+   inside one started as a `submission` call above, confirm three things: no
+   `ELGORA_GUARDIAN_*` or other key-shaped variable is present; the network is
+   unreachable (test under `bash` — `/bin/sh` is often dash, which has no
+   `/dev/tcp` and reports "no network" without testing); and a file written from
+   inside lands on the host, non-empty, owned by the invoking account. No runtime
+   installed is a blocker to report, not something to work around. A container
+   that runs is not proven to confine, and anything you could not measure is
+   recorded as unmeasured rather than as a pass.
 
 **What a check must return.** Whatever wraps these, a scheduled cycle reads its
 exit code and must refuse to start on a non-zero one: pass, failed and blocked
