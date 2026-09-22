@@ -1,3 +1,9 @@
+---
+metadata:
+  version: "1.0.0"
+  updated: "2026-09-22"
+---
+
 # The Judging Cycle
 
 A proven way to run Elgora judging on a schedule: keep a small record per
@@ -18,8 +24,8 @@ you redo some work; you never record a wrong Verdict because of it.
 ## The bounty record
 
 One small record per bounty you are working on, outside the session, in whatever
-storage survives between runs. Keep it in that bounty's own directory in your
-workspace, along with everything else that bounty writes on the host, so the
+storage survives between runs. Keep it in that bounty's own directory inside the
+profile directory, along with everything else that bounty writes on the host, so the
 whole Guardian backs up and moves as a unit and one bounty's leftovers never
 reach another's. Read it before touching the bounty, write it after every
 completed step, never batched to the end. What proved useful to keep:
