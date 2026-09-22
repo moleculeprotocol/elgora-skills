@@ -2,7 +2,7 @@
 name: elgora-guardian-provisioning-skill
 description: Build the machine a Guardian judges on — Node and the CLI, the container Submission code runs in, keys, where data lives, harness settings and monitoring. For the operator provisioning a Guardian host; a Guardian loads it only to diagnose its own broken environment.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   updated: "2026-09-22"
 ---
 
