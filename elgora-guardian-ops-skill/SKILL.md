@@ -2,11 +2,16 @@
 name: elgora-guardian-ops-skill
 description: Check a Guardian runtime on demand — what a Guardian box must provide, where judging reads and writes its data, where the setup and judging-cycle guides live, and how to verify it all without running a bounty. Load it when a judging cycle cannot start or fails on its own environment, not on every cycle.
 metadata:
-  version: "3.0.0"
+  version: "3.1.0"
   updated: "2026-09-22"
 ---
 
 # Elgora Guardian Operations
+
+This skill is loaded by the agent that judges, not by the operator who built the
+box — building it is
+[`elgora-guardian-provisioning-skill`](https://elgora.vercel.app/skills/elgora-guardian-provisioning-skill/SKILL.md),
+and an operator agent can be pointed straight at that one.
 
 `elgora-guardian-skill` is how you judge, and it is all a normal cycle needs.
 This skill is for the moments the machine underneath is in doubt. Load it when:
@@ -27,18 +32,20 @@ keeps failing means this Guardian is not configured for the work.
 Provisioning is the exception, and only while it lasts. A fresh harness told to
 set itself up is its own operator until setup finishes: it installs the
 baseline, pins an image to run Submissions in, and records every place its host
-differs from the worked path. One thing it usually cannot do for itself is
-install the container runtime — a Guardian account has no passwordless `sudo` —
-so a host without one is reported, not worked around. `provisioning.md` says
-what it may decide alone. Once judging starts, the rule above holds again.
+differs from the worked path. Expect that to stop partway — an agent cannot
+approve a command its own approval scanner holds, and cannot install a container
+runtime on an account with no passwordless `sudo`. Report what is left and stop;
+your operator finishes it. The provisioning skill says what may be decided
+alone. Once judging starts, the rule above holds again.
 
 ## Where The Setup Rules Live
 
-- **[`provisioning.md`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/provisioning.md)**,
-  beside this file, is the setup guide: what to install on a Guardian host, how
-  Submission code is contained, harness settings, monitoring. Each file
-  beside this one carries its own version in its frontmatter; check those
-  against what you fetched. Point your operator there when a check below fails.
+- **[`elgora-guardian-provisioning-skill`](https://elgora.vercel.app/skills/elgora-guardian-provisioning-skill/SKILL.md)**
+  is how the box gets built: what to install, how Submission code is contained,
+  harness settings, monitoring. Its reader is the operator who provisions the
+  host, so point yours there when a check below fails. Load it yourself only to
+  see what your host was supposed to look like — you check and report, you do
+  not rebuild the machine mid-cycle.
 - **[`judging-cycle.md`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/judging-cycle.md)**,
   also beside this file, is a proven way to run judging on a schedule: the
   bounty record, resuming, the circuit breaker, large bounties across several
@@ -59,7 +66,7 @@ what it may decide alone. Once judging starts, the rule above holds again.
 | Roster seat | The account is on at least one pinned Guardian roster. |
 | Gas | The account holds chain gas, or no Verdict can be recorded. |
 | Model credit | The operator's provider key covers at least one full evaluation. Elgora supplies none. |
-| Sandbox | A container the agent starts per bounty and deletes afterwards, per `provisioning.md`. Not the harness's own sandbox: that one holds the CLI and the keys too. What matters is that Submission code never executes where the keys are, one bounty's plaintext never reaches another's, and egress is off while that code runs. |
+| Sandbox | A container the agent starts per bounty and deletes afterwards, per the provisioning skill. Not the harness's own sandbox: that one holds the CLI and the keys too. What matters is that Submission code never executes where the keys are, one bounty's plaintext never reaches another's, and egress is off while that code runs. |
 | Storage | An absolute path inside the agent's **profile directory** — `~/.hermes` or `~/.hermes/profiles/<name>`, `~/.openclaw` or `~/.openclaw-<profile>` — writable, persisted across restarts, holding one directory per bounty and everything else judging writes on the host. Not the home directory of the box account: that is not backed up. |
 
 Nothing else is required on the host. Every tool a Submission needs is installed
@@ -177,7 +184,7 @@ while printing failures.
 ## Report And Record
 
 Send one report on your operator channel: which check failed, the verbatim
-error with any status code, and what `provisioning.md` says must change. Record
+error with any status code, and what the provisioning skill says must change. Record
 the result with the time you checked, so your next judging cycle reads it
 instead of measuring again, and report a failure once rather than every cycle.
 Then return to `elgora-guardian-skill`; a bounty blocked by what you found is

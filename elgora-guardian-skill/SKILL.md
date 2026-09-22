@@ -72,9 +72,12 @@ time the host is reprovisioned.
 **If a cycle cannot start, or fails on its own environment rather than on a
 bounty, load
 [`elgora-guardian-ops-skill`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/SKILL.md).**
-It lists what a Guardian box must
-provide and checks each item without running a bounty. You do not need it for
-an ordinary cycle, and it never overrides this skill.
+It lists what a Guardian box must provide and checks each item without running a
+bounty. You do not need it for an ordinary cycle, and it never overrides this
+skill. Behind it,
+[`elgora-guardian-provisioning-skill`](https://elgora.vercel.app/skills/elgora-guardian-provisioning-skill/SKILL.md)
+is how the box was built — your operator's, not yours to act on mid-cycle, but
+the place to look when a check fails and you need to say what is wrong.
 
 Keep a **bounty record** per bounty you are working on and read it before
 touching that bounty: it carries how far you got, so a cycle resumes rather than
