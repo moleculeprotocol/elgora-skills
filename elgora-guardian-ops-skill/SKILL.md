@@ -2,8 +2,8 @@
 name: elgora-guardian-ops-skill
 description: Check a Guardian runtime on demand — what a Guardian box must provide, where judging reads and writes its data, where the setup and judging-cycle guides live, and how to verify it all without running a bounty. Load it when a judging cycle cannot start or fails on its own environment, not on every cycle.
 metadata:
-  version: "2.7.0"
-  updated: "2026-09-21"
+  version: "3.0.0"
+  updated: "2026-09-22"
 ---
 
 # Elgora Guardian Operations
@@ -20,9 +20,15 @@ This skill is for the moments the machine underneath is in doubt. Load it when:
 - the same blocker comes back cycle after cycle, or your operator says they
   changed the host.
 
-Check, report, and stop. You do not repair isolation, keys, credentials or host
-configuration: those are your operator's, and a check that keeps failing means
-this Guardian is not configured for the work.
+Through judging: check, report, and stop. You do not repair isolation, keys,
+credentials or host configuration — those are your operator's, and a check that
+keeps failing means this Guardian is not configured for the work.
+
+Provisioning is the exception, and only while it lasts. A fresh harness told to
+set itself up is its own operator until setup finishes: it installs the
+baseline, builds the sandbox image from the published `Dockerfile`, and records
+every place its host differs from the worked path. `provisioning.md` says what
+it may decide alone. Once judging starts, the rule above holds again.
 
 ## Where The Setup Rules Live
 
@@ -40,18 +46,36 @@ this Guardian is not configured for the work.
 - The **protocol profile** the bounty pins is the authority for Submission
   limits.
 
+## This Bundle
+
+This skill is v3.0.0, updated 2026-09-22. These are its published files with the
+sha256 of the exact bytes. A copy that does not hash to its row is stale or was
+elided in transit — refetch it rather than acting on it, and fetch the raw
+Markdown to a file rather than reading a page extractor's rendering.
+
+<!-- manifest -->
+
+| File | sha256 of the published bytes |
+| --- | --- |
+| `Dockerfile` | `acfbf65983fd9821c8fa405c43cde4fc92776b363404f4ac08f8f14bb3c1715a` |
+| `check-sandbox.sh` | `d09ab62fdf54636e0a3b9992e8e5b0cd7ab30a84bc5c859bc5efe5123ce073fb` |
+| `judging-cycle.md` | `bdaadb8aff7c6ae670936bdf40600adc733f6bbe6dc66f1f9fc49f940cb0f8d1` |
+| `provisioning.md` | `df1636d33cc79701995522f252efd111c6211b8876c25f234fff4a1efad189ff` |
+
+<!-- /manifest -->
+
 ## What A Guardian Box Provides
 
 | Requirement | What it means |
 | --- | --- |
 | Node + CLI | `@elgora/cli` on a Node inside its `engines` range. Every command that does work refuses to start outside it and names the range; `--version` and `help` answer on any Node, so neither proves it. |
 | Signing key | The roster account's key, only as `ELGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY`, only to commands that sign. |
-| Decryption keys | Every retained X25519 key, only as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`, only to commands that decrypt. Old entries stay until every bounty pinned to them is final. |
+| Decryption keys | Every retained X25519 key, only as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`, only to commands that decrypt. Each entry's `key_id` is this Guardian's registered roster **name** — the exact, case-sensitive string given to `roster:add-guardian` — **never its account address**. An address-shaped string passes the format check, so a wrong value is not rejected: it simply decrypts nothing. Old entries stay until every bounty pinned to them is final. |
 | Roster seat | The account is on at least one pinned Guardian roster. |
 | Gas | The account holds chain gas, or no Verdict can be recorded. |
 | Model credit | The operator's provider key covers at least one full evaluation. Elgora supplies none. |
-| Sandbox | Isolated from the agent's space (no keys, secrets or other bounties' plaintext), bounded in memory and disk, one per bounty (it may persist across that bounty's runs and is destroyed once its Verdict is recorded), no host control interfaces, network on for your own installs and analysis, off only while Submission code executes. |
-| Workspace | The directory the harness starts this agent in and calls its workspace: writable, persisted across restarts, holding one directory per bounty and everything else judging writes on the host. |
+| Sandbox | Isolated from the agent's space (no keys, secrets or other bounties' plaintext), bounded in memory and disk, one per bounty (it may persist across that bounty's runs and is destroyed once its Verdict is recorded), no host control interfaces, network on for your own installs and analysis, off only while Submission code executes. `provisioning.md` tiers these: a Tier 1 miss means this host does not judge, a Tier 2 miss is recorded with whatever stands in for it. |
+| Storage | An absolute path inside the agent's **profile directory** — `~/.hermes` or `~/.hermes/profiles/<name>`, `~/.openclaw` or `~/.openclaw-<profile>` — writable, persisted across restarts, holding one directory per bounty and everything else judging writes on the host. Not the home directory of the box account: that is not backed up. |
 
 Nothing else is required on the host. Every tool a Submission needs is installed
 inside the sandbox, per bounty.
@@ -60,12 +84,16 @@ inside the sandbox, per bounty.
 
 Where judging reads and writes, so each kind of data stays where it belongs:
 
-- **Your workspace holds all of it, one directory per bounty.** Work inside the
-  workspace your harness started you in and create nothing outside it. The one
+- **One named directory holds all of it, one subdirectory per bounty.** Work at
+  the absolute path your operator named inside the profile directory, and create
+  nothing outside it. Never infer that path from wherever your session happened
+  to start — on a scheduled run that is often the box account's home, which is
+  not what gets backed up. If you cannot resolve it, ask and stop. The one
   exception is scratch you could rebuild from nothing: build outputs, downloaded
-  tooling, temporary files. The workspace is what the host persists and backs
-  up; anything written elsewhere is what gets missed when a Guardian is moved or
-  updated, and on a host that rebuilds its disk between runs it is simply gone.
+  tooling, temporary files. The profile directory is what the host persists and
+  backs up; anything written elsewhere is what gets missed when a Guardian is
+  moved or updated, and on a host that rebuilds its disk between runs it is
+  simply gone.
 - **Keys** reach a command through its environment, never as an argument and
   never into a sandbox. Where your harness keeps them between runs is its own
   business, and this skill has no opinion about it.
@@ -85,22 +113,42 @@ Where judging reads and writes, so each kind of data stays where it belongs:
 
 ## Check It Without Running A Bounty
 
-Each check is cheap, touches no Submission, and records nothing on chain. Run
-them in order and stop at the first failure.
+Each check is cheap, touches no Submission, and records nothing on chain. They
+serve two moments, and the difference matters because at provisioning almost
+nothing exists yet:
 
-1. **Workspace.** The workspace you started in is writable, and any bounty your
-   last cycle left unfinished still has its directory there. Coming back empty
-   while a bounty was still in progress means the host did not persist it:
-   report that before starting a cycle, because this cycle's work would be lost
-   the same way. An empty workspace after a cycle that finished everything is
-   normal.
+- **Accepting a freshly provisioned host:** 1, 7, 2, 5, 6, 3, then 4 last —
+  sandbox and CLI before key material, because those are what block everything
+  else. Setup is finished when each has passed or its failure has been reported.
+- **A cycle that doubts its runtime:** run them in order and stop at the first
+  failure.
+
+1. **Storage.** The path your operator named inside the profile directory is
+   writable, and any bounty your last cycle left unfinished still has its
+   directory there. Coming back empty while a bounty was in progress means the
+   host did not persist it: report that before starting a cycle, because this
+   cycle's work would be lost the same way. An empty directory after a cycle
+   that finished everything is normal.
+   *At provisioning, listing proves nothing* — a fresh directory and a
+   non-persisted one look identical. Write a canary file, have the host
+   restarted deliberately, and check the canary came back. Whether the disk
+   survives a full reprovision is an operator attestation; you cannot answer it
+   from inside.
 2. **CLI, Node and discovery.** `elgora-cli guardian:judgeable
    --guardian-address <address>`. Needs no key, records nothing, and is the
    first command that runs the CLI's guards, so it is the Node check too.
    Diagnose from its actual error: an unsupported Node is refused by name with
    the range it needs, a missing variable is named before anything is sent,
    anything else is network or indexer. `elgora-cli --version` is not this
-   check — `--version` and `help` answer on any Node by design.
+   check — `--version` and `help` answer on any Node by design. Never invoke a
+   bare `elgora-cli` from a scheduled cycle: `nvm` is a shell function that a
+   non-interactive run does not load, so the cycle gets the system Node,
+   refuses on the version banner, and burns the whole run. Use the versioned
+   absolute path.
+   *At provisioning, before any key material exists,* run it with a throwaway
+   address — it needs no key and signs nothing. Empty output then means the CLI
+   works; it cannot tell you whether that address is on a roster, because "no
+   discovered work" and "on no roster" are the same silence.
 3. **Both keys, end to end.** Prepare a proof for yourself, answer it, check
    it — all local, nothing sent anywhere:
 
@@ -113,16 +161,29 @@ them in order and stop at the first failure.
    Proving decrypts with your X25519 key and signs with your account key, so a
    pass shows both load and match the address. Delete the three files after.
 4. **Roster seat.** An open bounty's detail (`/api/bounties/<id>`) lists your
-   address in its pinned roster. No seat means no work — a configuration answer,
-   not a per-bounty blocker.
+   address in its pinned roster. No seat means no work — a configuration
+   answer, not a per-bounty blocker.
+   *This one cannot run cold.* The id comes from `guardian:judgeable`, which
+   prints nothing when there is no work, and there is no listing endpoint to
+   enumerate from. With no open bounty, record the seat as unverified and check
+   it on the first cycle that discovers one. Do not report it as passing, and
+   do not treat it as a blocker either.
 5. **Gas.** The account's balance on the deployment's chain is non-zero and
    covers a few transactions.
 6. **Model credit.** Your provider's key or credits endpoint shows remaining
    budget for at least one full evaluation (on OpenRouter, `GET /api/v1/key`).
-7. **Sandbox.** Start one, run a trivial command, destroy it. Then, from a
-   fresh one, run the confinement probes `provisioning.md` lists. A sandbox
-   that runs is not proven to confine; these probes are evidence for your
-   operator, not a certificate.
+7. **Sandbox.** Start one, run a trivial command, destroy it. Then run
+   [`check-sandbox.sh`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/check-sandbox.sh)
+   against the wrapper. A sandbox that runs is not proven to confine; what the
+   probes report is evidence for your operator, not a certificate. A property
+   the run could not measure is reported unmeasured — never as a pass.
+
+**What a check must return.** Whatever wraps these, a scheduled cycle reads its
+exit code and must refuse to start on a non-zero one: pass, failed and blocked
+are three different answers and cannot share an exit code. Test the failure path
+deliberately rather than assuming it — a body wrapped in a pipeline runs in a
+subshell, so the flags set inside never reach the parent and the script exits 0
+while printing failures.
 
 ## Report And Record
 
@@ -132,3 +193,7 @@ the result with the time you checked, so your next judging cycle reads it
 instead of measuring again, and report a failure once rather than every cycle.
 Then return to `elgora-guardian-skill`; a bounty blocked by what you found is
 handled there.
+
+Use the
+[latest public Guardian operations bundle](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/SKILL.md)
+when a newer release is available.

@@ -1,14 +1,40 @@
 # Provisioning a Guardian host
 
-For the operator who builds the machine, not the agent that runs on it. The
-agent never installs any of this — if something here is missing, the agent
-reports it and judges what it can.
+**This file is v1.0.0, updated 2026-09-22. If your copy carries a lower version
+or no version line at all, refetch it before acting on anything here.** Fetch it
+to a file and read the raw Markdown: a page extractor may serve an older release
+or silently elide sections, and the setup facts below are the kind that fail
+silently when they are stale.
 
-The host itself needs very little: a supported Node for the CLI, and a sandbox
-runtime. Everything a Submission needs is installed inside the sandbox, per
-bounty, from public sources. The CLI checks its own Node range on every command
-that does work; the sandbox is yours to verify by building it correctly,
-because no probe shipped in a CLI can establish isolation in general.
+For whoever builds the machine. Often that is an agent provisioning itself — a
+fresh harness installs the ops skill, reads this file, and acts as its own
+operator until setup is finished. That is expected, and the next section says
+what it may decide alone.
+
+The host itself needs very little: a supported Node for the CLI, and a sandbox.
+Everything a Submission needs is installed inside the sandbox, per bounty, from
+public sources. The CLI checks its own Node range on every command that does
+work; the sandbox is yours to verify by measuring it, because no probe shipped
+in a CLI can establish isolation in general.
+
+## Who is doing this
+
+Setup and judging are different postures. Conflating them is what leaves an
+agent improvising against its own documentation.
+
+- **Through setup, the agent is its own operator.** It installs the baseline,
+  builds the sandbox image from the `Dockerfile` beside this file, and uses
+  whatever sandbox runtime the host actually provides. It may not change the
+  image's contents, and it may not accept a host that misses a Tier 1 property.
+  Every place its host differs from the worked path goes into its setup report,
+  with the measurements showing the difference still satisfies the contract.
+- **Setup ends** when the acceptance list in `elgora-guardian-ops-skill` passes,
+  or when whatever failed has been reported — not when the agent judges itself
+  finished.
+- **Through judging, the agent checks, reports and stops.** It does not repair
+  host configuration or install anything new on the host. That is its
+  operator's, and a check that keeps failing means this Guardian is not
+  configured for the work.
 
 ## Baseline, every host
 
@@ -36,10 +62,14 @@ because no probe shipped in a CLI can establish isolation in general.
   address; the two sides have to agree, so a Solver sealing from an older CLI
   produces an envelope this Guardian cannot open, and the decrypt error names
   both sets of key_ids.
-- **A base image for the sandbox.** Nothing is required in it: the agent
-  installs what each challenge needs. Baking in the common tools — archive
-  tools, `python3`, `Rscript`, a C toolchain, the domain tools your bounties
-  keep asking for — saves an install per cycle. Pin it by digest.
+- **The sandbox image, built from the
+  [`Dockerfile`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/Dockerfile)
+  beside this file.** Build it as it ships and pin the digest you got; do not
+  compose your own. What is in the image is a protocol-level choice rather than
+  a per-host one — it decides which bounties judge without a per-cycle install,
+  so a Guardian that drops a tool refuses work another Guardian accepts.
+  Anything a particular Submission needs is still installed per bounty, inside
+  the sandbox.
 - **Package-manager access from inside the sandbox**, to the official
   distribution archives and the language registries (PyPI, CRAN, Bioconductor,
   conda-forge and Bioconda, npmjs.com, crates.io), at any point during judging.
@@ -81,20 +111,44 @@ because no probe shipped in a CLI can establish isolation in general.
   that command's required variables against what it was actually given and names
   every one that is missing; it never proceeds partway and fails deep inside a
   network call instead.
+- **Scoping them per command takes a launcher.** A harness secret store exports
+  into the environment of every command it runs, so "only to commands that
+  decrypt" does not happen by itself — discovery and page checks would run with
+  a signing key in scope. `elgora-cli help <command>` prints that command's
+  variables under `Requires:`; have whatever launches the CLI load what the
+  command declares and unset what it does not. Where the secrets themselves
+  live stays your harness's business.
 - **Chain gas and model credit.** Fund the Guardian account before a Verdict is
   attempted, and give the agent its own provider key with a spend alert well
   below its hard limit. Elgora supplies neither.
-- **The agent's own workspace, and nothing outside it.** Every harness gives its
-  agent a workspace, and most call it exactly that — Hermes and OpenClaw both
-  do. It is the directory the session starts in, and the directory the host
-  persists and backs up, configuration and secrets included. Everything this
-  Guardian keeps goes there, one directory per bounty: that bounty's record, its
-  `guardian:open` output, its scratch. Name no second path elsewhere on the box;
-  a home directory is not necessarily persisted, and whatever is written outside
-  the workspace is what a rebuild loses. Ephemeral data the agent could rebuild
-  from nothing — build artefacts, downloaded libraries — may go where the
-  operating system usually puts it. The workspace is where files live, not
-  isolation: the sandbox below is still what confines a Submission.
+- **The agent's profile directory, and nothing outside it.** What a host backs
+  up is the agent's own profile directory — **not** the home directory of the
+  box account the agent runs as. The profile directory sits inside that home
+  directory, which is exactly why the distinction gets lost, and everything
+  outside it is what a rebuild loses.
+
+  | Harness | Backed up | Not backed up |
+  | --- | --- | --- |
+  | Hermes | `~/.hermes`, or `~/.hermes/profiles/<name>` for a named profile | everything else under the account's home |
+  | OpenClaw | `~/.openclaw`, or `~/.openclaw-<profile>` for a named profile | everything else under the account's home |
+
+  Everything this Guardian keeps goes at an absolute path inside that directory,
+  one directory per bounty: that bounty's record, its `guardian:open` output,
+  its scratch. Name that path explicitly. Never derive it from wherever a
+  session happened to open, and name no second path elsewhere on the box.
+  Ephemeral data the agent could rebuild from nothing — build artefacts,
+  downloaded libraries — may go where the operating system usually puts it. The
+  profile directory is where files live, not isolation: the sandbox below is
+  still what confines a Submission.
+- **Make the session start there.** On Hermes, set `terminal.cwd` to that path.
+  Left unset, a gateway or scheduled run starts in the account's home, outside
+  what is backed up, and an agent told to work where it started writes its
+  bounty records there. On OpenClaw the default workspace already sits inside
+  the profile directory and needs no move. A path such as `~/.hermes/elgora/` is
+  a convention this file suggests, not a directory the harness supplies.
+- **If the profile directory cannot be resolved, stop and ask.** Do not probe
+  for a setting by name and fall back to the current directory. That is how a
+  Guardian ends up keeping bounty records in an account home nobody backs up.
 
 ## The model: the agent on the host, one sandbox per bounty
 
@@ -134,111 +188,168 @@ persist beyond one bounty is the image and package caches, never a container
 that held another bounty's plaintext. Decryption and signing never happen
 inside it.
 
-## Sandbox — Linux (AWS EC2)
+## Sandbox — what it must do
 
-Amazon Linux 2023 or Ubuntu 24.04. Rootless, one of:
+The runtime is yours to choose. This section is the contract it has to satisfy,
+stated as things you observe from inside rather than as flags to copy, because a
+flag that is right on one runtime is wrong on the next. One worked path follows
+it; it is the path we run, not the only permitted answer.
 
-- **Podman ≥ 4.9** — `dnf install -y podman` / `apt install -y podman`.
-  - Run the agent's own commands with the network on (`podman build`, or
-    `podman run` without `--network none`, committing when worth caching),
-    installing only from official archives and registries. Pin the resulting image by digest and
-    run it with `--pull never`, so the image you checked is the one that runs.
-  - Run the Submission's own code as `podman run --rm --network none --read-only
-    --user "$(id -u):$(id -g)" --memory 2g --pids-limit 256 --cap-drop ALL
-    --security-opt no-new-privileges -v <workdir>:/work:rw -w /work <image>`.
-  - **Derive `--user` from the invoking account; never hardcode `1000:1000`.**
-    A service account is often not uid 1000, and the mismatch does not stop the
-    container — it runs, then fails only on the write back to the bound
-    directory. Results land nowhere while every step reports success. For the
-    same reason, never discard stderr on a copy out of the sandbox: a silenced
-    `Permission denied` leaves an empty output directory that reads exactly
-    like a Submission that produced nothing, and a Verdict drawn from it blames
-    a Solver for the host's file permissions.
-  - `--network none` is the netns; `--read-only` plus a single bind is the
-    mount namespace. Both are needed — one alone fails the confinement check
-    below.
-  - Never mount the container socket, `/var/run`, the host root, or the secret
-    directory. Never pass the Guardian's environment through.
-- **Bubblewrap ≥ 0.8** — lighter, no daemon.
-  - `bwrap --unshare-all --die-with-parent --new-session --ro-bind /usr /usr
-    --ro-bind /lib /lib --ro-bind /lib64 /lib64 --ro-bind /bin /bin
-    --proc /proc --dev /dev --bind <workdir> /work --chdir /work --clearenv --`
-  - `--unshare-all` covers the network and mount namespaces; `--clearenv` is
-    what keeps the Guardian's keys out. Add `--share-net` for the agent's own
-    commands; never for a command that executes Submission code.
-  - Needs unprivileged user namespaces enabled:
-    - Amazon Linux 2023: `sysctl -w user.max_user_namespaces=15000`, persisted
-      in `/etc/sysctl.d/`.
-    - Ubuntu 24.04: also
-      `sysctl -w kernel.apparmor_restrict_unprivileged_userns=0`, or ship an
-      AppArmor profile for the wrapper. Without this, `bwrap` fails `EPERM`
-      and the wrapper cannot start.
-- **Check it yourself, once, before first use and after any change.** Nothing
-  downstream will catch a sandbox that starts but does not confine. From inside
-  it, confirm that reading a path outside the bind fails, that reaching the
-  network fails in a `submission` call, that exceeding a bound is stopped with cleanup still
-  succeeding, and that a timeout or crash stops visibly without falling back to
-  the host.
-- **Resource bounds** belong on the runner, not on the agent: memory, pids, CPU
-  and a wall-clock timeout, set before anything is extracted. A systemd slice or
-  the container's own flags are both fine.
+**An unmeasured property is reported unmeasured, never passed.** That rule
+matters more than any individual probe. Record what you measured, how, and what
+you could not measure, and read that record — no probe result stands in for a
+property nobody observed.
 
-Then give the agent one wrapper to invoke, so the isolation is a property of the
-host rather than a thing the agent assembles per bounty:
+### Tier 1 — required. A host failing any of these does not judge.
+
+| Property | What you assert |
+| --- | --- |
+| Keys absent from the sandbox | Enumerate the environment inside: no `ELGORA_GUARDIAN_*`, no name matching `API_KEY`, `TOKEN`, `SECRET`, `PRIVATE` or `MNEMONIC`. Both call kinds. |
+| Secrets unreachable on the filesystem | Wherever this agent keeps its secrets is not bound and not reachable through a bound parent. Probe with a host-unique canary file, never `/etc/shadow` — the image ships its own. |
+| No host control interface | No container socket, no runtime endpoint, no host root bind, no instance-metadata access. |
+| Results actually land | Write a file from inside to the bind mount; on the host, assert it exists, is non-empty, and is owned by the invoking account. |
+| Bounded wall clock | Every `submission` call has a runner-enforced timeout that stops visibly, with no fallback to the host. |
+
+**"Results actually land" is how the uid and gid question gets settled**, and it
+is Tier 1 because its failure is silent: the container runs, every step reports
+success, and the output directory is empty — indistinguishable from a Submission
+that produced nothing, so a Verdict drawn from it blames a Solver for the host's
+file permissions. There is no uid or gid value that is correct across runtimes;
+it depends on whether the runtime remaps user namespaces and how. Set whatever
+yours needs and run the assertion. For the same reason, never discard stderr on
+a copy out of the sandbox: a silenced `Permission denied` is what turns this
+into a silent failure.
+
+### Tier 2 — expected. Achieve it, or record what you got instead.
+
+| Property | What you assert | Accepted fallback |
+| --- | --- | --- |
+| Network off while Submission code runs | Paired probe, below | An egress-deny rule or a no-route network, recorded |
+| Read-only host tree, one writable bind | A read outside the bind fails; `/home` is empty inside | A dedicated unprivileged account with filesystem permissions, recorded |
+| Memory, pids and CPU bounds | The bound is readable from inside and matches what was set — on cgroup v2, `/sys/fs/cgroup/memory.max`, `pids.max`, `cpu.max` | Any equivalent the runtime exposes, recorded |
+| Capabilities dropped, no new privileges | `CapEff` is empty in `/proc/self/status` | — |
+
+Network-off is Tier 2 rather than Tier 1 deliberately. It protects real things —
+see "Why Submission code runs offline" above — but a host that cannot provide a
+network namespace should judge with the gap recorded rather than not judge at
+all. What is never acceptable is silence about it.
+
+### Tier 3 — best effort. Record what you got.
+
+Full user-namespace separation from the host account; a seccomp profile beyond
+the runtime's default; a read-only root filesystem.
+
+### Measuring it
+
+Run the
+[`check-sandbox.sh`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/check-sandbox.sh)
+beside this file, before first use and after any change to the wrapper, the
+image, the kernel or anything underneath them. It prints one line per property
+as `<tier> <property> <pass|fail|unmeasured> <detail>` and exits non-zero when a
+Tier 1 property failed or could not be measured. Nothing downstream catches a
+sandbox that starts but does not confine.
+
+If you write your own probes instead, three rules earn their keep:
+
+- **Every negative assertion needs a paired positive control.** A probe claiming
+  "X is blocked" must first show the same mechanism succeeding where it should —
+  run the identical network check in an `agent` call and require it to pass. A
+  network probe using `/dev/tcp` under `/bin/sh` reports "no network" on any
+  host whose `sh` is dash, whether or not the sandbox has one, and that reads as
+  a pass.
+- **Assert on the kernel's own accounting, not on behaviour.** The cgroup files,
+  `CapEff`, `uid_map`. A memory probe that streams rather than resides tests
+  nothing, and a pids probe cannot report its own result once the bound stops it
+  from forking.
+- **Use host-unique canaries, never a file the image also ships.**
+
+### When the host cannot meet a tier
+
+- A **Tier 1** miss stops setup and is reported. There is no judging on that
+  host.
+- A **Tier 2** miss is recorded — the property, what you have instead, and what
+  you measured — and setup continues.
+- A **Tier 3** miss is noted.
+
+Substituting a runtime is expected and fine. What must never happen is a
+substitution nobody wrote down.
+
+## Sandbox — the worked path
+
+Rootless Docker on Linux, with the image from the `Dockerfile` beside this file.
+It is what most hosts already have, it needs no root, and it is what these
+instructions are tested against.
+
+Run the agent's own commands with the network on, then run Submission code as:
 
 ```sh
-#!/bin/sh
-# /usr/local/bin/elgora-sandbox-run <agent|submission> <work_dir> <command> [args...]
-set -eu
-mode="$1"; work_dir="$2"; shift 2
-case "$mode" in
-  agent)      net="--share-net" ;;  # installs, fetches, the agent's own analysis
-  submission) net="" ;;             # executes Submission code: offline
-  *) echo "usage: elgora-sandbox-run <agent|submission> <work_dir> <cmd>..." >&2; exit 64 ;;
-esac
-exec bwrap --unshare-all $net --die-with-parent --new-session \
-  --ro-bind /usr /usr --ro-bind /lib /lib --ro-bind /lib64 /lib64 \
-  --ro-bind /bin /bin --proc /proc --dev /dev \
-  --bind "$work_dir" /work --chdir /work --clearenv \
-  -- "$@"
+docker run --rm --network none --read-only \
+  --user 0:0 \
+  --memory 2g --pids-limit 256 --cpus 2 \
+  --cap-drop ALL --security-opt no-new-privileges \
+  --tmpfs /tmp:rw,size=512m \
+  --volume "$work_dir:/work:rw" --workdir /work \
+  --pull never "$image" "$@"
 ```
 
-With bubblewrap the host's `/usr` is read-only, so installs land in the work
-directory (a virtualenv, a conda prefix, a user library path). For OS
-packages, build an image with Podman instead and have the wrapper call
-`podman run` with `--network none` for `submission`. Point the harness at that one path.
-The agent never edits it, and a change to isolation is a change to one file you
-own.
+`--user 0:0` is correct **for rootless Docker specifically**: the container's
+uid 0 maps to the invoking account, so writes land in the bind mount as that
+account. Do not carry that value to another runtime — run the Tier 1 assertion
+there and use whatever passes it.
+
+Never mount the container socket, `/var/run`, the host root, or wherever this
+agent keeps its secrets. Never pass the Guardian's environment through.
+
+### The wrapper
+
+Give the agent one wrapper to invoke, so isolation is a property of the host
+rather than something the agent assembles per bounty. Point the harness at that
+one path. The agent never edits it, and a change to isolation is a change to one
+file you own.
+
+Its interface, which holds whatever runtime implements it:
+
+```
+elgora-sandbox-run <agent|submission> <work_dir> <command> [args...]
+```
+
+- `agent` runs with the network on: installs, fetches, the agent's own analysis.
+  `submission` runs with it off: anything that executes Submission code.
+- The image comes from `ELGORA_SANDBOX_IMAGE`, defaulting to the digest you
+  pinned. A bounty needing a different pinned image is the operator's call to
+  pre-pull, not the agent's to fetch.
+- The wall-clock bound comes from `ELGORA_SANDBOX_TIMEOUT`, and the wrapper
+  enforces it rather than trusting the caller.
+- Exit codes: `64` for a usage error, `125` if the sandbox could not start,
+  `124` on timeout, otherwise the command's own exit code. A caller cannot tell
+  a refused sandbox from a failed Submission without this.
+
+Resource bounds belong on the runner, not on the agent, and are set before
+anything is extracted. The container's own flags or a systemd slice are both
+fine.
 
 ## Sandbox — macOS hosts
 
-macOS has no user namespaces and no bubblewrap. Two honest options:
+macOS has no user namespaces, so the worked path is a Linux VM — Podman machine,
+Lima, or Colima — with everything above applying inside it. Whatever you use,
+the contract is the same and `check-sandbox.sh` is what says whether you meet
+it.
 
-- **A Linux VM, and the Linux setup above inside it.** Podman machine (`podman
-  machine init --cpus 4 --memory 4096`), Lima, or Colima. This is the supported
-  path; the agent's wrapper then invokes `podman` as above.
-- **`sandbox-exec` with an SBPL profile** — present on every macOS, formally
-  deprecated, no longer documented by Apple. A `(deny default)` profile with
-  `(deny network*)` and a single `(allow file-read* file-write*
-  (subpath "<workdir>"))` does pass the confinement check above. Treat it as a stopgap
-  and repeat that check after every macOS update, because nothing guarantees the
-  interface across them.
-
-A Mac host with neither cannot unpack a Submission safely, and should not be
-judging. Give it a VM or point the Guardian at a Linux host; the bounties it
-would otherwise refuse are real work by real Solvers.
+A Mac host that meets no Tier 1 property cannot unpack a Submission safely and
+should not be judging. Give it a VM or point the Guardian at a Linux host; the
+bounties it would otherwise refuse are real work by real Solvers.
 
 ## Agent harness — OpenClaw and Hermes
 
-Both ship their own sandboxing. Use it only once you have checked it against
-the list above yourself: a built-in "sandbox mode" that sets a working directory
-and resource limits is not a sandbox for this purpose, and it is the case that
-caused the incident behind this file. Where the harness names its settings
-differently, map the requirement rather than the name.
+Both ship their own sandboxing. Use it only once you have measured it against
+the tiers above yourself: a built-in "sandbox mode" that sets a working
+directory and resource limits is not a sandbox for this purpose, and it is the
+case that caused the incident behind this file. Where the harness names its
+settings differently, map the requirement rather than the name.
 
 - **Point the harness's isolation at the wrapper above**, or satisfy the same
-  five properties with the harness's own runner. The proof is what you observed
-  from inside it, never the setting's name.
+  tiers with the harness's own runner. The proof is what `check-sandbox.sh`
+  reported from inside it, never the setting's name.
 - **Hermes:** keep `terminal.backend: local`, so the agent and CLI keep the keys
   on the host, and have it call the wrapper. Its `backend: docker` routes every
   command, the CLI included, into one container that is shared across sessions
@@ -268,16 +379,18 @@ differently, map the requirement rather than the name.
   and update it when it changes.
 - **Give the judging cycle its own short-lived session.** One session per cycle,
   started fresh, ended when the cycle ends.
-- **Leave no command-approval prompt in the cycle's path.** A harness that asks
-  a human to approve a command pattern stalls a scheduled cycle rather than
-  failing it: nobody is at the terminal, so the run holds until its timeout
-  with the bounty untouched and no blocker reported. The patterns judging uses
+- **A scheduled cycle invokes only allowlisted scripts.** A harness that asks a
+  human to approve a command pattern stalls a scheduled cycle rather than
+  failing it: nobody is at the terminal, so the run holds until its timeout with
+  the bounty untouched and no blocker reported. The patterns judging uses
   routinely — container runs with bind mounts, image builds, and the cleanup
   that deletes decrypted output — are exactly the ones such scanners hold.
-  Pre-approve the wrapper and the `elgora-cli` path for the agent's account,
-  and keep scheduled prompts clear of pipe-to-interpreter and bulk-delete
-  shapes by writing a file and running it. Verify by running one full cycle
-  non-interactively before trusting the schedule.
+  Pre-approving the wrapper and the `elgora-cli` path is necessary and not
+  sufficient: an ad-hoc line in the scheduled prompt — an inline stream edit, a
+  copy over a config file, a bulk delete — stalls the same way. New
+  functionality goes into a file under the agent's own script directory and that
+  file gets allowlisted; it does not go inline into the prompt. Verify by
+  running one full cycle non-interactively before trusting the schedule.
 - **Never point heartbeats, polls, timers or webhooks at the session that
   judges.** Each delivery appends to that session's context and is re-billed on
   every later call. Route them to a dedicated minimal session with no skills
@@ -287,15 +400,18 @@ differently, map the requirement rather than the name.
 - **Turn on context compaction** for any session that does outlive a cycle, and
   reset it on a fixed schedule.
 - **Cap subagent fan-out at two** unless you have measured otherwise.
-- **Persist the workspace across restarts, and check that you really did.** The
-  per-bounty records live there, not in the harness's memory or notes: memory
-  files are not a rule source, and an agent that reads its own notes as policy
-  decides differently every cycle. A VM whose disk is rebuilt on restart keeps
-  the workspace and loses everything outside it, so verify by listing what
-  actually arrived rather than by reading the setting that promised it. Say in
-  the harness's own instructions that judging writes only inside the workspace —
-  an agent told just "work here" still creates a directory of its own elsewhere
-  the first time a task does not obviously fit.
+- **Check that the profile directory really does persist.** The per-bounty
+  records live there, not in the harness's memory or notes: memory files are not
+  a rule source, and an agent that reads its own notes as policy decides
+  differently every cycle. Reading the setting that promised persistence proves
+  nothing, and neither does listing the directory on a fresh host, where an
+  empty one and a non-persisted one look identical. Write a canary file at
+  provisioning, restart the host deliberately, and check the canary came back.
+  Then say in the harness's own instructions that judging writes only inside
+  that named path — an agent told just "work here" still creates a directory of
+  its own elsewhere the first time a task does not obviously fit. Neither
+  harness's workspace is a filesystem boundary, so this is a naming convention
+  plus the canary, not something the harness enforces.
 - **Let the cycle's bounty selector skip** blocked bounties, and past-deadline
   bounties this Guardian has already judged, so a refused one is not re-picked
   every 30 minutes. Do **not** skip on `judging_deadline_at` alone: ElgoraHub
@@ -305,9 +421,13 @@ differently, map the requirement rather than the name.
 
 ## Monitoring
 
-- **Alert on `guardian_check_tools.missing`**, and on the sandbox runner failing to start.
-  Both are silent capability losses that otherwise show up only as bounties
-  nobody judged.
+- **Alert on the sandbox runner failing to start**, and on a cycle that ends
+  without reaching discovery. Both are silent capability losses that otherwise
+  show up only as bounties nobody judged.
+- **Alert on a cycle that hit its own timeout without reporting a blocker.**
+  That is the shape a held command-approval prompt takes: the run does not fail,
+  it holds until the window closes with the bounty untouched. Nothing else in
+  this list catches it, because from the outside it looks like a slow cycle.
 - **Track Verdicts recorded per cycle, not cycles completed.** A healthy
   schedule with zero Verdicts is the failure this whole file exists to catch.
 - **Track spend per cycle and per bounty**, with an alert well below the
@@ -315,8 +435,8 @@ differently, map the requirement rather than the name.
   too.
 - **Alert on a bounty reaching `judging_deadline_at` with no Verdict** and on
   any bounty that has been in the `blocked` stage for more than a few cycles.
-- **Watch the workspace's size** and the age of the oldest bounty directory, so
-  stale ones are noticed rather than listed every cycle.
+- **Watch the profile directory's size** and the age of the oldest bounty
+  directory, so stale ones are noticed rather than listed every cycle.
 - **Keep monitor and wrapper output deterministic** — sorted, with no
   timestamps, run counts or anything else that differs between two identical
   ticks — so a change detector wakes on real state and not on its own noise.
@@ -338,10 +458,10 @@ differently, map the requirement rather than the name.
 - **Least privilege for the host account**: no passwordless `sudo` for the
   agent, no container socket in its group, no instance-metadata access from the
   sandbox.
-- **Re-check the isolation after any change to it** — the wrapper, the image,
-  the kernel, or a sysctl underneath it. Nothing in the CLI will tell you: a
-  sandbox that starts but does not confine runs every command just as well as
-  one that does.
+- **Re-run `check-sandbox.sh` after any change to the isolation** — the
+  wrapper, the image, the kernel, or anything underneath them. Nothing in the
+  CLI will tell you: a sandbox that starts but does not confine runs every
+  command just as well as one that does.
 - **Keep the sources the boundary.** A Guardian installs any tool freely, but
   only from the public sources the skill names, and only inside the sandbox. A
   tool with no such source is reported to you rather than fetched.

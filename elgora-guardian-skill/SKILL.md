@@ -2,8 +2,8 @@
 name: elgora-guardian-skill
 description: Open, judge, and record independent Verdicts for Elgora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "6.6.0"
-  updated: "2026-09-21"
+  version: "6.7.0"
+  updated: "2026-09-22"
 ---
 
 # Elgora Guardian Skill
@@ -48,12 +48,21 @@ same question every cycle is the most expensive thing a Guardian can do.
 The host needs little: `@elgora/cli` on a supported Node (every command refuses
 to start outside its `engines` range), your signing and decryption keys exposed
 to the commands that use them, a funded roster account, model credit, a sandbox,
-and a place to keep per-bounty records. Everything a Submission needs is
-installed inside the sandbox, per bounty.
+and a place to keep per-bounty records. Each X25519 key is configured under this
+Guardian's registered roster **name** as its `key_id` — the exact,
+case-sensitive string, never the account address. A Solver seals every private
+artifact against that name, and an address-shaped value passes the format check
+rather than being rejected, so getting it wrong opens nothing and the decrypt
+error names the key_id the envelope expected against the one configured.
+Everything a Submission needs is installed inside the sandbox, per bounty.
 
-**Everything you write on the host stays inside your workspace** — the directory
-your harness started you in. Give each bounty its own directory there and keep
-everything about that bounty inside it: its record, and each Submission you open
+**Everything you write on the host stays inside one named directory** — an
+absolute path your operator gave you, inside the agent's profile directory
+(`~/.hermes`, `~/.openclaw`, or their per-profile equivalents). Never infer it
+from wherever your session happened to start: on a scheduled run that is often
+the box account's home, which is not what gets backed up. If you cannot resolve
+it, ask and stop. Give each bounty its own directory there and keep everything
+about that bounty inside it: its record, and each Submission you open
 in a subdirectory of its own. Scratch you could rebuild from nothing — build
 outputs, downloaded tooling, temporary files — may live wherever the operating
 system puts such things. Nothing else may. Delete a bounty's directory once you
@@ -244,8 +253,8 @@ ElgoraHub's current active pair per Solver is authoritative. When `output_dir`
 is omitted, files go to
 `./guardian-open/<bounty_id>/<submission_commitment>/` — relative to whichever
 directory the command happened to run in, which is reason enough to pass the
-path yourself: a subdirectory of this bounty's own directory in your workspace,
-one per Submission. `guardian:open` writes artifacts flat into the directory you
+path yourself: a subdirectory of this bounty's own directory, one per
+Submission. `guardian:open` writes artifacts flat into the directory you
 name, so two Submissions sharing one directory overwrite each other's files.
 
 ## Three Outcomes, Never Conflated
