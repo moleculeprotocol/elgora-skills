@@ -2,7 +2,7 @@
 name: elgora-guardian-skill
 description: Open, judge, and record independent Verdicts for Elgora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "6.8.0"
+  version: "6.9.0"
   updated: "2026-09-22"
 ---
 
@@ -683,6 +683,13 @@ follow-up — a wake-up timer, heartbeat, or crontab entry — and expect it to 
 a few times. Never schedule past `settlement_timeout_at`: after that `settle`
 reverts, the bounty can only be timed out, and there is nothing to deliver.
 
+**Never try to deliver in the run that records your Verdict.** The bounty
+cannot have settled yet, let alone reached a finalized block, so the attempt
+can only fail. Set the first follow-up no earlier than 20 minutes after
+`judging_deadline_at`, and space later ones at least 15 minutes apart: the
+chain's finalized tag trails the latest block by that much, and checking again
+seconds after a state change reads the old state.
+
 Each time it fires, read the bounty from chain — the bounty detail or the
 subgraph — and do one of three things:
 
@@ -706,10 +713,13 @@ subgraph — and do one of three things:
   ```
 
   It works from your keys and that pair alone, not from the plaintext you
-  already deleted. For roughly ten to twenty minutes after settlement it returns
-  `503`, because the API takes a wrap only once the settled block is behind the
-  chain's finalized tag. Treat any failure as "not delivered yet" and
-  reschedule. Once `delivery/status` answers `{"exists": true}`, delete the
+  already deleted. The API takes a wrap only once the settled block is behind
+  the chain's finalized tag, roughly ten to twenty minutes after settlement.
+  The command checks that first: until then it prints
+  `guardian_deliver_key.pending_finality`, delivers nothing, and exits `75`.
+  That is the expected wait, not an error — reschedule 15–20 minutes out
+  without retrying in the same run. Treat any other failure as "not delivered
+  yet" and reschedule too. Once `delivery/status` answers `{"exists": true}`, delete the
   schedule and the bounty's directory; you are finished with this bounty.
 
 **The winner is whoever ElgoraHub settled on, which need not be the Solver you
