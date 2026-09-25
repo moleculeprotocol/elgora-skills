@@ -161,8 +161,7 @@ token's smallest units, using that token's decimals. Current v0 uses USDC with
 6 decimals: `1 USDC` is `"1000000"`. Do not write token-unit or decimal values;
 Elgora will not convert them. Convert the approved deadline to Unix seconds in
 UTC for `submission_deadline`. Both must fit ElgoraHub's live bounds or funding
-reverts: on Base mainnet at launch, 20 to 250 USDC and a deadline 3 to 60 days
-ahead. Keep reward and deadline in frontmatter; ElgoraHub calculates fees and
+reverts. Keep reward and deadline in frontmatter; ElgoraHub calculates fees and
 payouts.
 
 Keep the challenge self-contained. It defines what a Solver must submit and how
