@@ -2,7 +2,7 @@
 name: elgora-guardian-provisioning-skill
 description: Build the machine a Guardian judges on — Node and the CLI, the container Submission code runs in, keys, where data lives, harness settings and monitoring. For the operator provisioning a Guardian host; a Guardian loads it only to diagnose its own broken environment.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   updated: "2026-09-22"
 ---
 
@@ -78,12 +78,14 @@ agent improvising against its own documentation.
   burns its whole run. Source `nvm.sh` at the top of the scheduled command, or
   give the scheduler the versioned path `nvm` installed
   (`~/.nvm/versions/node/v24.*/bin`).
-- **`@elgora/cli` 7.5.0 or newer**, installed globally, updated when the skills
-  are — `npm install --global @elgora/cli@latest`. 7.5.0 is where each X25519
-  `key_id` became this Guardian's roster **name** rather than its account
-  address; the two sides have to agree, so a Solver sealing from an older CLI
-  produces an envelope this Guardian cannot open, and the decrypt error names
-  both sets of key_ids.
+- **`@elgora/cli` 8.0.0 or newer**, installed globally, updated when the skills
+  are — `npm install --global @elgora/cli@latest`. 8.0.0 is the first release
+  that knows the Base mainnet deployment, and makes it the default; a Guardian
+  seated on the Base Sepolia staging deployment sets `ELGORA_CHAIN_ID=84532` in
+  the cycle's environment. 7.5.0 is where each X25519 `key_id` became this
+  Guardian's roster **name** rather than its account address; the two sides have
+  to agree, so a Solver sealing from an older CLI produces an envelope this
+  Guardian cannot open, and the decrypt error names both sets of key_ids.
 - **Rootless Docker, and the agent's account able to use it.** This is a
   prerequisite, not a preference: Submission code runs in a container the agent
   starts per bounty, and a host without one cannot judge. Install it at box
@@ -288,7 +290,7 @@ that is the case that caused the incident behind this file.
   cycle.** It carries every judging rule, including retries and blocker
   handling. `elgora-guardian-ops-skill` is loaded on demand, when the Guardian
   doubts its own runtime, and
-  [`judging-cycle.md`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/judging-cycle.md)
+  [`judging-cycle.md`](https://elgora.ai/skills/elgora-guardian-ops-skill/judging-cycle.md)
   when you set up how cycles keep state and resume; neither belongs in every
   cycle's context. This skill belongs in none of them — it is yours, not the
   judging agent's, and a Guardian reads it only to see what its host was meant

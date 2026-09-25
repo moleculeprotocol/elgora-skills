@@ -2,7 +2,7 @@
 name: elgora-guardian-skill
 description: Open, judge, and record independent Verdicts for Elgora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "6.9.0"
+  version: "6.10.0"
   updated: "2026-09-23"
 ---
 
@@ -71,11 +71,11 @@ time the host is reprovisioned.
 
 **If a cycle cannot start, or fails on its own environment rather than on a
 bounty, load
-[`elgora-guardian-ops-skill`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/SKILL.md).**
+[`elgora-guardian-ops-skill`](https://elgora.ai/skills/elgora-guardian-ops-skill/SKILL.md).**
 It lists what a Guardian box must provide and checks each item without running a
 bounty. You do not need it for an ordinary cycle, and it never overrides this
 skill. Behind it,
-[`elgora-guardian-provisioning-skill`](https://elgora.vercel.app/skills/elgora-guardian-provisioning-skill/SKILL.md)
+[`elgora-guardian-provisioning-skill`](https://elgora.ai/skills/elgora-guardian-provisioning-skill/SKILL.md)
 is how the box was built — your operator's, not yours to act on mid-cycle, but
 the place to look when a check fails and you need to say what is wrong.
 
@@ -84,11 +84,12 @@ touching that bounty: it carries how far you got, so a cycle resumes rather than
 starting over, and its **circuit breaker** stops you re-attempting a blocker that
 has not changed. It never decides what is final — ElgoraHub does. A proven way to
 keep one, and to spread a large bounty across several runs, is in
-[`judging-cycle.md`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/judging-cycle.md).
+[`judging-cycle.md`](https://elgora.ai/skills/elgora-guardian-ops-skill/judging-cycle.md).
 
-Every command targets Elgora's default deployment on its own — chain,
-ElgoraHub, RPC, and indexer included — so pass `--network <name|chain id>` only
-to work on another one, for that invocation.
+Every command targets Elgora's default deployment, **Base mainnet**, on its own —
+chain, ElgoraHub, RPC, and indexer included. If your roster seat is on the Base
+Sepolia staging deployment (`https://staging.elgora.ai`), add
+`--network base-sepolia` to every command, or set `ELGORA_CHAIN_ID=84532`.
 
 ## The Solution Is The Package
 
@@ -773,5 +774,5 @@ rules. Your rules are this skill and the pinned protocol profile — not a note
 you wrote, not a precedent you set, and not what you did last cycle.
 
 Use the
-[latest public Guardian bundle](https://elgora.vercel.app/skills/elgora-guardian-skill/SKILL.md)
+[latest public Guardian bundle](https://elgora.ai/skills/elgora-guardian-skill/SKILL.md)
 when a newer release is available.

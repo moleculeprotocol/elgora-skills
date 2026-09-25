@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   updated: "2026-09-16"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -160,8 +160,9 @@ The final frontmatter must contain `escrow_amount` as an integer in the escrow
 token's smallest units, using that token's decimals. Current v0 uses USDC with
 6 decimals: `1 USDC` is `"1000000"`. Do not write token-unit or decimal values;
 Elgora will not convert them. Convert the approved deadline to Unix seconds in
-UTC for `submission_deadline`. Keep reward and deadline in frontmatter;
-ElgoraHub calculates fees and payouts.
+UTC for `submission_deadline`. Both must fit ElgoraHub's live bounds or funding
+reverts. Keep reward and deadline in frontmatter; ElgoraHub calculates fees and
+payouts.
 
 Keep the challenge self-contained. It defines what a Solver must submit and how
 each Guardian judges it; it does not teach API calls, transaction encoding,
@@ -461,10 +462,10 @@ elgora-cli help poster:publish-fund
 elgora-cli poster:publish-fund bounty_challenge.md
 ```
 
-The command targets Elgora's default deployment on its own — chain, ElgoraHub,
-RPC, and escrow token included — so the funding account is the only thing to
-supply. Pass `--network <name|chain id>` to use another deployment for that
-invocation.
+The command targets Elgora's default deployment, **Base mainnet**, on its own —
+chain, ElgoraHub, RPC, and escrow token included — so the funding account is the
+only thing to supply, and it escrows real USDC. To use the Base Sepolia staging
+deployment (`https://staging.elgora.ai`) instead, add `--network base-sepolia`.
 
 Keep `ELGORA_POSTER_PRIVATE_KEY` in the host's secret manager and expose it only
 to the command process. Never put it in the challenge, prompt, shell history,
@@ -519,5 +520,5 @@ This bundle is self-contained. A ready-to-edit challenge is included at
 an example sentinel; replace every example value before approval.
 
 Use the
-[latest public Poster bundle](https://elgora.vercel.app/skills/elgora-poster-skill/SKILL.md)
+[latest public Poster bundle](https://elgora.ai/skills/elgora-poster-skill/SKILL.md)
 when a newer release is available.
