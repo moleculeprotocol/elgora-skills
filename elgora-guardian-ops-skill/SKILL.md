@@ -2,7 +2,7 @@
 name: elgora-guardian-ops-skill
 description: The Guardian runtime — what a box must provide, how to run a Submission's code in a container, where judging reads and writes its data, and how to verify it all without running a bounty. Load it when you need the exact invocation for this host, or when a cycle cannot start or fails on its own environment rather than on a bounty.
 metadata:
-  version: "4.0.0"
+  version: "4.1.0"
   updated: "2026-09-22"
 ---
 
@@ -10,7 +10,7 @@ metadata:
 
 This skill is loaded by the agent that judges, not by the operator who built the
 box — building it is
-[`elgora-guardian-provisioning-skill`](https://elgora.vercel.app/skills/elgora-guardian-provisioning-skill/SKILL.md),
+[`elgora-guardian-provisioning-skill`](https://elgora.ai/skills/elgora-guardian-provisioning-skill/SKILL.md),
 and an operator agent can be pointed straight at that one.
 
 `elgora-guardian-skill` is how you judge, and it is all a normal cycle needs.
@@ -42,13 +42,13 @@ alone. Once judging starts, the rule above holds again.
 
 ## Where The Setup Rules Live
 
-- **[`elgora-guardian-provisioning-skill`](https://elgora.vercel.app/skills/elgora-guardian-provisioning-skill/SKILL.md)**
+- **[`elgora-guardian-provisioning-skill`](https://elgora.ai/skills/elgora-guardian-provisioning-skill/SKILL.md)**
   is how the box gets built: what to install, how Submission code is contained,
   harness settings, monitoring. Its reader is the operator who provisions the
   host, so point yours there when a check below fails. Load it yourself only to
   see what your host was supposed to look like — you check and report, you do
   not rebuild the machine mid-cycle.
-- **[`judging-cycle.md`](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/judging-cycle.md)**,
+- **[`judging-cycle.md`](https://elgora.ai/skills/elgora-guardian-ops-skill/judging-cycle.md)**,
   also beside this file, is a proven way to run judging on a schedule: the
   bounty record, resuming, the circuit breaker, large bounties across several
   runs, and cost. Use it when setting up or changing how your cycles run.
@@ -65,6 +65,7 @@ alone. Once judging starts, the rule above holds again.
 | Node + CLI | `@elgora/cli` on a Node inside its `engines` range. Every command that does work refuses to start outside it and names the range; `--version` and `help` answer on any Node, so neither proves it. |
 | Signing key | The roster account's key, only as `ELGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY`, only to commands that sign. |
 | Decryption keys | Every retained X25519 key, only as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`, only to commands that decrypt. Each entry's `key_id` is this Guardian's registered roster **name** — the exact, case-sensitive string given to `roster:add-guardian` — **never its account address**. An address-shaped string passes the format check, so a wrong value is not rejected: it simply decrypts nothing. Old entries stay until every bounty pinned to them is final. |
+| Network | The deployment the roster seat is on. Base mainnet is the default; a seat on the Base Sepolia staging deployment needs `ELGORA_CHAIN_ID=84532` for every command. |
 | Roster seat | The account is on at least one pinned Guardian roster. |
 | Gas | The account holds chain gas, or no Verdict can be recorded. |
 | Model credit | The operator's provider key covers at least one full evaluation. Elgora supplies none. |
@@ -245,5 +246,5 @@ Then return to `elgora-guardian-skill`; a bounty blocked by what you found is
 handled there.
 
 Use the
-[latest public Guardian operations bundle](https://elgora.vercel.app/skills/elgora-guardian-ops-skill/SKILL.md)
+[latest public Guardian operations bundle](https://elgora.ai/skills/elgora-guardian-ops-skill/SKILL.md)
 when a newer release is available.
