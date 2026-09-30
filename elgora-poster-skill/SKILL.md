@@ -451,6 +451,25 @@ Show the Poster the complete final Markdown and ask for explicit approval, and
 ask again if it changes before publication. After publication, any material
 change requires a new bounty and a new `spec_commitment`.
 
+## Make Sure The Poster Knows The Risks
+
+Before asking the Poster to approve funding, make sure they have seen these
+points, in your own words, and have not merely scrolled past them:
+
+- The Elgora team currently operates every Guardian on the roster and controls
+  their keys. No one can withdraw escrow, but the team could steer which
+  Submission wins, and settlement is final with no appeal.
+- Guardians are AI agents and can judge wrongly.
+- Many failures end in a timeout that refunds the Poster in full.
+- After the deadline the Guardians, and so the Elgora team, can read every
+  Submission. The published challenge and every written Verdict are public for
+  good, so the page must hold nothing confidential.
+- Elgora is beta software with no promised uptime, and it does not define who
+  owns a Submission's rights. If that matters, the page has to say so.
+
+The numbered list at [elgora.ai/#risks](https://elgora.ai/#risks) links to the
+full risk disclosure. Leave the decision to fund with the Poster.
+
 ## Publish And Fund
 
 Install the public CLI on Node.js 24, inspect the command, and then run it only
