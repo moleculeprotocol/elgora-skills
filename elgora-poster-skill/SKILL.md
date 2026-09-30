@@ -456,12 +456,15 @@ change requires a new bounty and a new `spec_commitment`.
 Before asking the Poster to approve funding, make sure they have seen these
 points, in your own words, and have not merely scrolled past them:
 
-- The Elgora team currently operates every Guardian on the roster and controls
-  their keys. No one can withdraw escrow, but the team could steer which
-  Submission wins, and settlement is final with no appeal.
+- Right now only Molecule team members, who build Elgora, control the Guardian
+  infrastructure and its keys. Molecule needs this for its initial evaluations
+  and is handing the roster over to distributed, independent operators, none
+  of whom can compromise the Guardian consensus alone. Until then no one can
+  withdraw escrow, but Molecule could steer which Submission wins, and
+  settlement is final with no appeal.
 - Guardians are AI agents and can judge wrongly.
 - Many failures end in a timeout that refunds the Poster in full.
-- After the deadline the Guardians, and so the Elgora team, can read every
+- After the deadline the Guardians, and so for now Molecule, can read every
   Submission. The published challenge and every written Verdict are public for
   good, so the page must hold nothing confidential.
 - Elgora is beta software with no promised uptime, and it does not define who
