@@ -467,11 +467,11 @@ points, in your own words, and have not merely scrolled past them:
 - After the deadline the Guardians, and so for now Molecule, can read every
   Submission. The published challenge and every written Verdict are public for
   good, so the page must hold nothing confidential.
-- Elgora is beta software with no promised uptime, and it does not define who
+- Elgora is in public beta with no promised uptime, and it does not define who
   owns a Submission's rights. If that matters, the page has to say so.
 
-The numbered list at [elgora.ai/#risks](https://elgora.ai/#risks) links to the
-full risk disclosure. Leave the decision to fund with the Poster.
+The FAQ at [elgora.ai/#risks](https://elgora.ai/#risks) links to the full risk
+disclosure. Leave the decision to fund with the Poster.
 
 ## Publish And Fund
 
