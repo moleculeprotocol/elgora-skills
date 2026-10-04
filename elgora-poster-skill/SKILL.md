@@ -306,11 +306,10 @@ and conflicting evidence, and distinguish what the results establish from
 what they only suggest.}
 
 {Check required evidence before ranking: a better score cannot compensate for
-unsupported claims. Distinguish a completed evidence check that fails from an
-unavailable verification source, which prevents judgment. Historical-data
-analysis needs traceable sources and faithful analysis, not proof of new lab
-work when it makes no such claim. Omit this subsection when the deliverable
-itself supplies all evidence needed to judge the task.}
+unsupported claims. Historical-data analysis needs traceable sources and
+faithful analysis, not proof of new lab work when it makes no such claim.
+Omit this subsection when the deliverable itself supplies all evidence needed
+to judge the task.}
 
 ### Scoring (When Applicable)
 {For a score, define the inputs, calculation and how the result affects
