@@ -449,8 +449,11 @@ when process-local secret injection is unavailable.
    elgora-cli poster:review bounty_challenge.md --network base --previous <previous_spec_commitment> --signoff-out readiness.json
    ```
 
-   `--previous` carries that reference in the signed request. It does not yet
-   guarantee that the service uses prior-issue context.
+   `--previous` carries that reference in the signed request. The service
+   reports which previous issues remain open or are resolved for the same
+   Poster and site. Each status includes the original complaint message; check
+   it against the current page before revising. Fresh requests reusing an
+   approval return no prior statuses.
 
    **Keep external inputs visible.** Never resolve a rejection naming an
    external input by removing, inlining or obscuring it. Preserve its URL,
