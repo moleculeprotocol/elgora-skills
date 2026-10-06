@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "3.2.0"
+  version: "4.0.0"
   updated: "2026-10-06"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -398,10 +398,10 @@ the acceptance and ranking rules already define the evaluation fully.}
 ## Readiness Check
 
 Run the hosted review before asking for the human's final approval, never only
-when funding. Install CLI 9 on Node.js 24 and inspect its commands:
+when funding. Install CLI 10 on Node.js 24 and inspect its commands:
 
 ```sh
-npm install --global @elgora/cli@9.1.0
+npm install --global @elgora/cli@10.0.0
 elgora-cli help poster:review
 elgora-cli help poster:publish-fund
 ```
@@ -424,21 +424,23 @@ when process-local secret injection is unavailable.
    elgora-cli check-page bounty_challenge.md
    ```
 
-2. **Review the exact draft and save its certificate.** Record this draft's
+2. **Review the exact draft.** Record this draft's
    commitment before each attempt, including attempts that are rejected:
 
    ```sh
    elgora-cli spec-commitment bounty_challenge.md
-   elgora-cli poster:review bounty_challenge.md --network base --signoff-out readiness.json
+   elgora-cli poster:review bounty_challenge.md --network base
    ```
 
-   `review.ready` returns the commitment and saves the certificate. It may
+   `review.ready` returns the commitment and `approved_until`; Elgora keeps the
+   approval of those exact bytes on the target site until then. It may
    also list `warnings`: concerns that never block publication.
    `review.not_ready` prints issues, including `code`, `anchor`
    and `hazard`, and exits 2. One issue may stand for several reviewer
    wordings of the same problem: `other_wordings` keeps the other phrasings.
    A command failure exits 1 and is not approval.
-   Never use a certificate left over from an earlier attempt for changed bytes.
+   An approval covers only the exact bytes reviewed; changed bytes need a new
+   review.
 
 3. **Revise within the Poster's agreed decisions.** Read every issue and fix
    the actual ambiguity. If a fix needs a new requirement or changes the
@@ -449,7 +451,7 @@ when process-local secret injection is unavailable.
    for the preceding draft:
 
    ```sh
-   elgora-cli poster:review bounty_challenge.md --network base --previous <previous_spec_commitment> --signoff-out readiness.json
+   elgora-cli poster:review bounty_challenge.md --network base --previous <previous_spec_commitment>
    ```
 
    `--previous` carries that reference in the signed request. The service
@@ -471,15 +473,16 @@ when process-local secret injection is unavailable.
    time. Report service failures rather than repeatedly retrying or changing
    the page to work around them.
 
-5. **Ask for final approval of the signed-off text.** Compare the whole page
+5. **Ask for final approval of the exact approved text.** Compare the whole page
    with the Poster's agreed decisions. Surface unresolved conflicts for the
    Poster to settle; never silently change an agreed rule. Show any review
    warnings as information: they never block publication, and change the page
    for one only if the Poster asks. Show the complete
-   reviewed Markdown for explicit approval to publish and fund. The certificate
-   is valid only for those exact bytes, site, chain and Hub, for seven days
-   from the original completed review. Reissuing does not extend it. Any edit needs another
-   review and final approval. An expired certificate needs another review.
+   reviewed Markdown for explicit approval to publish and fund. The approval
+   lasts seven days from the original completed review, for those exact bytes
+   on the target site. Reviewing again does not extend it. Any edit needs
+   another review and final approval. An approval older than seven days needs
+   another review.
 
 The hosted reviewer judges whether the prose is usable for acceptance and
 winner selection. Its private rules are not part of this bundle. Draft to state
@@ -510,19 +513,21 @@ machinery.
 
 ## Publish And Fund
 
-After explicit approval, publish the unchanged file with its saved certificate
-on the same target used for review:
+After explicit approval, publish the unchanged file on the same target used for
+review:
 
 ```sh
-elgora-cli poster:publish-fund bounty_challenge.md --network base --signoff readiness.json
+elgora-cli poster:publish-fund bounty_challenge.md --network base
 ```
 
 Mainnet funding escrows real USDC. The CLI requires enough USDC for the reward
 and a nonzero ETH balance on the target chain for gas before proceeding.
-Publication still uses a fresh wallet-signed request; the certificate does not
-remove that signature. It prevents a second AI review at publication.
-If the certificate is rejected, resolve the stated mismatch or expiry and run
-review again; never fall back to publishing without it.
+Publication still uses a fresh wallet-signed request. It reuses the saved
+approval of the exact bytes, so no second AI review runs while it is valid. If
+publication returns `bounty_challenge_not_ready`, nothing was published: the
+bytes had no ready approval from the last seven days on this site, so
+publication reviewed them and they failed.
+Return to the review loop; never publish bytes the Poster has not approved.
 
 After publication, any material change requires a new bounty and a new
 `spec_commitment`.
