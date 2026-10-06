@@ -2,7 +2,7 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "3.1.0"
+  version: "3.2.0"
   updated: "2026-10-06"
   profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -435,7 +435,9 @@ when process-local secret injection is unavailable.
    `review.ready` returns the commitment and saves the certificate. It may
    also list `warnings`: concerns that never block publication.
    `review.not_ready` prints issues, including `code`, `anchor`
-   and `hazard`, and exits 2. A command failure exits 1 and is not approval.
+   and `hazard`, and exits 2. One issue may stand for several reviewer
+   wordings of the same problem: `other_wordings` keeps the other phrasings.
+   A command failure exits 1 and is not approval.
    Never use a certificate left over from an earlier attempt for changed bytes.
 
 3. **Revise within the Poster's agreed decisions.** Read every issue and fix
