@@ -2,8 +2,8 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "3.0.0"
-  updated: "2026-10-03"
+  version: "3.1.0"
+  updated: "2026-10-06"
   profile: elgora_markdown_bounty_challenge_v0
 ---
 
@@ -401,7 +401,7 @@ Run the hosted review before asking for the human's final approval, never only
 when funding. Install CLI 9 on Node.js 24 and inspect its commands:
 
 ```sh
-npm install --global @elgora/cli@9.0.0
+npm install --global @elgora/cli@9.1.0
 elgora-cli help poster:review
 elgora-cli help poster:publish-fund
 ```
@@ -432,10 +432,11 @@ when process-local secret injection is unavailable.
    elgora-cli poster:review bounty_challenge.md --network base --signoff-out readiness.json
    ```
 
-   `review.ready` returns the commitment and saves the certificate.
-   `review.not_ready` prints issues, including `code`, `anchor` and `hazard`,
-   and exits 2. A command failure exits 1 and is not approval. Never use a
-   certificate left over from an earlier attempt for changed bytes.
+   `review.ready` returns the commitment and saves the certificate. It may
+   also list `warnings`: concerns that never block publication.
+   `review.not_ready` prints issues, including `code`, `anchor`
+   and `hazard`, and exits 2. A command failure exits 1 and is not approval.
+   Never use a certificate left over from an earlier attempt for changed bytes.
 
 3. **Revise within the Poster's agreed decisions.** Read every issue and fix
    the actual ambiguity. If a fix needs a new requirement or changes the
@@ -470,7 +471,9 @@ when process-local secret injection is unavailable.
 
 5. **Ask for final approval of the signed-off text.** Compare the whole page
    with the Poster's agreed decisions. Surface unresolved conflicts for the
-   Poster to settle; never silently change an agreed rule. Show the complete
+   Poster to settle; never silently change an agreed rule. Show any review
+   warnings as information: they never block publication, and change the page
+   for one only if the Poster asks. Show the complete
    reviewed Markdown for explicit approval to publish and fund. The certificate
    is valid only for those exact bytes, site, chain and Hub, for seven days
    from the original completed review. Reissuing does not extend it. Any edit needs another
