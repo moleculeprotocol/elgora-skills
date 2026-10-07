@@ -51,6 +51,19 @@ version: "1", chainId: 8453, verifyingContract:
 | `query` | the query string through `URLSearchParams`, so `poster_address` and any `previous_spec_commitment` are signed |
 | `blockNumber`, `blockHash` | a recent Base block, three behind the tip |
 
+Take the block from any public Base RPC: read the head with
+`eth_blockNumber`, then the block three behind it with `eth_getBlockByNumber`
+(its `number` and `hash`). Elgora's own default is the first of these.
+
+| | Mainnet (Base, `8453`) | Testnet (Base Sepolia, `84532`) |
+| --- | --- | --- |
+| Public RPC | `https://mainnet.base.org` | `https://sepolia.base.org` |
+| Alternative | `https://base-rpc.publicnode.com` | `https://base-sepolia-rpc.publicnode.com` |
+
+Public endpoints are rate limited; use your own provider if they throttle you.
+The block must be on the chain the request targets, or the signature is
+rejected.
+
 Present it on every request as
 `Authorization: Elgora-Approval <base64(address~signature~blockNumber~blockHash)>`.
 Such a credential is self-issued, good for one request and accepted for five
@@ -655,7 +668,7 @@ place to dry-run this skill. Switch the whole target at once, never part of it:
 | ElgoraHub | `0x8f80d1183cd983b01b0c9ac6777cc732ec9800de` | `0x2f97b5f616495c2e923f39a46648eb783c053ad7` |
 | Escrow token | USDC `0x833589fcd6edb6e08f4c7c32d4f71b54bda02913` | test USDC `0x036cbd53842c5426634e7929541ec2318f3dcf7e` |
 
-Sign testnet requests with the testnet host, chain id and Hub, and fund from a
-Base Sepolia wallet. Testnet bounties, Guardians and approvals are separate from
+Sign testnet requests with the testnet host, chain id and Hub, take their block
+from a Base Sepolia RPC (above), and fund from a Base Sepolia wallet. Testnet bounties, Guardians and approvals are separate from
 mainnet's. If you drive Elgora through its CLI rather than the API, one flag,
 `--network base-sepolia`, selects all of these for that command.
