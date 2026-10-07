@@ -2,8 +2,8 @@
 name: elgora-poster-skill
 description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
 metadata:
-  version: "4.0.0"
-  updated: "2026-10-06"
+  version: "4.1.0"
+  updated: "2026-10-07"
   profile: elgora_markdown_bounty_challenge_v0
 ---
 
@@ -398,10 +398,10 @@ the acceptance and ranking rules already define the evaluation fully.}
 ## Readiness Check
 
 Run the hosted review before asking for the human's final approval, never only
-when funding. Install CLI 10 on Node.js 24 and inspect its commands:
+when funding. Install CLI 10.1 on Node.js 24 and inspect its commands:
 
 ```sh
-npm install --global @elgora/cli@10.0.0
+npm install --global @elgora/cli@10.1.0
 elgora-cli help poster:review
 elgora-cli help poster:publish-fund
 ```
@@ -416,39 +416,34 @@ to the command process. Never put it in the challenge, prompt, shell history,
 logs or source control. Use Elgora's web app
 when process-local secret injection is unavailable.
 
-1. **Check the page offline.** This checks the frontmatter, pinned profile and
-   declared limits without a model, network request or review quota. Fix its
-   reported issues before proceeding.
+1. **Review the exact draft.** One command is the whole check:
 
    ```sh
-   elgora-cli check-page bounty_challenge.md
-   ```
-
-2. **Review the exact draft.** Record this draft's
-   commitment before each attempt, including attempts that are rejected:
-
-   ```sh
-   elgora-cli spec-commitment bounty_challenge.md
    elgora-cli poster:review bounty_challenge.md --network base
    ```
+
+   It first checks the frontmatter, pinned profile and declared limits locally,
+   with no model, signature or network request. Only a page that passes that
+   goes to the hosted review. Both outcomes print the page's `spec_commitment`;
+   keep it for the next attempt, including after a rejection.
 
    `review.ready` returns the commitment and `approved_until`; Elgora keeps the
    approval of those exact bytes on the target site until then. It may
    also list `warnings`: concerns that never block publication.
    `review.not_ready` prints issues, including `code`, `anchor`
-   and `hazard`, and exits 2. One issue may stand for several reviewer
+   and `hazard`, and exits 2; `"checked": "structure"` means the hosted review
+   did not run yet. One issue may stand for several reviewer
    wordings of the same problem: `other_wordings` keeps the other phrasings.
    A command failure exits 1 and is not approval.
    An approval covers only the exact bytes reviewed; changed bytes need a new
    review.
 
-3. **Revise within the Poster's agreed decisions.** Read every issue and fix
+2. **Revise within the Poster's agreed decisions.** Read every issue and fix
    the actual ambiguity. If a fix needs a new requirement or changes the
    purchased work, ask the Poster to decide rather than weakening the brief.
    After changing winner selection, scoring, eligibility, disqualification or
    timing evidence, reread all those related sections together for conflicts.
-   Run the offline check again, then resubmit with the commitment recorded
-   for the preceding draft:
+   Resubmit with the commitment of the preceding draft:
 
    ```sh
    elgora-cli poster:review bounty_challenge.md --network base --previous <previous_spec_commitment>
@@ -466,14 +461,14 @@ when process-local secret injection is unavailable.
    Resubmit with `--previous`. If the same rejection repeats, report the issue
    and both drafts to the Poster instead of hiding the input.
 
-4. **Repeat until `review.ready`.** New reviews use a rolling 24-hour quota;
+3. **Repeat until `review.ready`.** New reviews use a rolling 24-hour quota;
    same-site approvals of identical bytes are reused without another charge.
    For `409`, wait for a running review; after failure or rejection, the CLI
    signs a fresh request on retry. For `429`, wait until the indicated retry
    time. Report service failures rather than repeatedly retrying or changing
    the page to work around them.
 
-5. **Ask for final approval of the exact approved text.** Compare the whole page
+4. **Ask for final approval of the exact approved text.** Compare the whole page
    with the Poster's agreed decisions. Surface unresolved conflicts for the
    Poster to settle; never silently change an agreed rule. Show any review
    warnings as information: they never block publication, and change the page
