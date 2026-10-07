@@ -11,8 +11,8 @@ metadata:
 
 Help a Poster turn a scientific goal into one `bounty_challenge.md`, then
 review, publish and fund it through Elgora's HTTP API. There is nothing to
-install and no account to open: every request is signed by the Poster's own
-wallet, whose key stays with the Poster. The Poster owns the challenge and the
+install and no account to open: every request is authenticated by a signature
+from an EVM account the Poster controls, whose key stays with the Poster. The Poster owns the challenge and the
 wallet. Never disclose a wallet secret to Elgora or to anyone else, and fund
 only a bounty the Poster asked for.
 
@@ -409,7 +409,8 @@ mainnet, and funding escrows real USDC. Two endpoints take the page:
 
 Both take the raw `bounty_challenge.md` bytes as the body (`Content-Type:
 text/markdown`, no JSON wrapper), exactly one `poster_address`, and an
-`Authorization` header signed by that address. A review request may also carry
+`Authorization` header signed by that address (see Authenticate each
+request). A review request may also carry
 one `previous_spec_commitment` (below).
 
 ### How Elgora checks a page
@@ -438,33 +439,36 @@ instead of to state a question is precisely the failure this separation exists
 to prevent, and the rules change without changing what a good bounty looks like.
 Draft to state the Poster's task, then review and fix what comes back.
 
-### Sign each request
+### Authenticate each request
 
-One EIP-712 signature over the exact request, made by the Poster's wallet.
-Nothing is stored server-side: no key, no session, no nonce.
+Elgora has no login, API key or session. Every call to the review and
+publication endpoints must be authenticated by an EVM account, which signs that
+one request as an EIP-712 message. How the Poster produces the signature is its
+own choice (a wallet skill, a signing library, a hardware wallet, a Safe); the
+key never goes to Elgora, and this skill does not need to hold it.
 
-- Domain: `{ name: "Elgora", version: "1", chainId: 8453, verifyingContract:
-  0x8f80d1183cd983b01b0c9ac6777cc732ec9800de }` (the public deployment's
-  ElgoraHub).
-- Primary type `ApiRequestApproval`: `endpointId` (string), `audience` (string),
-  `bodyHash` (bytes32), `query` (string), `blockNumber` (uint256), `blockHash`
-  (bytes32).
-- `endpointId` is `"<METHOD> <pathname>"` (method uppercased, no origin, no
-  query), `audience` is the lowercased host (`elgora.ai`), `bodyHash` is
-  `keccak256` of the exact body bytes, and `query` is the query string
-  canonicalized through `URLSearchParams` (so `poster_address` and any
-  `previous_spec_commitment` are signed).
-- `blockNumber` and `blockHash` name a recent block on Base: take the block three
-  behind the tip and send the request within five minutes. A signature is good
-  for one request; sign again for every call, including a retry.
-- Send `Authorization: Elgora-Approval <base64(address~signature~blockNumber~blockHash)>`,
-  the four fields joined with `~`.
+What must be signed, as `ApiRequestApproval` in the domain `{ name: "Elgora",
+version: "1", chainId: 8453, verifyingContract:
+0x8f80d1183cd983b01b0c9ac6777cc732ec9800de }`:
 
-`401` means a stale block or a signature that does not verify: re-derive a fresh
-block, re-sign and retry. `403` means the signer is not the declared
-`poster_address`. The full scheme, with a complete client, is under Reference,
-"Request authorization", on the public documentation site at
-<https://docs.elgora.ai>.
+| Field | Value |
+| --- | --- |
+| `endpointId` | `"<METHOD> <pathname>"`, method uppercased, no host, no query |
+| `audience` | the lowercased host, `elgora.ai` |
+| `bodyHash` | `keccak256` of the exact body bytes (`keccak256("")` for none) |
+| `query` | the query string through `URLSearchParams`, so `poster_address` and any `previous_spec_commitment` are signed |
+| `blockNumber`, `blockHash` | a recent Base block, three behind the tip |
+
+Present it on every request as
+`Authorization: Elgora-Approval <base64(address~signature~blockNumber~blockHash)>`.
+The signer must be the `poster_address` in the query, or the call is `403`.
+
+Such a credential is self-issued, good for one request and accepted for five
+minutes after its block. Sign again for every call, including a retry. `401`
+means a stale block or a signature that does not verify: take a fresh block,
+sign again and retry. The whole scheme, with a complete client, is on the public
+documentation site at <https://docs.elgora.ai>, Reference, "Request
+authorization".
 
 ### Review until it is green
 
@@ -485,8 +489,8 @@ block, re-sign and retry. `403` means the signer is not the declared
 4. Resubmit with `previous_spec_commitment=<spec_commitment of the draft you just
    sent>` (lowercase `0x` bytes32) so the reviewer sees its own earlier
    complaints. `error.prior_issues_resolved` and `error.prior_issues_open` (and
-   `readiness.prior_issues_*` on success) report, from the same signer and site,
-   which earlier complaints are fixed; each carries its original `message`, so
+   `readiness.prior_issues_*` on success) report, from the same signer, which
+   earlier complaints are fixed; each carries its original `message`, so
    check it against the page before revising. They are judgments, not proof.
 
    **Keep external inputs visible.** Never resolve a rejection naming an
