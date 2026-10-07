@@ -1,18 +1,20 @@
 ---
 name: elgora-poster-skill
-description: Draft, approve, publish, fund, and follow an Elgora v0 bounty challenge as its Poster.
+description: Draft, review, publish, fund, and follow an Elgora v0 bounty challenge as its Poster, through the Elgora API.
 metadata:
-  version: "4.1.0"
+  version: "5.0.0"
   updated: "2026-10-07"
   profile: elgora_markdown_bounty_challenge_v0
 ---
 
 # Elgora Poster Skill
 
-Help a Poster turn a scientific goal into one approved
-`bounty_challenge.md`, then publish and fund it through Elgora. The Poster owns
-the challenge and the wallet action. Do not publish, fund, claim, or disclose a
-wallet secret without the Poster's explicit approval.
+Help a Poster turn a scientific goal into one `bounty_challenge.md`, then
+review, publish and fund it through Elgora's HTTP API. There is nothing to
+install and no account to open: every request is signed by the Poster's own
+wallet, whose key stays with the Poster. The Poster owns the challenge and the
+wallet. Never disclose a wallet secret to Elgora or to anyone else, and fund
+only a bounty the Poster asked for.
 
 ElgoraHub owns the bounty lifecycle, escrow, pinned Guardian roster, final
 result, claims, and refunds. This skill does not choose a winner, record a
@@ -20,10 +22,10 @@ Verdict, settle a bounty, or invent another payout path.
 
 ## Draft The Challenge
 
-Draft a readable title and five core parts for Poster approval: Summary,
+Draft a readable title and five core parts with the Poster: Summary,
 Challenge details, Deliverables, Acceptance Criteria, and How is the winner
 selected? All core content is required; history and motivation are optional.
-Keep simple tasks brief. The frontend displays approved text, not an
+Keep simple tasks brief. The bounty page shows your text as written, not an
 AI-generated description.
 
 Develop the challenge with the Poster using the template below, adding
@@ -266,7 +268,7 @@ criterion, referring to Evidence, Provenance and Verification where further
 detail is needed. Explain how missing, incomplete or conflicting results affect
 acceptance where relevant. Make each decision clear enough to apply from the
 page alone; put additional comparison conditions in Evaluation Procedure when
-needed. Resolve ambiguous terms with the Poster before approval.
+needed. Resolve ambiguous terms with the Poster before the review.
 Use concrete descriptions or examples where they clarify the expected result.}
 
 {Where relevant, state whether negative or inconclusive results satisfy the
@@ -333,7 +335,7 @@ clarity, usefulness or traceability, state which standards take priority, and
 resolve remaining ties. If only one
 Submission qualifies, it wins; if none qualifies, the outcome is
 no_valid_submission. Keep these rules consistent with acceptance criteria and
-the evaluation procedure, and settle them with the Poster before approval.}
+the evaluation procedure, and settle them with the Poster before the review.}
 
 ## Disqualification Conditions
 {State which failures make a Submission ineligible regardless of its score.
@@ -395,93 +397,129 @@ Those belong to the operator and cannot be set from here. Omit this section when
 the acceptance and ranking rules already define the evaluation fully.}
 ```
 
-## Readiness Check
+## Review, Publish And Fund
 
-Run the hosted review before asking for the human's final approval, never only
-when funding. Install CLI 10.1 on Node.js 24 and inspect its commands:
+Everything below happens over HTTPS against `https://elgora.ai`, on Base
+mainnet, and funding escrows real USDC. Two endpoints take the page:
 
-```sh
-npm install --global @elgora/cli@10.1.0
-elgora-cli help poster:review
-elgora-cli help poster:publish-fund
-```
+| Step | Request |
+| --- | --- |
+| Review | `POST /api/bounty-challenge-specs/review?poster_address=<your address>` |
+| Publish | `POST /api/bounty-challenge-specs/prepare-publication?poster_address=<your address>` |
 
-Choose the target with the Poster and use it for both review and publication:
-`--network base` uses Base mainnet and real USDC;
-`--network base-sepolia` uses `https://staging.elgora.ai` and test USDC.
-The examples below use Base mainnet. For staging or testing, replace
-`--network base` with `--network base-sepolia` in both commands.
-Keep `ELGORA_POSTER_PRIVATE_KEY` in the host's secret manager and expose it only
-to the command process. Never put it in the challenge, prompt, shell history,
-logs or source control. Use Elgora's web app
-when process-local secret injection is unavailable.
+Both take the raw `bounty_challenge.md` bytes as the body (`Content-Type:
+text/markdown`, no JSON wrapper), exactly one `poster_address`, and an
+`Authorization` header signed by that address. A review request may also carry
+one `previous_spec_commitment` (below).
 
-1. **Review the exact draft.** One command is the whole check:
+### How Elgora checks a page
 
-   ```sh
-   elgora-cli poster:review bounty_challenge.md --network base
-   ```
+A check has two stages, both on Elgora's side, behind the review endpoint.
 
-   It first checks the frontmatter, pinned profile and declared limits locally,
-   with no model, signature or network request. Only a page that passes that
-   goes to the hosted review. Both outcomes print the page's `spec_commitment`;
-   keep it for the next attempt, including after a rejection.
+A deterministic stage measures form: the frontmatter, the pinned profile, every
+declared tightening and the filename rules. It calls no model and costs no review
+quota, and it returns every issue at once, each with a stable `code` and an
+`anchor` naming the field or section that fixes it. A page that fails it comes
+back as `400 invalid_bounty_challenge_spec`.
 
-   `review.ready` returns the commitment and `approved_until`; Elgora keeps the
-   approval of those exact bytes on the target site until then. It may
-   also list `warnings`: concerns that never block publication.
-   `review.not_ready` prints issues, including `code`, `anchor`
-   and `hazard`, and exits 2; `"checked": "structure"` means the hosted review
-   did not run yet. One issue may stand for several reviewer
-   wordings of the same problem: `other_wordings` keeps the other phrasings.
-   A command failure exits 1 and is not approval.
-   An approval covers only the exact bytes reviewed; changed bytes need a new
-   review.
+A reviewing stage then reads the prose, and that is the one that blocks: whether
+acceptance is decidable, whether ranking resolves to exactly one Submission,
+whether required sources are identified specifically enough to use, and whether
+the page strays into directing how an agent operates. It reads the page the way a
+Guardian will, several times independently, and the page passes when a majority of
+those readings do; a concern only a minority raised comes back as a non-blocking
+`warning`. A page that fails it comes back as `400 bounty_challenge_not_ready`
+with one issue per problem.
 
-2. **Revise within the Poster's agreed decisions.** Read every issue and fix
-   the actual ambiguity. If a fix needs a new requirement or changes the
-   purchased work, ask the Poster to decide rather than weakening the brief.
-   After changing winner selection, scoring, eligibility, disqualification or
-   timing evidence, reread all those related sections together for conflicts.
-   Resubmit with the commitment of the preceding draft:
+**You are not given that stage's own rules, and you should not write against
+them.** How a Guardian is instructed, what it tolerates, and how the review is
+tuned are deliberately not yours to see. A page drafted to satisfy a checker
+instead of to state a question is precisely the failure this separation exists
+to prevent, and the rules change without changing what a good bounty looks like.
+Draft to state the Poster's task, then review and fix what comes back.
 
-   ```sh
-   elgora-cli poster:review bounty_challenge.md --network base --previous <previous_spec_commitment>
-   ```
+### Sign each request
 
-   `--previous` carries that reference in the signed request. The service
-   reports which previous issues remain open or are resolved for the same
-   Poster and site. Each status includes the original complaint message; check
-   it against the current page before revising. Fresh requests reusing an
-   approval return no prior statuses.
+One EIP-712 signature over the exact request, made by the Poster's wallet.
+Nothing is stored server-side: no key, no session, no nonce.
+
+- Domain: `{ name: "Elgora", version: "1", chainId: 8453, verifyingContract:
+  0x8f80d1183cd983b01b0c9ac6777cc732ec9800de }` (the public deployment's
+  ElgoraHub).
+- Primary type `ApiRequestApproval`: `endpointId` (string), `audience` (string),
+  `bodyHash` (bytes32), `query` (string), `blockNumber` (uint256), `blockHash`
+  (bytes32).
+- `endpointId` is `"<METHOD> <pathname>"` (method uppercased, no origin, no
+  query), `audience` is the lowercased host (`elgora.ai`), `bodyHash` is
+  `keccak256` of the exact body bytes, and `query` is the query string
+  canonicalized through `URLSearchParams` (so `poster_address` and any
+  `previous_spec_commitment` are signed).
+- `blockNumber` and `blockHash` name a recent block on Base: take the block three
+  behind the tip and send the request within five minutes. A signature is good
+  for one request; sign again for every call, including a retry.
+- Send `Authorization: Elgora-Approval <base64(address~signature~blockNumber~blockHash)>`,
+  the four fields joined with `~`.
+
+`401` means a stale block or a signature that does not verify: re-derive a fresh
+block, re-sign and retry. `403` means the signer is not the declared
+`poster_address`. The full scheme, with a complete client, is under Reference,
+"Request authorization", on the public documentation site at
+<https://docs.elgora.ai>.
+
+### Review until it is green
+
+1. Compute `spec_commitment` for the draft: `keccak256` of its exact UTF-8 bytes.
+   Keep it; the next attempt names it.
+2. `POST` the review. Read every issue and fix the actual ambiguity.
+   - `400 invalid_bounty_challenge_spec`: structural issues, free to fix and
+     resubmit.
+   - `400 bounty_challenge_not_ready`: `error.issues` lists each problem (`path`,
+     `message`, `code`, `anchor`, `hazard`; an issue that stands for several
+     wordings of one problem lists the others in `other_wordings`).
+   - `200`: green, below.
+3. **Revise within the Poster's agreed decisions.** If a fix needs a new
+   requirement or changes the purchased work, ask the Poster to decide rather
+   than weakening the brief. After changing winner selection, scoring,
+   eligibility, disqualification or timing evidence, reread all those related
+   sections together for conflicts.
+4. Resubmit with `previous_spec_commitment=<spec_commitment of the draft you just
+   sent>` (lowercase `0x` bytes32) so the reviewer sees its own earlier
+   complaints. `error.prior_issues_resolved` and `error.prior_issues_open` (and
+   `readiness.prior_issues_*` on success) report, from the same signer and site,
+   which earlier complaints are fixed; each carries its original `message`, so
+   check it against the page before revising. They are judgments, not proof.
 
    **Keep external inputs visible.** Never resolve a rejection naming an
    external input by removing, inlining or obscuring it. Preserve its URL,
-   version and hash, where supplied, and describe access declaratively.
-   Resubmit with `--previous`. If the same rejection repeats, report the issue
-   and both drafts to the Poster instead of hiding the input.
+   version and hash, where supplied, and describe access declaratively. If the
+   same rejection repeats, report the issue and both drafts to the Poster
+   instead of hiding the input.
+5. `429 publication_review_limit_reached`: your wallet has used its reviews for
+   the rolling 24 hours; wait until `error.retry_not_before`. Report any `5xx`
+   (`orchestrator_provider_error`, `invalid_orchestrator_output`) rather than
+   retrying in a loop or changing the page to work around it.
 
-3. **Repeat until `review.ready`.** New reviews use a rolling 24-hour quota;
-   same-site approvals of identical bytes are reused without another charge.
-   For `409`, wait for a running review; after failure or rejection, the CLI
-   signs a fresh request on retry. For `429`, wait until the indicated retry
-   time. Report service failures rather than repeatedly retrying or changing
-   the page to work around them.
+**A green review is the sign-off.** The `200` response is Elgora's approval of
+those exact bytes, and it is all you need to publish:
 
-4. **Ask for final approval of the exact approved text.** Compare the whole page
-   with the Poster's agreed decisions. Surface unresolved conflicts for the
-   Poster to settle; never silently change an agreed rule. Show any review
-   warnings as information: they never block publication, and change the page
-   for one only if the Poster asks. Show the complete
-   reviewed Markdown for explicit approval to publish and fund. The approval
-   lasts seven days from the original completed review, for those exact bytes
-   on the target site. Reviewing again does not extend it. Any edit needs
-   another review and final approval. An approval older than seven days needs
-   another review.
+```json
+{
+  "content_record": { "spec_commitment": "0x…", "byte_length": 4210, "token_address": "0x…" },
+  "readiness": {
+    "decision": "ready",
+    "approved_until": "2026-10-14T09:00:00.000Z",
+    "warnings": [],
+    "prior_issues_resolved": [],
+    "prior_issues_open": []
+  }
+}
+```
 
-The hosted reviewer judges whether the prose is usable for acceptance and
-winner selection. Its private rules are not part of this bundle. Draft to state
-the Poster's task, not to satisfy a checker. Do not direct how Guardians operate.
+Elgora keeps that approval for the exact bytes until `approved_until` (seven days
+from the review; reviewing again does not extend it). Publishing the same bytes
+before then makes no second AI review. Warnings never block publication. Any edit
+to the page, however small, needs a new review, and a page past `approved_until`
+is reviewed again when you publish.
 
 ### What you may still require
 
@@ -506,26 +544,46 @@ Describe what the work must demonstrate and under what conditions. Leave how it
 is fetched, retried, sandboxed or recovered to the people who operate that
 machinery.
 
-## Publish And Fund
+### Publish and fund
 
-After explicit approval, publish the unchanged file on the same target used for
-review:
+Straight after a green review, publish the unchanged bytes:
 
-```sh
-elgora-cli poster:publish-fund bounty_challenge.md --network base
-```
+1. `POST /api/bounty-challenge-specs/prepare-publication?poster_address=<your address>`
+   with the same body and a **freshly signed** header. Elgora checks current
+   terms, reuses the approval above (reviewing first only if there is none, and
+   returning `400 bounty_challenge_not_ready` with nothing published if that
+   review fails), stores the exact bytes and returns:
 
-Mainnet funding escrows real USDC. The CLI requires enough USDC for the reward
-and a nonzero ETH balance on the target chain for gas before proceeding.
-Publication still uses a fresh wallet-signed request. It reuses the saved
-approval of the exact bytes, so no second AI review runs while it is valid. If
-publication returns `bounty_challenge_not_ready`, nothing was published: the
-bytes had no ready approval from the last seven days on this site, so
-publication reviewed them and they failed.
-Return to the review loop; never publish bytes the Poster has not approved.
+   ```json
+   {
+     "content_record": { "spec_commitment": "0x…", "byte_length": 4210, "token_address": "0x…", "created_at": "…" },
+     "create_bounty_transaction": {
+       "chain_id": 8453, "to": "0x…", "value": "0", "data": "0x…",
+       "function_name": "create_bounty",
+       "args": { "spec_commitment": "0x…", "escrow_amount": "1000000", "submission_deadline": 1890000000 }
+     },
+     "protocol_fee_policy": { "treasury_recipient": "0x…", "treasury_fee_bps": 500, "guardian_fee_recipient": "0x…", "guardian_fee_bps": 500 }
+   }
+   ```
 
-After publication, any material change requires a new bounty and a new
-`spec_commitment`.
+2. **Check before you sign anything.** `spec_commitment` must equal the one you
+   computed, `chain_id` must be 8453, `to` must be the ElgoraHub above, and
+   `escrow_amount` and `submission_deadline` must match your frontmatter. Stop
+   if any differs; a response that disagrees with you must not move your money.
+3. Fund from the Poster's wallet, which needs the escrow amount in USDC
+   (`0x833589fcd6edb6e08f4c7c32d4f71b54bda02913`, 6 decimals) and some ETH for
+   gas: send `approve(<ElgoraHub>, escrow_amount)` on the USDC contract, then the
+   `createBounty(bytes32 specCommitment, uint256 escrowAmount, uint64
+   submissionDeadline)` call (`data` in the response encodes it). The bounty
+   exists when the `BountyCreated` event arrives; its `bountyId` is the bounty's
+   identity.
+4. Keep `bounty_id`, `spec_commitment` and the creation transaction hash. They
+   are public, and nothing else you need is secret.
+
+Mainnet funding escrows real USDC. A published page whose funding transaction
+never lands is harmless: no bounty exists, and publishing the same bytes again
+yields the same `spec_commitment`. After publication, any material change
+requires a new bounty and a new `spec_commitment`.
 
 Creation pins the configured Guardian roster to the bounty and funds
 winner-take-all escrow. Publishing a challenge never authorizes a later
@@ -541,39 +599,42 @@ ElgoraHub finalizes as one of:
 - `NoValidSubmission`: the Poster can claim the queued refund.
 - `TimedOut`: the Poster can claim the full escrow refund.
 
-For an Awarded bounty, retrieve the exact finalized winner. The command creates
-a one-time key, signs both protected API requests with the funding Poster
-account, verifies the committed encrypted envelope, and writes plaintext only
-to the local output directory:
-
-```sh
-elgora-cli help poster:open-winning-submission
-elgora-cli poster:open-winning-submission <bounty_id> [output_dir]
-```
-
-Inspect the claim command before using it:
-
-```sh
-elgora-cli help claim
-elgora-cli claim --claimant-address <wallet_address> <bounty_id>
-```
-
-Finalized ElgoraHub state makes this one command route internally: an Awarded
-winner uses `claimAward(<bounty_id>, 0x)` for the reserved pool, while a
-refunded Poster uses `claim(<bounty_id>)` for the queued balance. The command
-accepts no payout or proof input.
-
-External-wallet mode prints prepared calldata for that wallet. Local signing
-omits `--claimant-address` and requires `ELGORA_CLAIMANT_PRIVATE_KEY`. ElgoraHub,
-not this skill or a displayed VerificationRecord, decides eligibility and the
-claim route.
+Read the state from the public bounty endpoint, `GET /api/bounties/<bounty_id>`
+(no signature needed). For a refund, call `claim(<bounty_id>)` on ElgoraHub from
+the funding wallet. For an Awarded bounty, retrieve the exact finalized winner with
+`POST /api/bounties/<bounty_id>/delivery/retrieve` (signed as above, body
+`{ "poster_ephemeral_public_key": … }` with a fresh X25519 public key), which
+returns the content key rewrapped to your key; fetch the encrypted Submission and
+decrypt it locally, so plaintext never leaves the Poster's machine. The exact
+steps are under How it works, "Delivering the winning work", at
+<https://docs.elgora.ai>. ElgoraHub, not
+this skill or a displayed VerificationRecord, decides eligibility and every
+payout.
 
 ## Release Snapshot
 
 This bundle is self-contained. A ready-to-edit challenge is included at
 [`examples/bounty_challenge.md`](examples/bounty_challenge.md). Its deadline is
-an example sentinel; replace every example value before approval.
+an example sentinel; replace every example value before publishing.
 
 Use the
 [latest public Poster bundle](https://elgora.ai/skills/elgora-poster-skill/SKILL.md)
 when a newer release is available.
+
+## Testing Against Testnet
+
+Everything above targets Elgora's production deployment. Elgora also runs a
+separate testnet deployment on Base Sepolia with test USDC, which is the safe
+place to dry-run this skill. Switch the whole target at once, never part of it:
+
+| | Mainnet (default) | Testnet |
+| --- | --- | --- |
+| API host | `https://elgora.ai` | `https://staging.elgora.ai` |
+| Chain id | `8453` | `84532` |
+| ElgoraHub | `0x8f80d1183cd983b01b0c9ac6777cc732ec9800de` | `0x2f97b5f616495c2e923f39a46648eb783c053ad7` |
+| Escrow token | USDC `0x833589fcd6edb6e08f4c7c32d4f71b54bda02913` | test USDC `0x036cbd53842c5426634e7929541ec2318f3dcf7e` |
+
+Sign testnet requests with the testnet host, chain id and Hub, and fund from a
+Base Sepolia wallet. Testnet bounties, Guardians and approvals are separate from
+mainnet's. If you drive Elgora through its CLI rather than the API, one flag,
+`--network base-sepolia`, selects all of these for that command.
