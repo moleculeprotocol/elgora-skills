@@ -20,6 +20,55 @@ ElgoraHub owns the bounty lifecycle, escrow, pinned Guardian roster, final
 result, claims, and refunds. This skill does not choose a winner, record a
 Verdict, settle a bounty, or invent another payout path.
 
+## Talking To The Elgora API
+
+Everything this skill does with Elgora is plain HTTPS against
+`https://elgora.ai` (Base mainnet; the testnet is explained at the end). There is
+no CLI to install, no SDK and no account. Reads that grant no authority, such as
+a bounty's public state, are unauthenticated `GET`s. Every call that acts for a
+wallet is authenticated as below. Bodies are sent raw: the challenge as
+`text/markdown`, other payloads as JSON with `snake_case` fields. Errors come
+back as JSON: `error.code`, `error.message`, `error.issues` and
+`error.next_action`.
+
+### Authenticate each request
+
+Elgora has no login, API key or session. Every authenticated call must be
+signed by an EVM account, as one EIP-712 message over that exact request. How
+the Poster produces the signature is its own choice (a wallet skill, a signing
+library, a hardware wallet, a Safe); the key never goes to Elgora, and this skill
+does not need to hold it.
+
+What must be signed, as `ApiRequestApproval` in the domain `{ name: "Elgora",
+version: "1", chainId: 8453, verifyingContract:
+0x8f80d1183cd983b01b0c9ac6777cc732ec9800de }`:
+
+| Field | Value |
+| --- | --- |
+| `endpointId` | `"<METHOD> <pathname>"`, method uppercased, no host, no query |
+| `audience` | the lowercased host, `elgora.ai` |
+| `bodyHash` | `keccak256` of the exact body bytes (`keccak256("")` for none) |
+| `query` | the query string through `URLSearchParams`, so `poster_address` and any `previous_spec_commitment` are signed |
+| `blockNumber`, `blockHash` | a recent Base block, three behind the tip |
+
+Present it on every request as
+`Authorization: Elgora-Approval <base64(address~signature~blockNumber~blockHash)>`.
+Such a credential is self-issued, good for one request and accepted for five
+minutes after its block. Sign again for every call, including a retry. The whole
+scheme, with a complete client, is on the public documentation site at
+<https://docs.elgora.ai>, Reference, "Request authorization".
+
+### Errors
+
+- `400`: the input is wrong; `error.issues` says where. Fix it and resend.
+- `401`: a stale block or a signature that does not verify. Take a fresh block,
+  sign again and retry.
+- `403`: the signer is not the address the call names (for the Poster's calls,
+  `poster_address`).
+- `429`: a limit is used up; wait until `error.retry_not_before`.
+- `5xx`: report it. Do not retry in a loop or change your input to work around
+  it.
+
 ## Draft The Challenge
 
 Draft a readable title and five core parts with the Poster: Summary,
@@ -86,6 +135,13 @@ A protocol limit is never restated on the page. The page is immutable once
 published and a Poster is not the authority for a protocol value, so a copy
 here can only go stale. Publish a bounty parameter; let the limit be read from
 the profile the bounty pins.
+
+You are not shown the review's own rules, and you should not write against
+them. How a Guardian is instructed, what it tolerates and how the review is
+tuned are deliberately not yours to see, and they change without changing what
+a good bounty looks like. A page drafted to satisfy a checker instead of to state
+a question is the failure this separation exists to prevent. State the Poster's
+task, then review and fix what comes back.
 
 ## Tighten Through Frontmatter, Not Prose
 
@@ -409,66 +465,28 @@ mainnet, and funding escrows real USDC. Two endpoints take the page:
 
 Both take the raw `bounty_challenge.md` bytes as the body (`Content-Type:
 text/markdown`, no JSON wrapper), exactly one `poster_address`, and an
-`Authorization` header signed by that address (see Authenticate each
-request). A review request may also carry
+`Authorization` header signed by that address (see Talking To The Elgora
+API). A review request may also carry
 one `previous_spec_commitment` (below).
 
-### How Elgora checks a page
+### What the review checks
 
-A check has two stages, both on Elgora's side, behind the review endpoint.
+The review checks the page against the rules in this skill, nothing else. Know
+them before you draft:
 
-A deterministic stage measures form: the frontmatter, the pinned profile, every
-declared tightening and the filename rules. It calls no model and costs no review
-quota, and it returns every issue at once, each with a stable `code` and an
-`anchor` naming the field or section that fixes it. A page that fails it comes
-back as `400 invalid_bounty_challenge_spec`.
-
-A reviewing stage then reads the prose, and that is the one that blocks: whether
-acceptance is decidable, whether ranking resolves to exactly one Submission,
-whether required sources are identified specifically enough to use, and whether
-the page strays into directing how an agent operates. It reads the page the way a
-Guardian will, several times independently, and the page passes when a majority of
-those readings do; a concern only a minority raised comes back as a non-blocking
-`warning`. A page that fails it comes back as `400 bounty_challenge_not_ready`
-with one issue per problem.
-
-**You are not given that stage's own rules, and you should not write against
-them.** How a Guardian is instructed, what it tolerates, and how the review is
-tuned are deliberately not yours to see. A page drafted to satisfy a checker
-instead of to state a question is precisely the failure this separation exists
-to prevent, and the rules change without changing what a good bounty looks like.
-Draft to state the Poster's task, then review and fix what comes back.
-
-### Authenticate each request
-
-Elgora has no login, API key or session. Every call to the review and
-publication endpoints must be authenticated by an EVM account, which signs that
-one request as an EIP-712 message. How the Poster produces the signature is its
-own choice (a wallet skill, a signing library, a hardware wallet, a Safe); the
-key never goes to Elgora, and this skill does not need to hold it.
-
-What must be signed, as `ApiRequestApproval` in the domain `{ name: "Elgora",
-version: "1", chainId: 8453, verifyingContract:
-0x8f80d1183cd983b01b0c9ac6777cc732ec9800de }`:
-
-| Field | Value |
-| --- | --- |
-| `endpointId` | `"<METHOD> <pathname>"`, method uppercased, no host, no query |
-| `audience` | the lowercased host, `elgora.ai` |
-| `bodyHash` | `keccak256` of the exact body bytes (`keccak256("")` for none) |
-| `query` | the query string through `URLSearchParams`, so `poster_address` and any `previous_spec_commitment` are signed |
-| `blockNumber`, `blockHash` | a recent Base block, three behind the tip |
-
-Present it on every request as
-`Authorization: Elgora-Approval <base64(address~signature~blockNumber~blockHash)>`.
-The signer must be the `poster_address` in the query, or the call is `403`.
-
-Such a credential is self-issued, good for one request and accepted for five
-minutes after its block. Sign again for every call, including a retry. `401`
-means a stale block or a signature that does not verify: take a fresh block,
-sign again and retry. The whole scheme, with a complete client, is on the public
-documentation site at <https://docs.elgora.ai>, Reference, "Request
-authorization".
+- **Form** (deterministic, instant, no review quota, every issue at once as
+  `400 invalid_bounty_challenge_spec` with a `code` and an `anchor`): valid
+  frontmatter, a published `profile`, and every `constraints:` entry a key the
+  profile lets you narrow, well formed (positive integers, extension lists,
+  filenames that satisfy the profile's filename rule) and strictly under the
+  protocol value.
+- **Judgeability** (a model reads the page the way a Guardian will, several
+  times independently; it blocks when most readings object, as
+  `400 bounty_challenge_not_ready`, one issue per problem; a concern only a
+  minority raised comes back as a non-blocking `warning`): acceptance is
+  decidable, ranking resolves to exactly one Submission, required sources and
+  versions are identified specifically enough to use, no protocol limit is
+  restated, and the page describes the judgment, never how an agent operates.
 
 ### Review until it is green
 
@@ -499,9 +517,8 @@ authorization".
    same rejection repeats, report the issue and both drafts to the Poster
    instead of hiding the input.
 5. `429 publication_review_limit_reached`: your wallet has used its reviews for
-   the rolling 24 hours; wait until `error.retry_not_before`. Report any `5xx`
-   (`orchestrator_provider_error`, `invalid_orchestrator_output`) rather than
-   retrying in a loop or changing the page to work around it.
+   the rolling 24 hours. Report a `5xx` (`orchestrator_provider_error`,
+   `invalid_orchestrator_output`) instead of changing the page to work around it.
 
 **A green review is the sign-off.** The `200` response is Elgora's approval of
 those exact bytes, and it is all you need to publish:
