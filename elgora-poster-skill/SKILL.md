@@ -466,11 +466,10 @@ when process-local secret injection is unavailable.
    Resubmit with `--previous`. If the same rejection repeats, report the issue
    and both drafts to the Poster instead of hiding the input.
 
-4. **Repeat until `review.ready`.** New reviews use a rolling 24-hour quota;
-   same-site approvals of identical bytes are reused without another charge.
-   For `409`, wait for a running review; after failure or rejection, the CLI
-   signs a fresh request on retry. For `429`, wait until the indicated retry
-   time. Report service failures rather than repeatedly retrying or changing
+4. **Repeat until `review.ready`.** New reviews use the signing wallet's rolling
+   24-hour quota; same-site approvals of identical bytes are reused without
+   another charge. After failure or rejection, the CLI signs a fresh request
+   on retry. For `429`, wait until the indicated retry time. Report service failures rather than repeatedly retrying or changing
    the page to work around them.
 
 5. **Ask for final approval of the exact approved text.** Compare the whole page
