@@ -197,7 +197,10 @@ protocol deadlines; the bounty cannot extend them. A timestamp proves ordering,
 not that the Solver lacked earlier access to the answers.}
 
 {Where the bounty is for work done a particular way, define the conditions that
-define it.
+define it. This is not only benchmarks and reproductions: an agreed laboratory
+procedure, specified equipment or measurement method, a Poster's own model,
+dataset or reference point, and which variables are held fixed while others
+vary can each be the question being asked.
 
 Specify the models, datasets, reference points, methods, versions and test
 conditions — including what stays fixed and what may vary — wherever they
