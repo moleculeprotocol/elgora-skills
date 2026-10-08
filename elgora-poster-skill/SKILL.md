@@ -1,19 +1,17 @@
 ---
 name: elgora-poster-skill
-description: Draft, review, publish, fund, and follow an Elgora v0 bounty challenge as its Poster, through the Elgora API.
+description: Draft, review, publish, fund, and follow an Elgora bounty challenge as its Poster, on the Elgora website or through its API.
 metadata:
   version: "4.1.0"
-  updated: "2026-10-07"
+  updated: "2026-10-08"
   profile: elgora_markdown_bounty_challenge_v0
 ---
 
 # Elgora Poster Skill
 
 Help a Poster turn a scientific goal into one `bounty_challenge.md`, then
-review, publish and fund it through Elgora's HTTP API. There is nothing to
-install and no account to open: every request is authenticated by a signature
-from an EVM account the Poster controls, whose key stays with the Poster. The Poster owns the challenge and the
-wallet. Never disclose a wallet secret to Elgora or to anyone else, and fund
+review, publish and fund it. There is nothing to install and no account to
+open. The Poster owns the challenge and the wallet. Never disclose a wallet secret to Elgora or to anyone else, and fund
 only a bounty the Poster asked for.
 
 ElgoraHub owns the bounty lifecycle, escrow, pinned Guardian roster, final
@@ -175,7 +173,7 @@ everything, within the limits below.
 A Submission is at most 500 files, packs to at most 50 MiB encrypted, and
 extracts to at most 250 MB unpacked; a challenge may lower the extracted budget,
 never raise it. It is flat at every level — plain filenames, no directories, a
-v0 limitation planned to lift. Every required deliverable is submitted as bytes:
+limitation planned to lift. Every required deliverable is submitted as bytes:
 a link never stands in for one and counts as missing, though citing a source
 beside its bytes is fine.
 
@@ -189,7 +187,7 @@ Poster rather than dropping evidence or pointing at a URL.
 ## Money And Deadline
 
 The final frontmatter must contain `escrow_amount` as an integer in the escrow
-token's smallest units, using that token's decimals. Current v0 uses USDC with
+token's smallest units, using that token's decimals. Elgora uses USDC with
 6 decimals: `1 USDC` is `"1000000"`. Do not write token-unit or decimal values;
 Elgora will not convert them. Convert the approved deadline to Unix seconds in
 UTC for `submission_deadline`. Both must fit ElgoraHub's live bounds or funding
@@ -203,27 +201,23 @@ payouts. Use only `winner_take_all`.
 The review checks the page against the rules in this skill, nothing else. Know
 them before you draft:
 
-- **Form** (deterministic, instant, no review quota, every issue at once as
-  `400 invalid_bounty_challenge_spec` with a `code` and an `anchor`): valid
-  frontmatter, a published `profile`, and every `constraints:` entry a key the
-  profile lets you narrow, well formed (positive integers, extension lists,
-  filenames that satisfy the profile's filename rule) and strictly under the
-  protocol value.
-- **Judgeability** (a model reads the page the way a Guardian will, several
-  times independently; it blocks when most readings object, as
-  `400 bounty_challenge_not_ready`, one issue per problem; a concern only a
-  minority raised comes back as a non-blocking `warning`): acceptance is
-  decidable, ranking resolves to exactly one Submission, required sources and
-  versions are identified specifically enough to use, no protocol limit is
-  restated, and the page describes the judgment, never how an agent operates.
+- **Form**: valid frontmatter, a published `profile`, and every
+  `constraints:` entry a key the profile lets you narrow, well formed (positive
+  integers, extension lists, filenames that satisfy the profile's filename
+  rule) and strictly under the protocol value. Every form issue comes back at
+  once and costs no review.
+- **Judgeability**: acceptance is decidable, ranking resolves to exactly one
+  Submission, required sources and versions are identified specifically enough
+  to use, no protocol limit is restated, and the page describes the judgment,
+  never how an agent operates. A concern that does not block comes back as a
+  `warning`.
 
 ### Review until it is green
 
 1. Compute `spec_commitment` for the draft: `keccak256` of its exact UTF-8 bytes.
    Keep it; the next attempt names it.
-
-2. `POST` the review. Read every issue and fix the actual ambiguity.
-
+2. Send the draft for review, on the website or through the API. Read every
+   issue and fix the actual ambiguity.
 3. **Revise within the Poster's agreed decisions.** If a fix needs a new
    requirement or changes the purchased work, ask the Poster to decide rather
    than weakening the brief. After changing winner selection, scoring,

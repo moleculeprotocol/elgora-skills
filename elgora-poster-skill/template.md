@@ -1,4 +1,4 @@
-# Embedded V0 Challenge Template
+# Elgora Challenge Template
 
 Use the template below, preserving its frontmatter structure. Remove
 inapplicable supporting sections rather than filling them with `None`.
