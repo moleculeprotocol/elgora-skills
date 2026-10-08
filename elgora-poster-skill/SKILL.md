@@ -23,6 +23,7 @@ Verdict, settle a bounty, or invent another payout path.
 | [`template.md`](template.md) | You start a draft. |
 | [`examples/`](examples/) | You want to see a finished page. |
 | [`publish-api.md`](publish-api.md) | You publish through the API yourself. |
+| [`publish-cli.md`](publish-cli.md) | You publish through the API and can run Node.js 24. |
 
 ## Choose How The Bounty Is Published
 
@@ -34,7 +35,8 @@ Ask the Poster at the start, not at the end:
    from their wallet. You need nothing from `publish-api.md`.
 2. **You publish for the Poster.** You draft, review, publish and fund through
    Elgora's API, signing with the wallet attached to you. `publish-api.md` has
-   the requests, signing and funding steps.
+   the requests, signing and funding steps. If you can run Node.js 24,
+   `publish-cli.md` does those steps for you.
 
 ## Draft The Challenge
 
