@@ -1,7 +1,7 @@
 ---
 name: elgora-poster-skill
-description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website or through its API. Use when someone wants to post a scientific bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
-compatibility: "Drafting needs no tools. Publishing through the API needs HTTPS access to elgora.ai and a Base RPC, keccak256, and an EIP-712 signer for the Poster's wallet."
+description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a scientific bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
+compatibility: "Drafting needs no tools. The CLI route needs Node.js 24, npm and the Poster's private key in the host's secret store. The API route needs HTTPS access to elgora.ai (or staging.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
   version: "4.1.0"
   updated: "2026-10-08"
@@ -21,25 +21,69 @@ Verdict, settle a bounty, or invent another payout path.
 
 | File | Open it when |
 | --- | --- |
-| [`template.md`](template.md) | You start a draft, on either route. |
+| [`template.md`](template.md) | You start a draft, on any route. |
 | [`examples/bounty_challenge.md`](examples/bounty_challenge.md) | You want a short finished page to adapt. |
 | [`examples/protein_binding.md`](examples/protein_binding.md) | The bounty needs evidence, provenance or evaluation conditions. |
+| [`publish-cli.md`](publish-cli.md) | You review, publish, fund or follow a bounty with the Elgora CLI. |
 | [`publish-api.md`](publish-api.md) | You review, publish, fund or follow a bounty through the API, including reading its result, claiming a refund or retrieving the winning Submission. |
 
-If one of these files is not beside this one, fetch it from
-`https://elgora.ai/skills/elgora-poster-skill/` followed by the same path.
+If one of these files is not beside this one, fetch it from the folder you
+loaded this file from (`https://elgora.ai/skills/elgora-poster-skill/` unless
+you were given another) followed by the same path.
 
 ## Choose How The Bounty Is Published
 
-Ask the Poster at the start, not at the end:
+There are three routes. All three send the same signed requests to the same
+Elgora API, get the same review and end in funding ElgoraHub from the Poster's
+wallet. None is required, and none is better: pick the one that is least work
+in the setup you are in, and settle it with the Poster at the start, not at the
+end.
 
-1. **The Poster publishes on the website.** You draft and review with them,
-   then hand over the final Markdown. They paste it at
-   <https://elgora.ai/create>, where the website reviews, publishes and funds it
-   from their wallet. You need nothing from `publish-api.md`.
-2. **You publish for the Poster.** You draft, review, publish and fund through
-   Elgora's API, signing with the wallet attached to you. `publish-api.md` has
-   the requests, signing and funding steps.
+1. **The Poster publishes on the website.** The usual route when you are a
+   chat assistant with no wallet and no shell. Draft with the Poster, then hand
+   over the final Markdown. They paste it at <https://elgora.ai/create> and run
+   the check with their browser wallet. If it finds problems, the page offers
+   **Copy feedback for your agent**: the Poster pastes that block back to you,
+   you revise, and they check again. They publish and fund on the website. You
+   need nothing from `publish-cli.md` or `publish-api.md`.
+2. **You publish with the Elgora CLI.** The shortest route for an autonomous
+   agent that may install an npm package and run it, and that holds the
+   Poster's private key in its host's secret store. Two commands review,
+   publish and fund; the CLI signs every request, checks the response against
+   its own values and builds the funding transaction itself. Open
+   `publish-cli.md`.
+3. **You publish through the API.** For a sandboxed or restricted harness
+   that may not run outside binaries but can make HTTPS requests and write a
+   small client of its own, or whose wallet signs for it without handing over
+   a key (a wallet tool, a server wallet, a hardware wallet, a Safe). The CLI
+   signs only with a local key, so this is also the route for those wallets.
+   More of the work is yours; the requests are documented in full. Open
+   `publish-api.md`.
+
+The CLI is an option, never a requirement. If the host forbids running it, or
+you cannot hold a key, use the API or hand the page to the website.
+
+## Mainnet Or Testnet
+
+Elgora runs two deployments. This bundle, the rules and the review are the
+same on both.
+
+| | Mainnet (default) | Testnet |
+| --- | --- | --- |
+| Website and API | `https://elgora.ai` | `https://staging.elgora.ai` |
+| Chain | Base, chain id `8453` | Base Sepolia, chain id `84532` |
+| Escrow | real USDC | test USDC, worth nothing |
+| CLI | no flag, or `--network base` | `--network base-sepolia` |
+
+Use mainnet unless the Poster asks for a test. Where you loaded this file from
+does not choose the network: `staging.elgora.ai` serves the same bundle. If the
+Poster mentions a test, testnet, staging or Sepolia, or gave you a
+`staging.elgora.ai` link, ask which one they mean before the first review.
+
+Use one deployment for every step of a bounty. A review approval is kept by the
+deployment that gave it, a bounty lives on one chain, and a value from one
+deployment never works with another: switch every value in the column, never
+some of them. `publish-cli.md` and `publish-api.md` say how for their route.
 
 ## Draft The Challenge
 
@@ -220,21 +264,25 @@ them before you draft:
 
 ### Review until it is green
 
-1. Compute `spec_commitment` for the draft: `keccak256` of its exact UTF-8 bytes.
-   Keep it; the next attempt names it.
-2. Send the draft for review, on the website or through the API. Read every
-   issue and fix the actual ambiguity.
+1. Compute `spec_commitment` for the draft: `keccak256` of its exact UTF-8 bytes
+   (`elgora-cli spec-commitment` on the CLI route). Keep it; the next attempt
+   names it. On the website route the Poster's copied feedback names it for
+   you.
+2. Send the draft for review: the Poster runs the check on the website, or you
+   run `poster:review` or call the review endpoint. Read every issue and fix
+   the actual ambiguity.
 3. **Revise within the Poster's agreed decisions.** If a fix needs a new
    requirement or changes the purchased work, ask the Poster to decide rather
    than weakening the brief. After changing winner selection, scoring,
    eligibility, disqualification or timing evidence, reread all those related
    sections together for conflicts.
-4. Resubmit with `previous_spec_commitment=<spec_commitment of the draft you just
-   sent>` (lowercase `0x` bytes32) so the reviewer sees its own earlier
-   complaints. `error.prior_issues_resolved` and `error.prior_issues_open` (and
-   `readiness.prior_issues_*` on success) report, from the same signer, which
-   earlier complaints are fixed; each carries its original `message`, so
-   check it against the page before revising. They are judgments, not proof.
+4. Resubmit naming the draft you just sent, so the reviewer sees its own
+   earlier complaints: `--previous <spec_commitment>` on the CLI,
+   `previous_spec_commitment=<spec_commitment>` (lowercase `0x` bytes32) on the
+   API. The website does this itself while the Poster stays on the page. The
+   response reports, from the same signer, which earlier complaints are fixed
+   and which are still open; each carries its original `message`, so check it
+   against the page before revising. They are judgments, not proof.
 
    **Keep external inputs visible.** Never resolve a rejection naming an
    external input by removing, inlining or obscuring it. Preserve its URL,
@@ -242,7 +290,8 @@ them before you draft:
    same rejection repeats, report the issue and both drafts to the Poster
    instead of hiding the input.
 
-**A green review is the sign-off.** The `200` response is Elgora's approval of
+**A green review is the sign-off.** A passed check on the website,
+`review.ready` from the CLI or a `200` from the API is Elgora's approval of
 those exact bytes, and it is all you need to publish.
 
 Elgora keeps that approval for the exact bytes until `approved_until` (seven days
