@@ -143,6 +143,11 @@ Straight after a green review, publish the unchanged bytes:
 4. Keep `bounty_id`, `spec_commitment` and the creation transaction hash. They
    are public, and nothing else you need is secret.
 
+Elgora sees only the signature, never who approved it. Any limit on what you
+may spend belongs in the wallet attached to you: for example a policy that
+allows only ElgoraHub and USDC, a cap on the amount, or the wallet's own
+approval prompt. Recommend one to the Poster before the first funding.
+
 Mainnet funding escrows real USDC. A published page whose funding transaction
 never lands is harmless: no bounty exists, and publishing the same bytes again
 yields the same `spec_commitment`. After publication, any material change
