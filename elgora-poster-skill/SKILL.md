@@ -1,10 +1,11 @@
 ---
 name: elgora-poster-skill
-description: Draft, review, publish, fund, and follow an Elgora bounty challenge as its Poster, on the Elgora website or through its API.
+description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website or through its API. Use when someone wants to post a scientific bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
+compatibility: "Drafting needs no tools. Publishing through the API needs HTTPS access to elgora.ai and a Base RPC, keccak256, and an EIP-712 signer for the Poster's wallet."
 metadata:
   version: "4.1.0"
   updated: "2026-10-08"
-  profile: elgora_markdown_bounty_challenge_v0
+  elgora_profile: elgora_markdown_bounty_challenge_v0
 ---
 
 # Elgora Poster Skill
