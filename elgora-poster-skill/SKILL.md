@@ -63,6 +63,21 @@ bounty's judgment or a protocol requirement. Leave presentation and
 implementation choices open. Keep optional suggestions separate from the
 decisions the Poster has to make.
 
+Define each requirement once and refer to it elsewhere. Check that every input
+needed to produce or judge a deliverable is identifiable, and resolve any
+conflict between calling an input optional and requiring work that depends
+on it.
+
+The Poster defines success but need not know the solution in advance. Solvers
+supply implementation detail and any run instructions; Guardian operators own
+infrastructure. Do not replace a requested reproduction with a proxy for a
+different claim.
+
+Propose scientific methods and evidence requirements in plain English for the
+Poster's approval. Do not invent scientific facts or treat a proposal as an
+agreed requirement. Where an unresolved scientific decision needs specialist
+input, say so and keep the draft provisional.
+
 ## The Page Describes The Judgment, Never The Judging Machinery
 
 One test for any sentence you are about to publish: does it describe the
@@ -87,14 +102,22 @@ being measured; "run it in a sandbox with no network" configures the evaluator.
 Ask what the sentence decides, not which words it uses, and leave every
 implementation choice that does not affect the result open.
 
+The line is not wet-lab versus software, and it is not the word "procedure". It
+is who the sentence is about:
+
+- *"Run the binding assay in triplicate and report the mean with standard
+  deviation"* — the work must show this. Yours.
+- *"Accuracy is measured with no access to external label sources"* — a
+  condition on the result. Yours.
+- *"Guardians retry the download three times"* — how the evaluator runs. Not
+  yours, and it will block.
+
 Where the Poster is buying work done a particular way, draw those choices out
 rather than waiting for them: what is being tested, what stays fixed, what may
 vary, what evidence shows the conditions were met, and how a deviation or an
-inconclusive result affects acceptance. Carry forward what the Poster has
-already decided and do not reopen it. Do not invent a method, and do not demand
-this of a bounty that does not need it — many are fully defined by their
-acceptance criteria alone. Where a choice needs specialist input, say so and
-leave it with the Poster.
+inconclusive result affects acceptance. Do not invent a method, and do not
+demand this of a bounty that does not need it — many are fully defined by their
+acceptance criteria alone.
 
 Specifying a requirement is not evidence that it was met. The page states the
 conditions; the evidence rules decide whether a Submission actually satisfied
@@ -163,25 +186,7 @@ require a folder, a path, or a named directory layout — ask for the files, or
 for one archive. Where the required outputs cannot fit, resolve it with the
 Poster rather than dropping evidence or pointing at a URL.
 
-Define each requirement once and refer to it elsewhere. Check that every input
-needed to produce or judge a deliverable is identifiable, and resolve any
-conflict between calling an input optional and requiring work that depends
-on it.
-
-The Poster defines success but need not know the solution in advance. Solvers
-supply implementation detail and any run instructions; Guardian operators own
-infrastructure. Do not replace a requested reproduction with a proxy for a
-different claim.
-
-Propose scientific methods and evidence requirements in plain English for the
-Poster's approval. Do not invent scientific facts or treat a proposal as an
-agreed requirement. Where an unresolved scientific decision needs specialist
-input, say so and keep the draft provisional.
-
-See [the protein-binding example](examples/protein_binding.md) for a bounded
-analysis of published 2026 experimental results. Its selection rules are
-illustrative, not a laboratory protocol, specialist approval, or evidence of a
-new binder. Adapt the claim and rules with the Poster before publication.
+## Money And Deadline
 
 The final frontmatter must contain `escrow_amount` as an integer in the escrow
 token's smallest units, using that token's decimals. Current v0 uses USDC with
@@ -189,12 +194,7 @@ token's smallest units, using that token's decimals. Current v0 uses USDC with
 Elgora will not convert them. Convert the approved deadline to Unix seconds in
 UTC for `submission_deadline`. Both must fit ElgoraHub's live bounds or funding
 reverts. Keep reward and deadline in frontmatter; ElgoraHub calculates fees and
-payouts.
-
-Keep the challenge self-contained. It defines what a Solver must submit and how
-each Guardian judges it; it does not teach API calls, transaction encoding,
-encryption internals, wallet UI steps, or a Solver's private method. Use only
-`winner_take_all`.
+payouts. Use only `winner_take_all`.
 
 ## The Review
 
@@ -221,13 +221,9 @@ them before you draft:
 
 1. Compute `spec_commitment` for the draft: `keccak256` of its exact UTF-8 bytes.
    Keep it; the next attempt names it.
+
 2. `POST` the review. Read every issue and fix the actual ambiguity.
-   - `400 invalid_bounty_challenge_spec`: structural issues, free to fix and
-     resubmit.
-   - `400 bounty_challenge_not_ready`: `error.issues` lists each problem (`path`,
-     `message`, `code`, `anchor`, `hazard`; an issue that stands for several
-     wordings of one problem lists the others in `other_wordings`).
-   - `200`: green, below.
+
 3. **Revise within the Poster's agreed decisions.** If a fix needs a new
    requirement or changes the purchased work, ask the Poster to decide rather
    than weakening the brief. After changing winner selection, scoring,
@@ -245,25 +241,9 @@ them before you draft:
    version and hash, where supplied, and describe access declaratively. If the
    same rejection repeats, report the issue and both drafts to the Poster
    instead of hiding the input.
-5. `429 publication_review_limit_reached`: your wallet has used its reviews for
-   the rolling 24 hours. Report a `5xx` (`orchestrator_provider_error`,
-   `invalid_orchestrator_output`) instead of changing the page to work around it.
 
 **A green review is the sign-off.** The `200` response is Elgora's approval of
-those exact bytes, and it is all you need to publish:
-
-```json
-{
-  "content_record": { "spec_commitment": "0x…", "byte_length": 4210, "token_address": "0x…" },
-  "readiness": {
-    "decision": "ready",
-    "approved_until": "2026-10-14T09:00:00.000Z",
-    "warnings": [],
-    "prior_issues_resolved": [],
-    "prior_issues_open": []
-  }
-}
-```
+those exact bytes, and it is all you need to publish.
 
 Elgora keeps that approval for the exact bytes until `approved_until` (seven days
 from the review; reviewing again does not extend it). Publishing the same bytes
@@ -271,34 +251,16 @@ before then makes no second AI review. Warnings never block publication. Any edi
 to the page, however small, needs a new review, and a page past `approved_until`
 is reviewed again when you publish.
 
-### What you may still require
-
-None of that restricts the science. Any procedure that decides whether a
-Submission is *good* is yours to set, and a Guardian is expected to check the
-work against it: a required assay and its replicate count, the instrument or
-reference standard, the version of a model or dataset, which variables stay
-fixed while others vary, the statistic a result must be reported as, the
-controls that must accompany it.
-
-The line is not wet-lab versus software, and it is not the word "procedure". It
-is who the sentence is about:
-
-- *"Run the binding assay in triplicate and report the mean with standard
-  deviation"* — the work must show this. Yours.
-- *"Accuracy is measured with no access to external label sources"* — a
-  condition on the result. Yours.
-- *"Guardians retry the download three times"* — how the evaluator runs. Not
-  yours, and it will block.
-
-Describe what the work must demonstrate and under what conditions. Leave how it
-is fetched, retried, sandboxed or recovered to the people who operate that
-machinery.
-
 ## Release Snapshot
 
 This bundle is self-contained. A ready-to-edit challenge is included at
 [`examples/bounty_challenge.md`](examples/bounty_challenge.md). Its deadline is
 an example sentinel; replace every example value before publishing.
+
+See [the protein-binding example](examples/protein_binding.md) for a bounded
+analysis of published 2026 experimental results. Its selection rules are
+illustrative, not a laboratory protocol, specialist approval, or evidence of a
+new binder. Adapt the claim and rules with the Poster before publication.
 
 Use the
 [latest public Poster bundle](https://elgora.ai/skills/elgora-poster-skill/SKILL.md)

@@ -81,6 +81,32 @@ text/markdown`, no JSON wrapper), exactly one `poster_address`, and an
 API). A review request may also carry
 one `previous_spec_commitment` (below).
 
+### Review responses
+
+- `400 invalid_bounty_challenge_spec`: structural issues, free to fix and
+  resubmit.
+- `400 bounty_challenge_not_ready`: `error.issues` lists each problem (`path`,
+  `message`, `code`, `anchor`, `hazard`; an issue that stands for several
+  wordings of one problem lists the others in `other_wordings`).
+- `429 publication_review_limit_reached`: your wallet has used its reviews for
+  the rolling 24 hours. Report a `5xx` (`orchestrator_provider_error`,
+  `invalid_orchestrator_output`) instead of changing the page to work around
+  it.
+- `200`: green, below.
+
+```json
+{
+  "content_record": { "spec_commitment": "0x…", "byte_length": 4210, "token_address": "0x…" },
+  "readiness": {
+    "decision": "ready",
+    "approved_until": "2026-10-14T09:00:00.000Z",
+    "warnings": [],
+    "prior_issues_resolved": [],
+    "prior_issues_open": []
+  }
+}
+```
+
 ### Publish and fund
 
 Straight after a green review, publish the unchanged bytes:
