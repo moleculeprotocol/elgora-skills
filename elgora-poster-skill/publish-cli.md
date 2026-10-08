@@ -9,24 +9,27 @@ pastes the page into the website needs neither file.
 
 ## Install And Configure
 
-Install CLI 10 on Node.js 24 and inspect its commands:
+Install the CLI on Node.js 24 from the npm tag that matches the network agreed
+with the Poster, and inspect its commands:
 
 ```sh
-npm install --global @elgora/cli@10.0.0
+npm install --global @elgora/cli@latest   # mainnet
+npm install --global @elgora/cli@next     # testnet
 elgora-cli help poster:review
 elgora-cli help poster:publish-fund
 ```
 
-The CLI carries both deployments. It uses mainnet unless told otherwise and
-prints a notice on stderr when it fell back to that default. Pass the network
-agreed with the Poster on every command, and keep it for every step of the
-bounty:
+`latest` is the release that matches what runs on mainnet; `next` is the
+release being rolled out on the testnet first. A tag selects a version, not a
+network: still pass `--network` as below. If either `help` command reports an
+unknown command, the installed CLI is older than this skill: install again
+from the tag.
 
-| | Mainnet (default) | Testnet |
-| --- | --- | --- |
-| Flag | `--network base` | `--network base-sepolia` |
-| API it talks to | `https://elgora.ai` | `https://staging.elgora.ai` |
-| Escrow | real USDC on Base | test USDC on Base Sepolia |
+Both deployments in `SKILL.md`'s Mainnet Or Testnet table are built into the
+CLI, which selects one per command: `--network base` for mainnet, the default,
+or `--network base-sepolia` for the testnet. It prints a notice on stderr when it
+fell back to the default. Pass the network agreed with the Poster on every
+command, and keep it for every step of the bounty.
 
 The examples below use `--network base`. On the testnet, write
 `--network base-sepolia` in every command instead. Never set

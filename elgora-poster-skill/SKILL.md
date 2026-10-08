@@ -73,7 +73,6 @@ same on both.
 | Website and API | `https://elgora.ai` | `https://staging.elgora.ai` |
 | Chain | Base, chain id `8453` | Base Sepolia, chain id `84532` |
 | Escrow | real USDC | test USDC, worth nothing |
-| CLI | no flag, or `--network base` | `--network base-sepolia` |
 
 Use mainnet unless the Poster asks for a test. Where you loaded this file from
 does not choose the network: `staging.elgora.ai` serves the same bundle. If the
@@ -84,6 +83,8 @@ Use one deployment for every step of a bounty. A review approval is kept by the
 deployment that gave it, a bounty lives on one chain, and a value from one
 deployment never works with another: switch every value in the column, never
 some of them. `publish-cli.md` and `publish-api.md` say how for their route.
+Each deployment shows its own live values at `/status` on its website, for
+example <https://elgora.ai/status>.
 
 ## Draft The Challenge
 

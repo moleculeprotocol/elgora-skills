@@ -20,10 +20,15 @@ is rejected by, or lands on, the other.
 | ElgoraHub | `0x8f80d1183cd983b01b0c9ac6777cc732ec9800de` | `0x2f97b5f616495c2e923f39a46648eb783c053ad7` |
 | Escrow token (USDC, 6 decimals) | `0x833589fcd6edb6e08f4c7c32d4f71b54bda02913` | `0x036cbd53842c5426634e7929541ec2318f3dcf7e` (test USDC) |
 | Public RPC | `https://mainnet.base.org` | `https://sepolia.base.org` |
-| Alternative RPC | `https://base-rpc.publicnode.com` | `https://base-sepolia-rpc.publicnode.com` |
 
 The examples below use mainnet values. On the testnet, replace each one with
 its testnet value.
+
+This table is a copy. The deployment's own website shows its live ElgoraHub
+and escrow token at `/status` (<https://elgora.ai/status>,
+<https://staging.elgora.ai/status>), and every publication response names
+the chain and Hub it expects. If either disagrees with this table, this copy
+of the skill is out of date: stop, sign nothing, and load the latest bundle.
 
 ## Talking To The Elgora API
 
@@ -44,9 +49,8 @@ library, a hardware wallet, a Safe); the key never goes to Elgora, and this skil
 does not need to hold it.
 
 What must be signed, as `ApiRequestApproval` in the domain `{ name: "Elgora",
-version: "1", chainId: <chain id>, verifyingContract: <ElgoraHub> }` of the
-deployment (on mainnet `8453` and
-`0x8f80d1183cd983b01b0c9ac6777cc732ec9800de`):
+version: "1", chainId: <chain id>, verifyingContract: <ElgoraHub> }`, with
+the deployment's chain id and ElgoraHub from the table above:
 
 | Field | Value |
 | --- | --- |
@@ -59,8 +63,9 @@ deployment (on mainnet `8453` and
 Take the block from the deployment's chain, through either RPC in the table:
 read the head with `eth_blockNumber`, then the block three behind it with
 `eth_getBlockByNumber` (its `number` and `hash`). Elgora's own default is the
-public RPC. Public endpoints are rate limited; use your own provider if they
-throttle you. A block from the other chain makes the signature fail.
+public RPC in the table. Public endpoints are rate limited; use your own
+provider, or another public one such as PublicNode's, if they throttle you. A
+block from the other chain makes the signature fail.
 
 Present it on every request as
 `Authorization: Elgora-Approval <base64(address~signature~blockNumber~blockHash)>`.
@@ -148,8 +153,8 @@ Straight after a green review, publish the unchanged bytes:
    ```
 
 2. **Check before you sign anything.** `spec_commitment` must equal the one you
-   computed, `chain_id` must be the deployment's chain id (`8453` on mainnet),
-`to` must be the deployment's ElgoraHub, and
+   computed, `chain_id` must be the deployment's chain id, `to` must be the
+deployment's ElgoraHub, and
    `escrow_amount` and `submission_deadline` must match your frontmatter. Stop
    if any differs; a response that disagrees with you must not move your money.
 3. Fund from the Poster's wallet on the deployment's chain, which needs the
