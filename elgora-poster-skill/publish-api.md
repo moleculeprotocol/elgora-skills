@@ -103,9 +103,10 @@ are fixed.
   `message`, `code`, `anchor`, `hazard`; an issue that stands for several
   wordings of one problem lists the others in `other_wordings`).
 - `429 publication_review_limit_reached`: your wallet has used its reviews for
-  the rolling 24 hours. Report a `5xx` (`orchestrator_provider_error`,
-  `invalid_orchestrator_output`) instead of changing the page to work around
-  it.
+  the rolling 24 hours; wait until `error.retry_not_before`.
+- `5xx` (`orchestrator_provider_error`, `invalid_orchestrator_output`): the
+  review did not run to a judgment. Report it instead of changing the page to
+  work around it.
 - `200`: green, below.
 
 ```json

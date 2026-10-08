@@ -71,5 +71,5 @@ CMP-005,6.8
 
 ## Out Of Scope
 
-Chemical interpretation, experimental follow-up, predictive modeling, and use
-of data not supplied with this challenge are out of scope.
+Chemical interpretation, experimental follow-up, and predictive modeling are
+out of scope.
