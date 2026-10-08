@@ -1,13 +1,30 @@
 # Publishing Through The Elgora API
 
-Open this file only when you publish for the Poster. A Poster who pastes the
-page into the website needs none of it.
+Open this file only when you publish for the Poster through the API. A Poster
+who pastes the page into the website needs none of it, and an agent that may
+run the Elgora CLI can let `publish-cli.md` do all of this in two commands.
+
+## Pick The Deployment
+
+`deployments.json` beside this file lists every deployment's exact values:
+`api_base_url`, `audience`, `chain_id`, `elgora_hub`, `escrow_token` (USDC,
+6 decimals; test USDC on the testnet), `public_rpc_url` and `status_url`. It
+is generated from Elgora's own records whenever the bundle is published. Take
+the one entry for the network agreed with the Poster (`"network": "mainnet"`
+unless they asked for a test) and use it for every request, signature and
+transaction of the bounty. Never mix entries: a signature, review approval or
+transaction made for one deployment is rejected by, or lands on, the other.
+Read the values from the file; never type them from memory.
+
+Each deployment's `status_url` shows its live ElgoraHub and escrow token, and
+every publication response names the chain and Hub it expects. If either
+disagrees with your `deployments.json`, your copy of the bundle is out of
+date: stop, sign nothing, and load the latest bundle.
 
 ## Talking To The Elgora API
 
-Everything this skill does with Elgora is plain HTTPS against
-`https://elgora.ai` (Base mainnet). There is
-no CLI to install, no SDK and no account. Reads that grant no authority, such as
+Everything this skill does with Elgora is plain HTTPS against the deployment's
+`api_base_url`. This route needs no CLI, no SDK and no account. Reads that grant no authority, such as
 a bounty's public state, are unauthenticated `GET`s. Every call that acts for a
 wallet is authenticated as below. Bodies are sent raw: the challenge as
 `text/markdown`, other payloads as JSON with `snake_case` fields. Errors come
@@ -23,29 +40,23 @@ library, a hardware wallet, a Safe); the key never goes to Elgora, and this skil
 does not need to hold it.
 
 What must be signed, as `ApiRequestApproval` in the domain `{ name: "Elgora",
-version: "1", chainId: 8453, verifyingContract:
-0x8f80d1183cd983b01b0c9ac6777cc732ec9800de }`:
+version: "1", chainId: <chain_id>, verifyingContract: <elgora_hub> }`, with
+the deployment's values:
 
 | Field | Value |
 | --- | --- |
 | `endpointId` | `"<METHOD> <pathname>"`, method uppercased, no host, no query |
-| `audience` | the lowercased host, `elgora.ai` |
+| `audience` | the deployment's `audience`: the lowercased host of its `api_base_url` |
 | `bodyHash` | `keccak256` of the exact body bytes (`keccak256("")` for none) |
 | `query` | the query string through `URLSearchParams`, so `poster_address` and any `previous_spec_commitment` are signed |
 | `blockNumber`, `blockHash` | a recent Base block, three behind the tip |
 
-Take the block from any public Base RPC: read the head with
-`eth_blockNumber`, then the block three behind it with `eth_getBlockByNumber`
-(its `number` and `hash`). Elgora's own default is the first of these.
-
-| | Mainnet (Base, `8453`) |
-| --- | --- |
-| Public RPC | `https://mainnet.base.org` |
-| Alternative | `https://base-rpc.publicnode.com` |
-
-Public endpoints are rate limited; use your own provider if they throttle you.
-The block must be on the chain the request targets, or the signature is
-rejected.
+Take the block from the deployment's chain, through its `public_rpc_url` (Elgora's
+own default) or any RPC for that chain: read the head with `eth_blockNumber`,
+then the block three behind it with `eth_getBlockByNumber` (its `number` and
+`hash`). Public endpoints are rate limited; use your own
+provider, or another public one such as PublicNode's, if they throttle you. A
+block from the other chain makes the signature fail.
 
 Present it on every request as
 `Authorization: Elgora-Approval <base64(address~signature~blockNumber~blockHash)>`.
@@ -67,8 +78,8 @@ scheme, with a complete client, is on the public documentation site at
 
 ## Review, Publish And Fund
 
-Everything below happens over HTTPS against `https://elgora.ai`, on Base
-mainnet, and funding escrows real USDC. Two endpoints take the page:
+Everything below happens over HTTPS against the deployment's `api_base_url`. On
+mainnet, funding escrows real USDC. Two endpoints take the page:
 
 | Step | Request |
 | --- | --- |
@@ -78,8 +89,11 @@ mainnet, and funding escrows real USDC. Two endpoints take the page:
 Both take the raw `bounty_challenge.md` bytes as the body (`Content-Type:
 text/markdown`, no JSON wrapper), exactly one `poster_address`, and an
 `Authorization` header signed by that address (see Talking To The Elgora
-API). A review request may also carry
-one `previous_spec_commitment` (below).
+API). A review request may also carry one `previous_spec_commitment`: the
+`spec_commitment` of the draft you sent before, as lowercase `0x` bytes32.
+Then `error.prior_issues_resolved` and `error.prior_issues_open` (and
+`readiness.prior_issues_*` on success) say which of that draft's complaints
+are fixed.
 
 ### Review responses
 
@@ -130,12 +144,13 @@ Straight after a green review, publish the unchanged bytes:
    ```
 
 2. **Check before you sign anything.** `spec_commitment` must equal the one you
-   computed, `chain_id` must be 8453, `to` must be the ElgoraHub above, and
+   computed, `chain_id` must be the deployment's `chain_id`, `to` must be its
+`elgora_hub`, and
    `escrow_amount` and `submission_deadline` must match your frontmatter. Stop
    if any differs; a response that disagrees with you must not move your money.
-3. Fund from the Poster's wallet, which needs the escrow amount in USDC
-   (`0x833589fcd6edb6e08f4c7c32d4f71b54bda02913`, 6 decimals) and some ETH for
-   gas: send `approve(<ElgoraHub>, escrow_amount)` on the USDC contract, then the
+3. Fund from the Poster's wallet on the deployment's chain, which needs the
+   escrow amount in the deployment's `escrow_token` and some ETH for gas: send
+   `approve(<elgora_hub>, escrow_amount)` on `escrow_token`, then the
    `createBounty(bytes32 specCommitment, uint256 escrowAmount, uint64
    submissionDeadline)` call (`data` in the response encodes it). The bounty
    exists when the `BountyCreated` event arrives; its `bountyId` is the bounty's
@@ -148,7 +163,8 @@ may spend belongs in the wallet attached to you: for example a policy that
 allows only ElgoraHub and USDC, a cap on the amount, or the wallet's own
 approval prompt. Recommend one to the Poster before the first funding.
 
-Mainnet funding escrows real USDC. A published page whose funding transaction
+Mainnet funding escrows real USDC; testnet funding escrows test USDC from a
+faucet and pays nothing of value. A published page whose funding transaction
 never lands is harmless: no bounty exists, and publishing the same bytes again
 yields the same `spec_commitment`. After publication, any material change
 requires a new bounty and a new `spec_commitment`.
