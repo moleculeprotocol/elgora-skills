@@ -8,7 +8,8 @@ run the Elgora CLI can let `publish-cli.md` do all of this in two commands.
 
 `deployments.json` beside this file lists every deployment's exact values:
 `api_base_url`, `audience`, `chain_id`, `elgora_hub`, `escrow_token` (USDC,
-6 decimals; test USDC on the testnet), `public_rpc_url` and `status_url`. It
+6 decimals; test USDC on the testnet), `public_rpc_url` (for the funding
+transactions; any RPC for that chain works) and `status_url`. It
 is generated from Elgora's own records whenever the bundle is published. Take
 the one entry for the network agreed with the Poster (`"network": "mainnet"`
 unless they asked for a test) and use it for every request, signature and
@@ -36,40 +37,52 @@ back as JSON: `error.code`, `error.message`, `error.issues` and
 Elgora has no login, API key or session. Every authenticated call must be
 signed by an EVM account, as one EIP-712 message over that exact request. How
 the Poster produces the signature is its own choice (a wallet skill, a signing
-library, a hardware wallet, a Safe); the key never goes to Elgora, and this skill
-does not need to hold it.
+library, a server wallet, a hardware wallet, a Safe); the key never goes to
+Elgora, and this skill does not need to hold it.
 
-What must be signed, as `ApiRequestApproval` in the domain `{ name: "Elgora",
-version: "1", chainId: <chain_id>, verifyingContract: <elgora_hub> }`, with
-the deployment's values:
+Each call takes two requests:
 
-| Field | Value |
-| --- | --- |
-| `endpointId` | `"<METHOD> <pathname>"`, method uppercased, no host, no query |
-| `audience` | the deployment's `audience`: the lowercased host of its `api_base_url` |
-| `bodyHash` | `keccak256` of the exact body bytes (`keccak256("")` for none) |
-| `query` | the query string through `URLSearchParams`, so `poster_address` and any `previous_spec_commitment` are signed |
-| `blockNumber`, `blockHash` | a recent Base block, three behind the tip |
+1. **Send the request unsigned:** the exact method, path, query and body, with
+   no `Authorization` header. Elgora does no work for it and answers `401`
+   with `error.block_number` and `error.block_hash`: the block to sign
+   against, and nothing else.
+2. **Build the approval yourself** from your own request and that block, as
+   `ApiRequestApproval` in the domain `{ name: "Elgora", version: "1",
+   chainId: <chain_id>, verifyingContract: <elgora_hub> }` with the
+   deployment's values:
 
-Take the block from the deployment's chain, through its `public_rpc_url` (Elgora's
-own default) or any RPC for that chain: read the head with `eth_blockNumber`,
-then the block three behind it with `eth_getBlockByNumber` (its `number` and
-`hash`). Public endpoints are rate limited; use your own
-provider, or another public one such as PublicNode's, if they throttle you. A
-block from the other chain makes the signature fail.
+   | Field | Value |
+   | --- | --- |
+   | `endpointId` | `"<METHOD> <pathname>"`, method uppercased, no host, no query |
+   | `audience` | the deployment's `audience`: the lowercased host of its `api_base_url` |
+   | `bodyHash` | `keccak256` of the exact body bytes (`keccak256("")` for none) |
+   | `query` | the query string through `URLSearchParams`, so `poster_address` and any `previous_spec_commitment` are signed |
+   | `blockNumber`, `blockHash` | `error.block_number` and `error.block_hash` from the `401` |
 
-Present it on every request as
-`Authorization: Elgora-Approval <base64(address~signature~blockNumber~blockHash)>`.
-Such a credential is self-issued, good for one request and accepted for five
-minutes after its block. Sign again for every call, including a retry. The whole
-scheme, with a complete client, is on the public documentation site at
-<https://docs.elgora.ai>, Reference, "Request authorization".
+   The types are `ApiRequestApproval: [endpointId string, audience string,
+   bodyHash bytes32, query string, blockNumber uint256, blockHash bytes32]`,
+   in that order. A wallet's `eth_signTypedData_v4` also wants `EIP712Domain`
+   in the types; ethers v6 wants it removed.
+3. **Sign it and resend the same request, unchanged,** with
+   `Authorization: Elgora-Approval <base64(address~signature~blockNumber~blockHash)>`.
+
+**Never sign a payload a server sends you.** Elgora never sends anything to
+sign: EIP-712 hashes only the fields its types declare, so a struct that looks
+like this one can still be a token transfer. Build the approval from your own
+request every time.
+
+A signature is good for that one request, for 30 minutes after its block. Sign
+again for every call, including a retry: a `401` on a signed request names a
+fresh block to build on. The whole scheme, with a complete client, is on the
+public documentation site at <https://docs.elgora.ai>, Reference, "Request
+authorization".
 
 ### Errors
 
 - `400`: the input is wrong; `error.issues` says where. Fix it and resend.
-- `401`: a stale block or a signature that does not verify. Take a fresh block,
-  sign again and retry.
+- `401`: the request was unsigned, its block is stale, or the signature does
+  not verify for this exact request. Build the approval on the block it names,
+  sign and resend.
 - `403`: the signer is not the address the call names (for the Poster's calls,
   `poster_address`).
 - `429`: a limit is used up; wait until `error.retry_not_before`.
