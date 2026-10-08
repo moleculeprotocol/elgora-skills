@@ -95,8 +95,8 @@ criterion, referring to Evidence, Provenance and Verification where further
 detail is needed. Explain how missing, incomplete or conflicting results affect
 acceptance where relevant. Make each decision clear enough to apply from the
 page alone; put additional comparison conditions in Evaluation Procedure when
-needed. Resolve ambiguous terms with the Poster before the review.
-Use concrete descriptions or examples where they clarify the expected result.}
+needed. Use concrete descriptions or examples where they clarify the expected
+result.}
 
 {Where relevant, state whether negative or inconclusive results satisfy the
 bounty. Distinguish reliable work that finds no effect from evidence that
@@ -134,18 +134,15 @@ verification procedure.}
 and conflicting evidence, and distinguish what the results establish from
 what they only suggest.}
 
-{Check required evidence before ranking: a better score cannot compensate for
-unsupported claims. Historical-data analysis needs traceable sources and
-faithful analysis, not proof of new lab work when it makes no such claim.
-Omit this subsection when the deliverable itself supplies all evidence needed
-to judge the task.}
+{Check required evidence before ranking. Historical-data analysis needs
+traceable sources and faithful analysis, not proof of new lab work when it
+makes no such claim. Omit this subsection when the deliverable itself supplies
+all evidence needed to judge the task.}
 
 ### Scoring (When Applicable)
 {For a score, define the inputs, calculation and how the result affects
 acceptance or ranking. Include units, thresholds, rounding or a worked example
-when they clarify that decision. Resolve missing or conflicting results when
-they affect acceptance. Refer to rules elsewhere rather than repeating them.
-Remove this subsection for a task that does not need it.}
+when they clarify that decision.}
 
 {When applicable, define how partially correct predictions, confidence estimates
 and permitted abstentions affect acceptance and ranking. Distinguish a missing
@@ -162,7 +159,7 @@ clarity, usefulness or traceability, state which standards take priority, and
 resolve remaining ties. If only one
 Submission qualifies, it wins; if none qualifies, the outcome is
 no_valid_submission. Keep these rules consistent with acceptance criteria and
-the evaluation procedure, and settle them with the Poster before the review.}
+the evaluation procedure.}
 
 ## Disqualification Conditions
 {State which failures make a Submission ineligible regardless of its score.
@@ -179,7 +176,7 @@ the applicable acceptance criterion. Do not treat those results as
 automatically disqualifying.}
 
 ## Out Of Scope
-{State relevant exclusions or restrictions. Remove this section if unnecessary.}
+{State relevant exclusions or restrictions.}
 
 ## Evaluation Procedure (When Applicable)
 {When the bounty requires improvement over a baseline, identify the reference
@@ -200,11 +197,7 @@ protocol deadlines; the bounty cannot extend them. A timestamp proves ordering,
 not that the Solver lacked earlier access to the answers.}
 
 {Where the bounty is for work done a particular way, define the conditions that
-define it. This is not only benchmarks and reproductions: an agreed laboratory
-procedure, specified equipment or measurement method, a Poster's own model,
-dataset or reference point, and which variables are held fixed while others
-vary can each be the question being asked. Changing them produces results that
-answer a different question or cannot be compared at all.
+define it.
 
 Specify the models, datasets, reference points, methods, versions and test
 conditions — including what stays fixed and what may vary — wherever they

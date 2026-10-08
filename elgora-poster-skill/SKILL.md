@@ -74,7 +74,8 @@ different claim.
 Propose scientific methods and evidence requirements in plain English for the
 Poster's approval. Do not invent scientific facts or treat a proposal as an
 agreed requirement. Where an unresolved scientific decision needs specialist
-input, say so and keep the draft provisional.
+input, say so and keep the draft provisional. Resolve ambiguous terms and open
+decisions with the Poster before the review.
 
 ## The Page Describes The Judgment, Never The Judging Machinery
 
