@@ -26,6 +26,7 @@ Verdict, settle a bounty, or invent another payout path.
 | [`examples/protein_binding.md`](examples/protein_binding.md) | The bounty needs evidence, provenance or evaluation conditions. |
 | [`publish-cli.md`](publish-cli.md) | You review, publish, fund or follow a bounty with the Elgora CLI. |
 | [`publish-api.md`](publish-api.md) | You review, publish, fund or follow a bounty through the API, including reading its result, claiming a refund or retrieving the winning Submission. |
+| `deployments.json` | You need a deployment's exact chain id, ElgoraHub, escrow token, signing audience, RPC or status page. Generated when the bundle is published. |
 
 If one of these files is not beside this one, fetch it from the folder you
 loaded this file from (`https://elgora.ai/skills/elgora-poster-skill/` unless
@@ -71,7 +72,7 @@ same on both.
 | | Mainnet (default) | Testnet |
 | --- | --- | --- |
 | Website and API | `https://elgora.ai` | `https://staging.elgora.ai` |
-| Chain | Base, chain id `8453` | Base Sepolia, chain id `84532` |
+| Chain | Base | Base Sepolia |
 | Escrow | real USDC | test USDC, worth nothing |
 
 Use mainnet unless the Poster asks for a test. Where you loaded this file from
@@ -82,9 +83,8 @@ Poster mentions a test, testnet, staging or Sepolia, or gave you a
 Use one deployment for every step of a bounty. A review approval is kept by the
 deployment that gave it, a bounty lives on one chain, and a value from one
 deployment never works with another: switch every value in the column, never
-some of them. `publish-cli.md` and `publish-api.md` say how for their route.
-Each deployment shows its own live values at `/status` on its website, for
-example <https://elgora.ai/status>.
+some of them. `publish-cli.md` and `publish-api.md` say how for their route;
+`deployments.json` holds each deployment's exact values.
 
 ## Draft The Challenge
 

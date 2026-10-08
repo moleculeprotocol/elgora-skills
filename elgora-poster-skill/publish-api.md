@@ -6,34 +6,25 @@ run the Elgora CLI can let `publish-cli.md` do all of this in two commands.
 
 ## Pick The Deployment
 
-Every value below belongs to one deployment. Take the whole column for the
-network agreed with the Poster (mainnet unless they asked for a test) and use
-it for every request, signature and transaction of the bounty. Never mix
-columns: a signature, review approval or transaction made for one deployment
-is rejected by, or lands on, the other.
+`deployments.json` beside this file lists every deployment's exact values:
+`api_base_url`, `audience`, `chain_id`, `elgora_hub`, `escrow_token` (USDC,
+6 decimals; test USDC on the testnet), `public_rpc_url` and `status_url`. It
+is generated from Elgora's own records whenever the bundle is published. Take
+the one entry for the network agreed with the Poster (`"network": "mainnet"`
+unless they asked for a test) and use it for every request, signature and
+transaction of the bounty. Never mix entries: a signature, review approval or
+transaction made for one deployment is rejected by, or lands on, the other.
+Read the values from the file; never type them from memory.
 
-| | Mainnet (default) | Testnet |
-| --- | --- | --- |
-| API base URL | `https://elgora.ai` | `https://staging.elgora.ai` |
-| `audience` | `elgora.ai` | `staging.elgora.ai` |
-| Chain | Base, `8453` | Base Sepolia, `84532` |
-| ElgoraHub | `0x8f80d1183cd983b01b0c9ac6777cc732ec9800de` | `0x2f97b5f616495c2e923f39a46648eb783c053ad7` |
-| Escrow token (USDC, 6 decimals) | `0x833589fcd6edb6e08f4c7c32d4f71b54bda02913` | `0x036cbd53842c5426634e7929541ec2318f3dcf7e` (test USDC) |
-| Public RPC | `https://mainnet.base.org` | `https://sepolia.base.org` |
-
-The examples below use mainnet values. On the testnet, replace each one with
-its testnet value.
-
-This table is a copy. The deployment's own website shows its live ElgoraHub
-and escrow token at `/status` (<https://elgora.ai/status>,
-<https://staging.elgora.ai/status>), and every publication response names
-the chain and Hub it expects. If either disagrees with this table, this copy
-of the skill is out of date: stop, sign nothing, and load the latest bundle.
+Each deployment's `status_url` shows its live ElgoraHub and escrow token, and
+every publication response names the chain and Hub it expects. If either
+disagrees with your `deployments.json`, your copy of the bundle is out of
+date: stop, sign nothing, and load the latest bundle.
 
 ## Talking To The Elgora API
 
 Everything this skill does with Elgora is plain HTTPS against the deployment's
-API base URL. This route needs no CLI, no SDK and no account. Reads that grant no authority, such as
+`api_base_url`. This route needs no CLI, no SDK and no account. Reads that grant no authority, such as
 a bounty's public state, are unauthenticated `GET`s. Every call that acts for a
 wallet is authenticated as below. Bodies are sent raw: the challenge as
 `text/markdown`, other payloads as JSON with `snake_case` fields. Errors come
@@ -49,21 +40,21 @@ library, a hardware wallet, a Safe); the key never goes to Elgora, and this skil
 does not need to hold it.
 
 What must be signed, as `ApiRequestApproval` in the domain `{ name: "Elgora",
-version: "1", chainId: <chain id>, verifyingContract: <ElgoraHub> }`, with
-the deployment's chain id and ElgoraHub from the table above:
+version: "1", chainId: <chain_id>, verifyingContract: <elgora_hub> }`, with
+the deployment's values:
 
 | Field | Value |
 | --- | --- |
 | `endpointId` | `"<METHOD> <pathname>"`, method uppercased, no host, no query |
-| `audience` | the lowercased host of the API base URL: `elgora.ai`, or `staging.elgora.ai` on the testnet |
+| `audience` | the deployment's `audience`: the lowercased host of its `api_base_url` |
 | `bodyHash` | `keccak256` of the exact body bytes (`keccak256("")` for none) |
 | `query` | the query string through `URLSearchParams`, so `poster_address` and any `previous_spec_commitment` are signed |
 | `blockNumber`, `blockHash` | a recent Base block, three behind the tip |
 
-Take the block from the deployment's chain, through either RPC in the table:
-read the head with `eth_blockNumber`, then the block three behind it with
-`eth_getBlockByNumber` (its `number` and `hash`). Elgora's own default is the
-public RPC in the table. Public endpoints are rate limited; use your own
+Take the block from the deployment's chain, through its `public_rpc_url` (Elgora's
+own default) or any RPC for that chain: read the head with `eth_blockNumber`,
+then the block three behind it with `eth_getBlockByNumber` (its `number` and
+`hash`). Public endpoints are rate limited; use your own
 provider, or another public one such as PublicNode's, if they throttle you. A
 block from the other chain makes the signature fail.
 
@@ -87,7 +78,7 @@ scheme, with a complete client, is on the public documentation site at
 
 ## Review, Publish And Fund
 
-Everything below happens over HTTPS against the deployment's API base URL. On
+Everything below happens over HTTPS against the deployment's `api_base_url`. On
 mainnet, funding escrows real USDC. Two endpoints take the page:
 
 | Step | Request |
@@ -153,13 +144,13 @@ Straight after a green review, publish the unchanged bytes:
    ```
 
 2. **Check before you sign anything.** `spec_commitment` must equal the one you
-   computed, `chain_id` must be the deployment's chain id, `to` must be the
-deployment's ElgoraHub, and
+   computed, `chain_id` must be the deployment's `chain_id`, `to` must be its
+`elgora_hub`, and
    `escrow_amount` and `submission_deadline` must match your frontmatter. Stop
    if any differs; a response that disagrees with you must not move your money.
 3. Fund from the Poster's wallet on the deployment's chain, which needs the
-   escrow amount in the deployment's escrow token and some ETH for gas: send
-   `approve(<ElgoraHub>, escrow_amount)` on the escrow token, then the
+   escrow amount in the deployment's `escrow_token` and some ETH for gas: send
+   `approve(<elgora_hub>, escrow_amount)` on `escrow_token`, then the
    `createBounty(bytes32 specCommitment, uint256 escrowAmount, uint64
    submissionDeadline)` call (`data` in the response encodes it). The bounty
    exists when the `BountyCreated` event arrives; its `bountyId` is the bounty's
