@@ -20,9 +20,13 @@ Verdict, settle a bounty, or invent another payout path.
 
 | File | Open it when |
 | --- | --- |
-| [`template.md`](template.md) | You start a draft. |
-| [`examples/`](examples/) | You want to see a finished page. |
-| [`publish-api.md`](publish-api.md) | You publish through the API yourself. |
+| [`template.md`](template.md) | You start a draft, on either route. |
+| [`examples/bounty_challenge.md`](examples/bounty_challenge.md) | You want a short finished page to adapt. |
+| [`examples/protein_binding.md`](examples/protein_binding.md) | The bounty needs evidence, provenance or evaluation conditions. |
+| [`publish-api.md`](publish-api.md) | You review, publish, fund or follow a bounty through the API, including reading its result, claiming a refund or retrieving the winning Submission. |
+
+If one of these files is not beside this one, fetch it from
+`https://elgora.ai/skills/elgora-poster-skill/` followed by the same path.
 
 ## Choose How The Bounty Is Published
 
@@ -257,6 +261,6 @@ analysis of published 2026 experimental results. Its selection rules are
 illustrative, not a laboratory protocol, specialist approval, or evidence of a
 new binder. Adapt the claim and rules with the Poster before publication.
 
-Use the
-[latest public Poster bundle](https://elgora.ai/skills/elgora-poster-skill/SKILL.md)
-when a newer release is available.
+Compare this file's `metadata.version` with the
+[latest public Poster bundle](https://elgora.ai/skills/elgora-poster-skill/SKILL.md).
+If the public copy is newer, use it and the files beside it instead.
