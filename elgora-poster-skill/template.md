@@ -145,8 +145,7 @@ acceptance or ranking. Include units, thresholds, rounding or a worked example
 when they clarify that decision.}
 
 {When applicable, define how partially correct predictions, confidence estimates
-and permitted abstentions affect acceptance and ranking. Distinguish a missing
-required prediction from unavailable reference evidence.}
+and permitted abstentions affect acceptance and ranking.}
 
 ## How is the winner selected?
 {Define how one winning Submission is selected from those meeting all

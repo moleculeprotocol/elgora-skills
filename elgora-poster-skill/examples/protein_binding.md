@@ -43,21 +43,21 @@ No executable is required.
 ### Access And Known Limitations
 
 Solvers and Guardians use only `b2b_summary.csv`, published in the study authors'
-`kosonocky/bits-to-binders` repository as Adaptyv SPR results. Retrieve it by public
-HTTPS GET, with no login, signature, payment, or access secret:
+`kosonocky/bits-to-binders` repository as Adaptyv SPR results. It is public over
+HTTPS, with no login, signature, payment, or access secret:
 
 https://raw.githubusercontent.com/kosonocky/bits-to-binders/43eeeaf7e6ab629e796c9fe8d20b0ef70a3610d9/scripts/adaptyv/b2b_summary.csv
 
 SHA-256: `625f0af9f9232303520ffac826c73377f0b82160e59f83bb360b7626d0b3ceea`.
 
 The Poster selects that repository and revision as the source of this historical
-analysis. Guardians obtain the file themselves and check its hash; a
-Solver-provided copy alone is insufficient. This verifies the selected release,
-not the experiment's authenticity or physical sample identity. Within the table,
-link rows by exact `name` and `sequence`; do not claim that this establishes an
-independently verified physical chain of custody. No other file is needed.
-Never substitute later revisions. Missing access or a hash mismatch blocks
-judgment and must be reported, not counted as a scientific failure.
+analysis. The authoritative input is the file with that SHA-256; bytes with any
+other hash, including later revisions, are not this input, and a
+Solver-provided copy alone is insufficient. The hash identifies the selected
+release, not the experiment's authenticity or physical sample identity. Within
+the table, link rows by exact `name` and `sequence`; do not claim that this
+establishes an independently verified physical chain of custody. No other file
+is needed.
 
 ## Acceptance Criteria
 
@@ -121,14 +121,13 @@ data are outside this historical analysis.
 ### Allowed Resources And Reuse
 
 Use only the specified input for the analysis. No particular Solver method is
-required. Judge the submitted results under the stated checks.
+required.
 
 ## Evaluation Procedure And Limits
 
 The audit is reproduced from `b2b_summary.csv` alone. The authoritative file
 has 304 data records and 47,902 bytes; a file with a different record count is
-not the specified input and cannot settle this bounty. All 304 records are in
-scope.
+not the specified input. All 304 records are in scope.
 
 The check runs in three parts: the input source and its row-to-candidate links,
 then the eligibility audit, then the calculation and the selected candidate. A
