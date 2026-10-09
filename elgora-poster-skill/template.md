@@ -154,11 +154,12 @@ evidence or attributes used to compare eligible Submissions. If using scores,
 define the calculation, weights and ranking order, or refer to their definition
 above. Numerical scores are optional. For qualitative judging, explain what
 makes one eligible Submission better than another. Define terms such as
-clarity, usefulness or traceability, state which standards take priority, and
-resolve remaining ties. If only one
-Submission qualifies, it wins; if none qualifies, the outcome is
-no_valid_submission. Keep these rules consistent with acceptance criteria and
-the evaluation procedure.}
+clarity, usefulness or traceability, and state which standards take priority.
+If any Submission qualifies, select exactly one winner. Define comparisons and
+tie groups unambiguously, and ensure every remaining tie reaches a final unique
+tie-break, such as ascending lowercase Solver address. If none qualifies, the
+outcome is no_valid_submission. Keep these rules consistent with acceptance
+criteria and the evaluation procedure.}
 
 ## Disqualification Conditions
 {State which failures make a Submission ineligible regardless of its score.

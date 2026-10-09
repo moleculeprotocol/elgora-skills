@@ -3,7 +3,7 @@ name: elgora-poster-skill
 description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a scientific bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
 compatibility: "Drafting needs no tools. The CLI route needs Node.js 24, npm and the Poster's private key in the host's secret store. The API route needs HTTPS access to elgora.ai (or staging.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
-  version: "4.2.0"
+  version: "4.3.0"
   updated: "2026-10-09"
   elgora_profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -102,7 +102,9 @@ supporting sections stay expandable.
 Read the whole brief and current draft before asking questions. Carry forward
 decisions already supplied, and ask again only when a contradiction or a newly
 identified consequence needs clarification. Apply fixed Elgora rules without
-presenting them as choices.
+presenting them as choices: one winner takes all, and exactly one Submission
+wins whenever any qualifies. The ranking and its tie-break are the Poster's; if
+the agreed ranking lacks a complete tie-break, ask before the first review.
 
 Establish what the Poster is purchasing, and connect the deliverables,
 evidence, acceptance criteria and winner rules to that result. Ask about
