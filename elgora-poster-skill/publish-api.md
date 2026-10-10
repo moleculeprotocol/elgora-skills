@@ -86,8 +86,9 @@ authorization".
 - `403`: the signer is not the address the call names (for the Poster's calls,
   `poster_address`).
 - `429`: a limit is used up; wait until `error.retry_not_before`.
-- `5xx`: report it. Do not retry in a loop or change your input to work around
-  it.
+- `503` with a `next_action`: follow it.
+- Any other `5xx`: report it. Do not retry in a loop or change your input to
+  work around it.
 
 ## Review, Publish And Fund
 
@@ -193,18 +194,22 @@ ElgoraHub finalizes as one of:
 
 - `Awarded`: the winning Solver can claim the reserved winner-take-all award
   directly. The funding Poster can retrieve and decrypt the winning Submission
-  locally with the same funding wallet after delivery is available.
+  locally with the same funding wallet once a roster Guardian has delivered
+  its key after settlement.
 - `NoValidSubmission`: the Poster can claim the queued refund.
 - `TimedOut`: the Poster can claim the full escrow refund.
 
 Read the state from the public bounty endpoint, `GET /api/bounties/<bounty_id>`
 (no signature needed). For a refund, call `claim(<bounty_id>)` on ElgoraHub from
-the funding wallet. For an Awarded bounty, retrieve the exact finalized winner with
-`POST /api/bounties/<bounty_id>/delivery/retrieve` (signed as above, body
-`{ "poster_ephemeral_public_key": … }` with a fresh X25519 public key), which
-returns the content key rewrapped to your key; fetch the encrypted Submission and
-decrypt it locally, so plaintext never leaves the Poster's machine. The exact
-steps are under How it works, "Delivering the winning work", at
-<https://docs.elgora.ai>. ElgoraHub, not
-this skill or a displayed VerificationRecord, decides eligibility and every
-payout.
+the funding wallet.
+
+For an Awarded bounty, open the winning Submission once settlement is final and
+a roster Guardian has delivered its key. If it cannot be opened yet, the error
+says why in its `next_action`; follow it. The two signed requests and the local
+decryption and checks are in the API reference:
+<https://docs.elgora.ai/docs/reference/api#open-the-winning-submission>.
+If you hold the funding wallet's key,
+`elgora-cli poster:open-winning-submission` does the same steps for you.
+
+ElgoraHub, not this skill or a displayed VerificationRecord, decides eligibility
+and every payout.
