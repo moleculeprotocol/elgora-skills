@@ -158,9 +158,10 @@ clarity, usefulness or traceability, and state which standards take priority.
 If any Submission qualifies, select exactly one winner. Define comparisons and
 tie groups unambiguously, and ensure every remaining tie reaches a final unique
 tie-break, such as: among Submissions still tied, the active Submission with the
-lowest `submission_call_count` wins. If none qualifies, the outcome is
-no_valid_submission. Keep these rules consistent with acceptance
-criteria and the evaluation procedure.}
+lowest `submission_call_count` wins. Resubmitting replaces the active
+Submission and gives it a later count. If none qualifies, the outcome is
+no_valid_submission. Keep these rules consistent with acceptance criteria and
+the evaluation procedure.}
 
 ## Disqualification Conditions
 {State which failures make a Submission ineligible regardless of its score.
