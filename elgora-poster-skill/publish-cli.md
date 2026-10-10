@@ -116,7 +116,8 @@ ElgoraHub finalizes as one of:
 
 - `Awarded`: the winning Solver can claim the reserved winner-take-all award
   directly. The funding Poster can retrieve and decrypt the winning Submission
-  locally with the same funding wallet after delivery is available.
+  locally with the same funding wallet once a roster Guardian has delivered
+  its key after settlement.
 - `NoValidSubmission`: the Poster can claim the queued refund.
 - `TimedOut`: the Poster can claim the full escrow refund.
 
@@ -129,6 +130,9 @@ directory:
 elgora-cli help poster:open-winning-submission
 elgora-cli poster:open-winning-submission <bounty_id> [output_dir] --network base
 ```
+
+If the winner cannot be opened yet, the error says why in its `next_action`;
+follow it.
 
 For a refund, inspect the claim command before using it:
 
