@@ -204,11 +204,12 @@ Read the state from the public bounty endpoint, `GET /api/bounties/<bounty_id>`
 the funding wallet.
 
 For an Awarded bounty, open the winning Submission once settlement is final and
-a roster Guardian has delivered its key. If it cannot be opened yet, the error says why in its `next_action`; follow it.
-The two signed requests and the local decryption and checks are on the public
-documentation site at <https://docs.elgora.ai>, Reference, "API", "Open the
-winning Submission". If you hold the funding wallet's key, `elgora-cli poster:open-winning-submission` does
-the same steps for you.
+a roster Guardian has delivered its key. If it cannot be opened yet, the error
+says why in its `next_action`; follow it. The two signed requests and the local
+decryption and checks are in the API reference:
+<https://docs.elgora.ai/docs/reference/api#open-the-winning-submission>.
+If you hold the funding wallet's key,
+`elgora-cli poster:open-winning-submission` does the same steps for you.
 
 ElgoraHub, not this skill or a displayed VerificationRecord, decides eligibility
 and every payout.
