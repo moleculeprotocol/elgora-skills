@@ -145,8 +145,7 @@ acceptance or ranking. Include units, thresholds, rounding or a worked example
 when they clarify that decision.}
 
 {When applicable, define how partially correct predictions, confidence estimates
-and permitted abstentions affect acceptance and ranking. Distinguish a missing
-required prediction from unavailable reference evidence.}
+and permitted abstentions affect acceptance and ranking.}
 
 ## How is the winner selected?
 {Define how one winning Submission is selected from those meeting all
@@ -155,9 +154,12 @@ evidence or attributes used to compare eligible Submissions. If using scores,
 define the calculation, weights and ranking order, or refer to their definition
 above. Numerical scores are optional. For qualitative judging, explain what
 makes one eligible Submission better than another. Define terms such as
-clarity, usefulness or traceability, state which standards take priority, and
-resolve remaining ties. If only one
-Submission qualifies, it wins; if none qualifies, the outcome is
+clarity, usefulness or traceability, and state which standards take priority.
+If any Submission qualifies, select exactly one winner. Define comparisons and
+tie groups unambiguously, and ensure every remaining tie reaches a final unique
+tie-break, such as: among Submissions still tied, the active Submission with the
+lowest `submission_call_count` wins. Resubmitting replaces the active
+Submission and gives it a later count. If none qualifies, the outcome is
 no_valid_submission. Keep these rules consistent with acceptance criteria and
 the evaluation procedure.}
 
