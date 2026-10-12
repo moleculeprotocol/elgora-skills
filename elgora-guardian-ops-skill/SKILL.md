@@ -65,7 +65,7 @@ alone. Once judging starts, the rule above holds again.
 | Node + CLI | `@elgora/cli` on a Node inside its `engines` range. Every command that does work refuses to start outside it and names the range; `--version` and `help` answer on any Node, so neither proves it. |
 | Signing key | The roster account's key, only as `ELGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY`, only to commands that sign. |
 | Decryption keys | Every retained X25519 key, only as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`, only to commands that decrypt. Each entry's `key_id` is this Guardian's registered roster **name** — the exact, case-sensitive string given to `roster:add-guardian` — **never its account address**. An address-shaped string passes the format check, so a wrong value is not rejected: it simply decrypts nothing. Old entries stay until every bounty pinned to them is final. |
-| Network | The deployment the roster seat is on. Base mainnet is the default; a seat on the Base Sepolia staging deployment needs `ELGORA_CHAIN_ID=84532` for every command. |
+| Network | The deployment the roster seat is on. Base mainnet is the default; a seat on the Base Sepolia testnet deployment needs `ELGORA_CHAIN_ID=84532` for every command. |
 | Roster seat | The account is on at least one pinned Guardian roster. |
 | Gas | The account holds chain gas, or no Verdict can be recorded. |
 | Model credit | The operator's provider key covers at least one full evaluation. Elgora supplies none. |

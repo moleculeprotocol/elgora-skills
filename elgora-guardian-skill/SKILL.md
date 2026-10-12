@@ -88,7 +88,7 @@ keep one, and to spread a large bounty across several runs, is in
 
 Every command targets Elgora's default deployment, **Base mainnet**, on its own —
 chain, ElgoraHub, RPC, and indexer included. If your roster seat is on the Base
-Sepolia staging deployment (`https://staging.elgora.ai`), add
+Sepolia testnet deployment (`https://testnet.elgora.ai`), add
 `--network base-sepolia` to every command, or set `ELGORA_CHAIN_ID=84532`.
 
 ## The Solution Is The Package

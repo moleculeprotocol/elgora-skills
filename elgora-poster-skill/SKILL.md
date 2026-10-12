@@ -1,7 +1,7 @@
 ---
 name: elgora-poster-skill
 description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a scientific bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
-compatibility: "Drafting needs no tools. The CLI route needs Node.js 24, npm and the Poster's private key in the host's secret store. The API route needs HTTPS access to elgora.ai (or staging.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
+compatibility: "Drafting needs no tools. The CLI route needs Node.js 24, npm and the Poster's private key in the host's secret store. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
   version: "4.1.0"
   updated: "2026-10-08"
@@ -71,14 +71,14 @@ same on both.
 
 | | Mainnet (default) | Testnet |
 | --- | --- | --- |
-| Website and API | `https://elgora.ai` | `https://staging.elgora.ai` |
+| Website and API | `https://elgora.ai` | `https://testnet.elgora.ai` |
 | Chain | Base | Base Sepolia |
 | Escrow | real USDC | test USDC, worth nothing |
 
 Use mainnet unless the Poster asks for a test. Where you loaded this file from
-does not choose the network: `staging.elgora.ai` serves the same bundle. If the
+does not choose the network: `testnet.elgora.ai` serves the same bundle. If the
 Poster mentions a test, testnet, staging or Sepolia, or gave you a
-`staging.elgora.ai` link, ask which one they mean before the first review.
+`testnet.elgora.ai` link, ask which one they mean before the first review.
 
 Use one deployment for every step of a bounty. A review approval is kept by the
 deployment that gave it, a bounty lives on one chain, and a value from one

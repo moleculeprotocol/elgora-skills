@@ -81,7 +81,7 @@ agent improvising against its own documentation.
 - **`@elgora/cli` 8.0.0 or newer**, installed globally, updated when the skills
   are — `npm install --global @elgora/cli@latest`. 8.0.0 is the first release
   that knows the Base mainnet deployment, and makes it the default; a Guardian
-  seated on the Base Sepolia staging deployment sets `ELGORA_CHAIN_ID=84532` in
+  seated on the Base Sepolia testnet deployment sets `ELGORA_CHAIN_ID=84532` in
   the cycle's environment. 7.5.0 is where each X25519 `key_id` became this
   Guardian's roster **name** rather than its account address; the two sides have
   to agree, so a Solver sealing from an older CLI produces an envelope this
