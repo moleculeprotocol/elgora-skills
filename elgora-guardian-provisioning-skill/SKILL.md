@@ -2,8 +2,8 @@
 name: elgora-guardian-provisioning-skill
 description: Build the machine a Guardian judges on — Node and the CLI, the container Submission code runs in, keys, where data lives, harness settings and monitoring. For the operator provisioning a Guardian host; a Guardian loads it only to diagnose its own broken environment.
 metadata:
-  version: "1.2.0"
-  updated: "2026-09-22"
+  version: "1.2.1"
+  updated: "2026-10-12"
 ---
 
 # Provisioning a Guardian host
@@ -79,13 +79,9 @@ agent improvising against its own documentation.
   give the scheduler the versioned path `nvm` installed
   (`~/.nvm/versions/node/v24.*/bin`).
 - **`@elgora/cli` 8.0.0 or newer**, installed globally, updated when the skills
-  are — `npm install --global @elgora/cli@latest`. 8.0.0 is the first release
-  that knows the Base mainnet deployment, and makes it the default; a Guardian
-  seated on the Base Sepolia staging deployment sets `ELGORA_CHAIN_ID=84532` in
-  the cycle's environment. 7.5.0 is where each X25519 `key_id` became this
-  Guardian's roster **name** rather than its account address; the two sides have
-  to agree, so a Solver sealing from an older CLI produces an envelope this
-  Guardian cannot open, and the decrypt error names both sets of key_ids.
+  are — `npm install --global @elgora/cli@latest`. The CLI defaults to the Base
+  mainnet deployment; a Guardian seated on the Base Sepolia testnet deployment
+  sets `ELGORA_CHAIN_ID=84532` in the cycle's environment.
 - **Rootless Docker, and the agent's account able to use it.** This is a
   prerequisite, not a preference: Submission code runs in a container the agent
   starts per bounty, and a host without one cannot judge. Install it at box
