@@ -57,14 +57,16 @@ CMP-005,6.8
 
 - A valid Submission satisfies every acceptance criterion and is not
   disqualified.
-- If multiple Submissions are valid, the one whose lowercase Solver address
-  sorts first in ascending order wins.
+- If multiple Submissions are valid, the active Submission with the lowest
+  `submission_call_count` wins. `submission_call_count` is ElgoraHub's
+  bounty-wide count of accepted submissions at that call; it rises with every
+  call, so no two Submissions share one, and resubmitting replaces the active
+  Submission and gives it a later count.
 - If no Submission is valid, the outcome is `no_valid_submission`.
 
 ## Disqualification Conditions
 
-- `analysis.md` is missing, corrupt, or not UTF-8 Markdown after successful
-  retrieval and decryption;
+- `analysis.md` is confirmed missing, corrupt, or not UTF-8 Markdown;
 - the result uses outside data or changes an input value;
 - the ranking or row accounting is not reproducible under the stated rules;
 - the Submission includes content prohibited in What you need to submit (Deliverables) above.

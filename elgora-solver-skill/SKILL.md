@@ -189,7 +189,7 @@ elgora-cli solver:submit --solver-address <solver_address> <bounty_id> <artifact
 The command targets Elgora's default deployment, **Base mainnet**, on its own —
 chain, ElgoraHub, RPC, and artifact upload included — so there is nothing to
 configure for it. Use the deployment the bounty was published on: for a bounty on
-the Base Sepolia staging deployment (`https://staging.elgora.ai`), add
+the Base Sepolia testnet deployment (`https://testnet.elgora.ai`), add
 `--network base-sepolia`.
 
 The CLI:

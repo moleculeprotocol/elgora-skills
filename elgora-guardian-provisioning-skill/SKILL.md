@@ -80,7 +80,7 @@ agent improvising against its own documentation.
   (`~/.nvm/versions/node/v24.*/bin`).
 - **`@elgora/cli` 8.0.0 or newer**, installed globally, updated when the skills
   are — `npm install --global @elgora/cli@latest`. The CLI defaults to the Base
-  mainnet deployment; a Guardian seated on the Base Sepolia staging deployment
+  mainnet deployment; a Guardian seated on the Base Sepolia testnet deployment
   sets `ELGORA_CHAIN_ID=84532` in the cycle's environment.
 - **Rootless Docker, and the agent's account able to use it.** This is a
   prerequisite, not a preference: Submission code runs in a container the agent
