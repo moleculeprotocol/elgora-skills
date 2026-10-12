@@ -50,7 +50,7 @@ challenge to the website.
    reported issues before going on.
 
    ```sh
-   elgora-cli check-page bounty_challenge.md
+   elgora-cli check-challenge bounty_challenge.md
    ```
 
 2. **Review the exact draft.** Record this draft's commitment before each
