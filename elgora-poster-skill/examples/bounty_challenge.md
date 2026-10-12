@@ -63,8 +63,7 @@ CMP-005,6.8
 
 ## Disqualification Conditions
 
-- `analysis.md` is missing, corrupt, or not UTF-8 Markdown after successful
-  retrieval and decryption;
+- `analysis.md` is confirmed missing, corrupt, or not UTF-8 Markdown;
 - the result uses outside data or changes an input value;
 - the ranking or row accounting is not reproducible under the stated rules;
 - the Submission includes content prohibited in What you need to submit (Deliverables) above.
