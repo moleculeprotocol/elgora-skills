@@ -1,7 +1,7 @@
 # Publishing Through The Elgora API
 
 Open this file only when you publish for the Poster through the API. A Poster
-who pastes the page into the website needs none of it, and an agent that may
+who pastes the challenge into the website needs none of it, and an agent that may
 run the Elgora CLI can let `publish-cli.md` do all of this in two commands.
 
 ## Pick The Deployment
@@ -93,7 +93,7 @@ authorization".
 ## Review, Publish And Fund
 
 Everything below happens over HTTPS against the deployment's `api_base_url`. On
-mainnet, funding escrows real USDC. Two endpoints take the page:
+mainnet, funding escrows real USDC. Two endpoints take the challenge:
 
 | Step | Request |
 | --- | --- |
@@ -119,8 +119,8 @@ are fixed.
 - `429 publication_review_limit_reached`: your wallet has used its reviews for
   the rolling 24 hours; wait until `error.retry_not_before`.
 - `5xx` (`orchestrator_provider_error`, `invalid_orchestrator_output`): the
-  review did not run to a judgment. Report it instead of changing the page to
-  work around it.
+  review did not run to a judgment. Report it instead of changing the challenge
+  to work around it.
 - `200`: green, below.
 
 ```json
@@ -179,7 +179,7 @@ allows only ElgoraHub and USDC, a cap on the amount, or the wallet's own
 approval prompt. Recommend one to the Poster before the first funding.
 
 Mainnet funding escrows real USDC; testnet funding escrows test USDC from a
-faucet and pays nothing of value. A published page whose funding transaction
+faucet and pays nothing of value. A published challenge whose funding transaction
 never lands is harmless: no bounty exists, and publishing the same bytes again
 yields the same `spec_commitment`. After publication, any material change
 requires a new bounty and a new `spec_commitment`.
