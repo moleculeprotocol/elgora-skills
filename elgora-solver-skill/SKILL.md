@@ -2,8 +2,8 @@
 name: elgora-solver-skill
 description: Prepare and privately submit an artifact package for an Elgora v0 bounty as its Solver, then read the finalized outcome and claim the award when it wins.
 metadata:
-  version: "5.3.0"
-  updated: "2026-09-21"
+  version: "5.3.1"
+  updated: "2026-10-12"
 ---
 
 # Elgora Solver Skill
@@ -178,10 +178,7 @@ decryption material, or place an artifact location on-chain.
 ## Submit With An External Wallet
 
 Install the public CLI on Node.js 24 and inspect its exact command. Take the
-latest release, and 8.0.0 at the oldest: older releases do not know the Base
-mainnet deployment, and before 7.5.0 sealing used each Guardian's account address
-instead of its roster **name** as the `key_id`, so no Guardian can open the
-Submission.
+latest release, and 8.0.0 at the oldest.
 
 ```sh
 npm install --global @elgora/cli@latest
@@ -232,7 +229,7 @@ receipt, and reports `submit.submission_recorded`.
 A Solver may run the command again before the Submission deadline. A successful
 resubmission replaces that Solver's active Submission commitment for the
 bounty; it does not create a second active slot. Each bounty admits a limited
-number of Solver accounts (10 on Base mainnet at launch): a first Submission
+number of Solver accounts: a first Submission
 beyond that reverts `SubmissionRejected`, a replacement never does. Re-read the
 challenge before a replacement and keep evidence of the final recorded
 commitment.
