@@ -158,10 +158,13 @@ clarity, usefulness or traceability, and state which standards take priority.
 If any Submission qualifies, select exactly one winner. If a comparison can use
 several values from one Submission, define which value is used. Define
 comparisons and tie groups unambiguously, and ensure every remaining tie
-reaches a final unique tie-break, such as: among Submissions still tied, the
-active Submission with the lowest `submission_call_count` wins. Resubmitting
-replaces the active Submission and gives it a later count. If none qualifies,
-the outcome is no_valid_submission. Keep these rules consistent with acceptance
+reaches a final unique tie-break. If the Poster chooses earliest-wins, end
+with these two sentences unchanged: "Among Submissions still tied, the active
+Submission with the lowest `submission_call_count` wins. `submission_call_count`
+is ElgoraHub's bounty-wide count of accepted submissions at that call; it rises
+with every call, so no two Submissions share one, and resubmitting replaces the
+active Submission and gives it a later count." If none qualifies, the outcome
+is no_valid_submission. Keep these rules consistent with acceptance
 criteria and the evaluation procedure.}
 
 ## Disqualification Conditions
