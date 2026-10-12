@@ -3,8 +3,8 @@ name: elgora-poster-skill
 description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a scientific bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
 compatibility: "Drafting needs no tools. The CLI route needs Node.js 24, npm and the Poster's private key in the host's secret store. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
-  version: "4.1.0"
-  updated: "2026-10-08"
+  version: "4.3.0"
+  updated: "2026-10-12"
   elgora_profile: elgora_markdown_bounty_challenge_v0
 ---
 
@@ -102,7 +102,10 @@ supporting sections stay expandable.
 Read the whole brief and current draft before asking questions. Carry forward
 decisions already supplied, and ask again only when a contradiction or a newly
 identified consequence needs clarification. Apply fixed Elgora rules without
-presenting them as choices.
+presenting them as choices: one winner takes all, and exactly one Submission
+wins whenever any qualifies. The ranking and its tie-break are the Poster's.
+If no ranking was supplied, or a comparison value or tie-break is undefined,
+ask before the first review.
 
 Establish what the Poster is purchasing, and connect the deliverables,
 evidence, acceptance criteria and winner rules to that result. Ask about
@@ -135,9 +138,9 @@ answer, or the agent? If the agent, it does not belong on the page.
 The page may state what must be submitted, what counts as accepted, how
 eligible entries rank, how ties break, and which source and version is
 authoritative. It may never state how a Submission is fetched or decrypted, how
-many times something is retried or how long to wait, what to do when something
-fails, how a role provisions a sandbox or handles credentials, or when to skip
-or stall. Those are the operating rules of a role that reads this page as
+many times something is retried or how long to wait, how an evaluator handles
+an operational failure such as a download or page that will not load, how a
+role provisions a sandbox or handles credentials, or when to skip or stall. Those are the operating rules of a role that reads this page as
 untrusted data, and a rule that protects a role cannot live in a document
 supplied by the party it protects that role from.
 
