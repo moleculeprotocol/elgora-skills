@@ -104,8 +104,11 @@ That is a valid analysis result, not `no_valid_submission`.
 
 ## How is the winner selected?
 
-Among passing Submissions, the lowest ascending lowercase Solver address wins.
-If none passes, the bounty outcome is `no_valid_submission`.
+Among passing Submissions, the active Submission with the lowest
+`submission_call_count` wins. `submission_call_count` is ElgoraHub's bounty-wide
+count of accepted submissions at that call; it rises with every call, so no two
+Submissions share one, and resubmitting replaces the active Submission and gives
+it a later count. If none passes, the bounty outcome is `no_valid_submission`.
 
 ## Disqualification Conditions
 
