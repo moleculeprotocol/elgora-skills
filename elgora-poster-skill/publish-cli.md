@@ -9,7 +9,7 @@ pastes the page into the website needs neither file.
 
 ## Install And Configure
 
-Install the CLI on Node.js 24 from the npm tag that matches the network agreed
+Install the CLI on Node.js 24 or 26 from the npm tag that matches the network agreed
 with the Poster, and inspect its commands:
 
 ```sh

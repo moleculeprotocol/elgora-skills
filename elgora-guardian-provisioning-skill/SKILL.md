@@ -2,8 +2,8 @@
 name: elgora-guardian-provisioning-skill
 description: Build the machine a Guardian judges on — Node and the CLI, the container Submission code runs in, keys, where data lives, harness settings and monitoring. For the operator provisioning a Guardian host; a Guardian loads it only to diagnose its own broken environment.
 metadata:
-  version: "1.2.1"
-  updated: "2026-10-12"
+  version: "1.2.2"
+  updated: "2026-10-13"
 ---
 
 # Provisioning a Guardian host
@@ -60,10 +60,11 @@ agent improvising against its own documentation.
 
 ## Baseline, every host
 
-- **Node 24.x** (`>=24 <25`). Match the CLI's `engines` range exactly; every
-  command that does work refuses to start outside it and names the range.
-  `--version` and `help` are exempt by design, so neither is a check. Install
-  it with `nvm` and select it, rather than working around whatever `node` the
+- **Node 24.x or 26.x** (`24.x || 26.x`). Match the CLI's `engines` range
+  exactly; every command that does work refuses to start outside it and names
+  the range. `--version` and `help` are exempt by design, so neither is a
+  check. A host already on Node 26 keeps it; otherwise install Node 24 with
+  `nvm` and select it, rather than working around whatever `node` the
   distribution ships:
 
   ```sh

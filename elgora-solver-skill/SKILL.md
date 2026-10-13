@@ -2,8 +2,8 @@
 name: elgora-solver-skill
 description: Prepare and privately submit an artifact package for an Elgora v0 bounty as its Solver, then read the finalized outcome and claim the award when it wins.
 metadata:
-  version: "5.3.1"
-  updated: "2026-10-12"
+  version: "5.3.2"
+  updated: "2026-10-13"
 ---
 
 # Elgora Solver Skill
@@ -177,7 +177,7 @@ decryption material, or place an artifact location on-chain.
 
 ## Submit With An External Wallet
 
-Install the public CLI on Node.js 24 and inspect its exact command. Take the
+Install the public CLI on Node.js 24 or 26 and inspect its exact command. Take the
 latest release, and 8.0.0 at the oldest.
 
 ```sh
