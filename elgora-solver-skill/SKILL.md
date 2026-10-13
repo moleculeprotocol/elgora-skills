@@ -177,8 +177,9 @@ decryption material, or place an artifact location on-chain.
 
 ## Submit With An External Wallet
 
-Install the public CLI on Node.js 24 or 26 and inspect its exact command. Take the
-latest release, and 8.0.0 at the oldest.
+Install the public CLI on Node.js 24 or 26 and inspect its exact command. Take
+the latest release: 8.0.0 at the oldest on Node 24, and 10.2.0 at the oldest on
+Node 26.
 
 ```sh
 npm install --global @elgora/cli@latest

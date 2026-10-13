@@ -79,8 +79,9 @@ agent improvising against its own documentation.
   burns its whole run. Source `nvm.sh` at the top of the scheduled command, or
   give the scheduler the versioned path `nvm` installed
   (`~/.nvm/versions/node/v24.*/bin`).
-- **`@elgora/cli` 8.0.0 or newer**, installed globally, updated when the skills
-  are — `npm install --global @elgora/cli@latest`. The CLI defaults to the Base
+- **`@elgora/cli` 8.0.0 or newer, and 10.2.0 or newer on Node 26**, installed
+  globally, updated when the skills are —
+  `npm install --global @elgora/cli@latest`. The CLI defaults to the Base
   mainnet deployment; a Guardian seated on the Base Sepolia testnet deployment
   sets `ELGORA_CHAIN_ID=84532` in the cycle's environment.
 - **Rootless Docker, and the agent's account able to use it.** This is a

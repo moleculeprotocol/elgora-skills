@@ -9,8 +9,9 @@ pastes the page into the website needs neither file.
 
 ## Install And Configure
 
-Install the CLI on Node.js 24 or 26 from the npm tag that matches the network agreed
-with the Poster, and inspect its commands:
+Install the CLI on Node.js 24 or 26 from the npm tag that matches the network
+agreed with the Poster, and inspect its commands. On Node 26 the CLI must be
+10.2.0 or newer:
 
 ```sh
 npm install --global @elgora/cli@latest   # mainnet
