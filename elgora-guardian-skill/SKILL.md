@@ -2,7 +2,7 @@
 name: elgora-guardian-skill
 description: Open, judge, and record independent Verdicts for Elgora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "6.10.0"
+  version: "6.11.0"
   updated: "2026-09-23"
 ---
 
@@ -427,8 +427,8 @@ in two parts.
 **Structure**, with the client:
 
 ```sh
-elgora-cli help check-page
-elgora-cli check-page <bounty_challenge_md_path>
+elgora-cli help check-challenge
+elgora-cli check-challenge <bounty_challenge_md_path>
 ```
 
 It runs Elgora's structural rules locally — no network call, no key — and exits

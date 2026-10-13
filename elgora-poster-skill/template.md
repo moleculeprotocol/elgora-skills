@@ -60,7 +60,7 @@ Adapt the columns to the task.
 
 ## Inputs, Materials and References
 {List required inputs and useful references. Put small inputs directly in the
-page, or provide external links to files, datasets, papers and other supporting
+challenge, or provide external links to files, datasets, papers and other supporting
 material. Distinguish required evaluation inputs from background references;
 background reading does not introduce unstated acceptance requirements. Identify
 which sources are authoritative for evaluation or verification. Omit this
@@ -69,7 +69,7 @@ section only when neither inputs nor references are needed.}
 {Where the task depends on materials, facilities or an external verification
 service, state what the Poster provides, what the Solver must arrange, who
 covers the cost, and when it becomes available. Required external evidence must
-be identified and reachable from the page alone: nothing may depend on private
+be identified and reachable from the challenge alone: nothing may depend on private
 clarification or on an approval given after submission.}
 
 | File or reference | Purpose | Required input or background | Link or access instructions | Version or snapshot, if relevant |
@@ -94,8 +94,8 @@ standards needed for that decision. Identify the evidence supporting each
 criterion, referring to Evidence, Provenance and Verification where further
 detail is needed. Explain how missing, incomplete or conflicting results affect
 acceptance where relevant. Make each decision clear enough to apply from the
-page alone; put additional comparison conditions in Evaluation Procedure when
-needed. Use concrete descriptions or examples where they clarify the expected
+challenge alone; put additional comparison conditions in Evaluation Procedure
+when needed. Use concrete descriptions or examples where they clarify the expected
 result.}
 
 {Where relevant, state whether negative or inconclusive results satisfy the
@@ -123,8 +123,8 @@ establishes that timing.}
 
 {State which underlying data, methods and quality checks are in scope for
 verification, what they must show, and how missing or contradictory evidence
-affects acceptance. Name any verification source in the page so it is reachable
-from the page alone. A Solver assertion, file hash or signature alone does not prove that
+affects acceptance. Name any verification source in the challenge so it is
+reachable from the challenge alone. A Solver assertion, file hash or signature alone does not prove that
 claimed work occurred. A hash proves bytes, not origin or validity; a signature
 identifies a key, not the truth of its claims. Leave unresolved scientific or
 trust decisions with the Poster rather than inventing a protocol or
@@ -220,8 +220,9 @@ that. Where a scientific choice needs specialist input, leave it with the
 Poster and their experts rather than inventing one here.
 
 What stays out is the evaluator's own operation: how it secures execution, what
-it installs, what credentials it holds, and what it does when a step fails.
-Those belong to the operator and cannot be set from here. Omit this section when
+credentials it holds, and what it does when a step fails. Those belong to the
+operator and cannot be set from here. Requiring a tool, package or script the
+work needs is fine; whether it is safe to install is the evaluator's call. Omit this section when
 the acceptance and ranking rules already define the evaluation fully.}
 ```
 

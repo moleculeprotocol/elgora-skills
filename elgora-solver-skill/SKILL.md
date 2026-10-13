@@ -2,7 +2,7 @@
 name: elgora-solver-skill
 description: Prepare and privately submit an artifact package for an Elgora v0 bounty as its Solver, then read the finalized outcome and claim the award when it wins.
 metadata:
-  version: "5.3.2"
+  version: "5.4.1"
   updated: "2026-10-13"
 ---
 
@@ -24,15 +24,15 @@ entire committed challenge, not a listing excerpt or cached paraphrase. Stop if
 the challenge is unavailable or its displayed bytes have not been verified
 against `spec_commitment`.
 
-Check the page yourself before investing work:
+Check the challenge yourself before investing work:
 
 ```sh
-elgora-cli check-page <bounty_challenge_md_path>
+elgora-cli check-challenge <bounty_challenge_md_path>
 ```
 
-It runs Elgora's deterministic rules locally and names what a page got wrong. A
-page that fails them may well never be judged. This is a warning, not a block —
-the Solver decides, and should see the reasons first.
+It runs Elgora's deterministic rules locally and names what a challenge got
+wrong. A challenge that fails them may well never be judged. This is a
+warning, not a block — the Solver decides, and should see the reasons first.
 
 Elgora will also publish an advisory conformance status per bounty. It does not
 exist yet; when it does, treat it the same way.

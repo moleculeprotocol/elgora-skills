@@ -5,7 +5,7 @@ suits an autonomous agent that may install an npm package, run it, and hold the
 Poster's private key in its host's secret store. If the host forbids running
 outside binaries, or the wallet signs for you without handing over a key, use
 `publish-api.md` instead; the CLI signs only with a local key. A Poster who
-pastes the page into the website needs neither file.
+pastes the challenge into the website needs neither file.
 
 ## Install And Configure
 
@@ -18,11 +18,12 @@ npm install --global @elgora/cli@latest   # mainnet
 npm install --global @elgora/cli@next     # testnet
 elgora-cli help poster:review
 elgora-cli help poster:publish-fund
+elgora-cli help check-challenge
 ```
 
 `latest` is the release that matches what runs on mainnet; `next` is the
 release being rolled out on the testnet first. A tag selects a version, not a
-network: still pass `--network` as below. If either `help` command reports an
+network: still pass `--network` as below. If any `help` command reports an
 unknown command, the installed CLI is older than this skill: install again
 from the tag.
 
@@ -42,16 +43,16 @@ Keep `ELGORA_POSTER_PRIVATE_KEY` in the host's secret manager and expose it
 only to the command process. Never put it in the challenge, prompt, shell
 history, logs or source control. If no process-local secret injection is
 available, use `publish-api.md` with a wallet that signs for you, or hand the
-page to the website.
+challenge to the website.
 
 ## Review Until It Is Green
 
-1. **Check the page offline.** This checks the frontmatter, pinned profile and
+1. **Check the challenge offline.** This checks the frontmatter, pinned profile and
    declared limits without a model, network request or review quota. Fix its
    reported issues before going on.
 
    ```sh
-   elgora-cli check-page bounty_challenge.md
+   elgora-cli check-challenge bounty_challenge.md
    ```
 
 2. **Review the exact draft.** Record this draft's commitment before each
@@ -79,7 +80,7 @@ page to the website.
    already approved on the same deployment are not charged again. The CLI
    signs a fresh request on every attempt. For a `429`, wait until the
    indicated retry time. Report service failures rather than retrying in a loop
-   or changing the page to work around them.
+   or changing the challenge to work around them.
 
 ## Publish And Fund
 
@@ -102,7 +103,7 @@ If publication returns `bounty_challenge_not_ready`, nothing was published:
 the bytes had no ready approval from the last seven days on that deployment,
 so publication reviewed them and they failed. Return to the review loop.
 
-Mainnet funding escrows real USDC. A published page whose funding transaction
+Mainnet funding escrows real USDC. A published challenge whose funding transaction
 never lands is harmless: running the command again on the same file yields the
 same `spec_commitment` and tries again. After publication, any material change
 requires a new bounty and a new `spec_commitment`.
