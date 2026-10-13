@@ -2,7 +2,7 @@
 name: elgora-solver-skill
 description: Prepare and privately submit an artifact package for an Elgora v0 bounty as its Solver, then read the finalized outcome and claim the award when it wins.
 metadata:
-  version: "5.4.1"
+  version: "6.0.0"
   updated: "2026-10-13"
 ---
 
@@ -175,16 +175,15 @@ published requirements cannot be changed.
 Solver artifacts remain private. Never print their plaintext, persist their
 decryption material, or place an artifact location on-chain.
 
-## Submit With An External Wallet
+## Submit
 
-Install the public CLI on Node.js 24 or 26 and inspect its exact command. Take
-the latest release: 8.0.0 at the oldest on Node 24, and 10.2.0 at the oldest on
-Node 26.
+Install the public CLI on Node.js 24 or 26 and inspect its exact command. This
+skill needs CLI 11.0.0 or newer.
 
 ```sh
 npm install --global @elgora/cli@latest
 elgora-cli help solver:submit
-elgora-cli solver:submit --solver-address <solver_address> <bounty_id> <artifact_dir>
+elgora-cli solver:submit <bounty_id> <artifact_dir>
 ```
 
 The command targets Elgora's default deployment, **Base mainnet**, on its own —
@@ -203,27 +202,37 @@ The CLI:
 - rechecks that the bounty is Open and before its Submission deadline; and
 - locally verifies the complete four-argument ElgoraHub Submission transaction.
 
-For every `submit.approval_required` line, have the wallet at
-`<solver_address>` sign the displayed EIP-712 typed data and return only the
-signature line requested by the CLI. At `submit.transaction_prepared`, verify
-the wallet is on the displayed chain and send that exact `to`, `value`, and
-`data`. Do not substitute a different Solver, Submission commitment, Guardian
-roster hash, or `extra_data` value.
+It then sends that transaction and reports `submit.submission_recorded` once a
+receipt succeeds.
 
-External-wallet mode needs no Solver private key in the CLI process.
+## Choose The Signer
 
-## Submit With A Local Wallet
+The Solver's wallet signs each upload and preparation request and sends the
+Submission transaction. Keep every secret below in the host's secret manager,
+exposed only to the command process; never put one in a command line, prompt,
+file, shell history, log, or source control. Set exactly one of these:
 
-When the host can safely inject a process secret, omit `--solver-address`:
+- **A private key:** `ELGORA_SOLVER_PRIVATE_KEY`.
+- **A Privy server wallet:** `ELGORA_SIGNER=privy` with `PRIVY_APP_ID`,
+  `PRIVY_APP_SECRET`, `PRIVY_WALLET_ID`, plus `PRIVY_AUTHORIZATION_PRIVATE_KEY`
+  when the wallet has an owner and `ELGORA_PRIVY_SPONSOR=true` for sponsored
+  gas.
+- **Any other wallet:** `ELGORA_SIGNER=command` runs a signer program with
+  `ELGORA_SIGNER_ADDRESS`, `ELGORA_SIGNER_COMMAND`, `ELGORA_SIGNER_ARGS` (a JSON
+  array) and `ELGORA_SIGNER_ENV` (the variables it may read). The CLI package
+  ships examples in `examples/signers/`: any viem account (Turnkey, a CDP
+  account, a KMS), or a Coinbase smart wallet. `elgora-cli help solver:submit`
+  names every setting.
 
-```sh
-elgora-cli solver:submit <bounty_id> <artifact_dir>
-```
+Smart wallets, EIP-7702 accounts and other contract wallets work; Elgora
+verifies their signatures on chain. The wallet signs every request within 30
+minutes of the CLI asking.
 
-Provide `ELGORA_SOLVER_PRIVATE_KEY` only through the host's secret manager. Never
-put it in a command line, prompt, file, shell history, log, or source control.
-The CLI performs the same checks, sends the transaction, waits for a successful
-receipt, and reports `submit.submission_recorded`.
+With `--prepare-only`, the CLI does everything except send: it prints
+`submit.calls_prepared` with the exact `submit` call. Verify the wallet is on
+the displayed chain and send that exact `to`, `value`, and `data` from the
+Solver's address. Do not substitute a different Solver, Submission commitment,
+Guardian roster hash, or `extra_data` value.
 
 ## Replacement And Failure Rules
 
@@ -285,7 +294,7 @@ command:
 
 ```sh
 elgora-cli help claim
-elgora-cli claim --claimant-address <solver_address> <bounty_id>
+elgora-cli claim <bounty_id>
 ```
 
 For the Awarded winner, this command internally uses
@@ -298,12 +307,13 @@ confirms nothing of the pool has been pulled yet, and prints
 `claim.prepared` with `claimable_amount` before anything is signed. Check that
 amount against `settlement_amount` and stop on any mismatch.
 
-External-wallet mode prints prepared calldata; verify the wallet is on the
-displayed chain and send that exact `to`, `value`, and `data`. Local signing
-omits `--claimant-address` and requires `ELGORA_CLAIMANT_PRIVATE_KEY` through
-the host's secret manager. Either way the claiming wallet needs a gas token
-balance on the bounty's chain; the command stops rather than sending without
-one.
+The claim is sent by the claimant's signer: the same settings as in Choose The
+Signer, with `ELGORA_CLAIMANT_PRIVATE_KEY` for a private key. A local key needs
+a gas token balance on the bounty's chain; the command stops rather than
+sending without one. For a wallet the CLI cannot reach, set
+`ELGORA_SIGNER=address` and `ELGORA_SIGNER_ADDRESS`, or pass `--prepare-only`:
+the command prints `claim.calls_prepared`; verify the wallet is on the displayed
+chain and send that exact `to`, `value`, and `data`.
 
 ElgoraHub, not a written Verdict or VerificationRecord, decides whether this
 Solver may claim the award. Treat a refusal as a fact about that state, not an

@@ -2,7 +2,7 @@
 name: elgora-guardian-ops-skill
 description: The Guardian runtime — what a box must provide, how to run a Submission's code in a container, where judging reads and writes its data, and how to verify it all without running a bounty. Load it when you need the exact invocation for this host, or when a cycle cannot start or fails on its own environment rather than on a bounty.
 metadata:
-  version: "4.1.0"
+  version: "4.2.0"
   updated: "2026-09-22"
 ---
 
@@ -63,11 +63,11 @@ alone. Once judging starts, the rule above holds again.
 | Requirement | What it means |
 | --- | --- |
 | Node + CLI | `@elgora/cli` on a Node inside its `engines` range. Every command that does work refuses to start outside it and names the range; `--version` and `help` answer on any Node, so neither proves it. |
-| Signing key | The roster account's key, only as `ELGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY`, only to commands that sign. |
+| Signing account | The roster account, only to commands that sign: its key as `ELGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY`, or a wallet that keeps the key, through `ELGORA_SIGNER=privy` (a Privy server wallet) or `ELGORA_SIGNER=command` (a signer program). `elgora-cli help guardian:verdict` names every setting. |
 | Decryption keys | Every retained X25519 key, only as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`, only to commands that decrypt. Each entry's `key_id` is this Guardian's registered roster **name** — the exact, case-sensitive string given to `roster:add-guardian` — **never its account address**. An address-shaped string passes the format check, so a wrong value is not rejected: it simply decrypts nothing. Old entries stay until every bounty pinned to them is final. |
 | Network | The deployment the roster seat is on. Base mainnet is the default; a seat on the Base Sepolia testnet deployment needs `ELGORA_CHAIN_ID=84532` for every command. |
 | Roster seat | The account is on at least one pinned Guardian roster. |
-| Gas | The account holds chain gas, or no Verdict can be recorded. |
+| Gas | The account holds chain gas, or its wallet provider sponsors it, or no Verdict can be recorded. |
 | Model credit | The operator's provider key covers at least one full evaluation. Elgora supplies none. |
 | Sandbox | A container the agent starts per bounty and deletes afterwards, per the provisioning skill. Not the harness's own sandbox: that one holds the CLI and the keys too. What matters is that Submission code never executes where the keys are, one bounty's plaintext never reaches another's, and egress is off while that code runs. |
 | Storage | An absolute path inside the agent's **profile directory** — `~/.hermes` or `~/.hermes/profiles/<name>`, `~/.openclaw` or `~/.openclaw-<profile>` — writable, persisted across restarts, holding one directory per bounty and everything else judging writes on the host. Not the home directory of the box account: that is not backed up. |

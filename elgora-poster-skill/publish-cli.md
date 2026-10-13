@@ -1,17 +1,17 @@
 # Publishing With The Elgora CLI
 
 Open this file only when you publish for the Poster with the Elgora CLI. It
-suits an autonomous agent that may install an npm package, run it, and hold the
-Poster's private key in its host's secret store. If the host forbids running
-outside binaries, or the wallet signs for you without handing over a key, use
-`publish-api.md` instead; the CLI signs only with a local key. A Poster who
-pastes the challenge into the website needs neither file.
+suits an autonomous agent that may install an npm package and run it, with the
+Poster's wallet reachable as a private key, a Privy server wallet, or a signer
+program (see Choose The Signer). If the host forbids running outside binaries,
+use `publish-api.md` instead. A Poster who pastes the challenge into the
+website needs neither file.
 
 ## Install And Configure
 
 Install the CLI on Node.js 24 or 26 from the npm tag that matches the network
-agreed with the Poster, and inspect its commands. On Node 26 the CLI must be
-10.2.0 or newer:
+agreed with the Poster, and inspect its commands. This file needs CLI 11.0.0
+or newer:
 
 ```sh
 npm install --global @elgora/cli@latest   # mainnet
@@ -39,11 +39,32 @@ The examples below use `--network base`. On the testnet, write
 `ELGORA_API_BASE_URL` for one of these two deployments: the CLI already holds
 a matching set, and one value from the other deployment breaks it.
 
-Keep `ELGORA_POSTER_PRIVATE_KEY` in the host's secret manager and expose it
-only to the command process. Never put it in the challenge, prompt, shell
-history, logs or source control. If no process-local secret injection is
-available, use `publish-api.md` with a wallet that signs for you, or hand the
-challenge to the website.
+## Choose The Signer
+
+Every secret below belongs in the host's secret manager, exposed only to the
+command process. Never put one in the challenge, prompt, shell history, logs
+or source control. Set exactly one of these; the CLI refuses an ambiguous mix.
+
+- **A private key:** `ELGORA_POSTER_PRIVATE_KEY`.
+- **A Privy server wallet:** `ELGORA_SIGNER=privy` with `PRIVY_APP_ID`,
+  `PRIVY_APP_SECRET` and `PRIVY_WALLET_ID`, plus
+  `PRIVY_AUTHORIZATION_PRIVATE_KEY` when the wallet has an owner, and
+  `ELGORA_PRIVY_SPONSOR=true` if the Privy app sponsors gas.
+- **Any other wallet:** `ELGORA_SIGNER=command` runs a signer program you
+  provide. Set `ELGORA_SIGNER_ADDRESS` to the wallet's address,
+  `ELGORA_SIGNER_COMMAND` to the program, `ELGORA_SIGNER_ARGS` to its
+  arguments as a JSON array, and `ELGORA_SIGNER_ENV` to the comma-separated
+  names of the variables it needs; it gets no others. The CLI package ships
+  two in `examples/signers/` of its install directory: `viem-account.mjs` for
+  any viem account (Turnkey, a CDP account, a KMS) and
+  `cdp-smart-account.mjs` for a Coinbase smart wallet.
+  `elgora-cli help poster:publish-fund` names every setting.
+
+Smart wallets, EIP-7702 accounts and other contract wallets work: Elgora
+verifies their signatures on chain. If the Poster restricts the wallet with a
+policy, allow typed data only in the `Elgora` domain on the deployment's chain
+and ElgoraHub, and calls only to the escrow token's `approve` for ElgoraHub and
+to ElgoraHub itself; both addresses are in `deployments.json`.
 
 ## Review Until It Is Green
 
@@ -92,12 +113,17 @@ elgora-cli poster:publish-fund bounty_challenge.md --network base
 
 The command publishes the exact bytes, checks the returned commitment, chain,
 ElgoraHub and escrow token against its own values, and only then funds. It
-needs enough USDC for the reward and some ETH for gas on that chain, and
-refuses to start without them. Where the wallet supports it, it funds in one
-transaction with a USDC authorization; otherwise it sends `approve`, then
-`createBounty`. It prints one JSON line per step; the last,
-`publish_fund.bounty_created`, carries `bounty_id`, `spec_commitment` and
-`tx_hash`. Keep all three. They are public.
+needs enough USDC for the reward and refuses to start without it; the wallet
+pays gas unless its provider sponsors it. With a private key on an ordinary
+account it funds in one transaction with a USDC authorization; every other
+signer sends `approve` for exactly the escrow amount, then `createBounty`. It
+prints one JSON line per step; the last, `publish_fund.bounty_created`, carries
+`bounty_id`, `spec_commitment` and `tx_hash`. Keep all three. They are public.
+
+With `--prepare-only` the command publishes but sends nothing: it prints
+`publish_fund.calls_prepared` with the `approve` and `createBounty` calls for
+the wallet to send itself, in order, from the Poster's address. Then read the
+bounty id from that `BountyCreated` event.
 
 If publication returns `bounty_challenge_not_ready`, nothing was published:
 the bytes had no ready approval from the last seven days on that deployment,
@@ -140,10 +166,12 @@ For a refund, inspect the claim command before using it:
 
 ```sh
 elgora-cli help claim
-elgora-cli claim --claimant-address <wallet_address> <bounty_id> --network base
+elgora-cli claim <bounty_id> --network base
 ```
 
-With `--claimant-address` the command prints prepared calldata for that wallet
-to sign. Without it, it signs locally and requires `ELGORA_CLAIMANT_PRIVATE_KEY`.
+It sends the claim from the claimant's signer: the same settings as above,
+with `ELGORA_CLAIMANT_PRIVATE_KEY` for a private key. For a wallet the CLI
+cannot reach, set `ELGORA_SIGNER=address` and `ELGORA_SIGNER_ADDRESS`; the
+command then prints `claim.calls_prepared` for that wallet to send.
 ElgoraHub, not this skill or a displayed VerificationRecord, decides
 eligibility and every payout.

@@ -2,7 +2,7 @@
 name: elgora-guardian-provisioning-skill
 description: Build the machine a Guardian judges on — Node and the CLI, the container Submission code runs in, keys, where data lives, harness settings and monitoring. For the operator provisioning a Guardian host; a Guardian loads it only to diagnose its own broken environment.
 metadata:
-  version: "1.2.3"
+  version: "1.3.0"
   updated: "2026-10-13"
 ---
 
@@ -114,7 +114,12 @@ agent improvising against its own documentation.
   Elgora cares only about what ends up in these two variables and which commands
   see them. The signing key goes to commands that sign, as
   `ELGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY`; the X25519 keys only to commands that
-  decrypt, as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`. Each X25519 entry's
+  decrypt, as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`. The roster account need not
+  be a raw key on the box: a Privy server wallet (`ELGORA_SIGNER=privy`) or a
+  signer program for any other wallet (`ELGORA_SIGNER=command`), including a
+  smart or EIP-7702 account, can hold it instead; `elgora-cli help
+  guardian:verdict` names the settings. The X25519 keys stay on the box either
+  way. Each X25519 entry's
   `key_id` is this Guardian's own registered roster **name** — the exact,
   case-sensitive string given to `roster:add-guardian`, **never its account
   address** — with the suite

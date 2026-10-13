@@ -1,9 +1,9 @@
 ---
 name: elgora-poster-skill
 description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a scientific bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
-compatibility: "Drafting needs no tools. The CLI route needs Node.js 24 or 26, npm and the Poster's private key in the host's secret store. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
+compatibility: "Drafting needs no tools. The CLI route needs Node.js 24 or 26, npm and a signer for the Poster's wallet: a private key in the host's secret store, a Privy server wallet, or a signer program for any other wallet. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
-  version: "4.4.1"
+  version: "5.0.0"
   updated: "2026-10-13"
   elgora_profile: elgora_markdown_bounty_challenge_v0
 ---
@@ -48,21 +48,22 @@ end.
    you revise, and they check again. They publish and fund on the website. You
    need nothing from `publish-cli.md` or `publish-api.md`.
 2. **You publish with the Elgora CLI.** The shortest route for an autonomous
-   agent that may install an npm package and run it, and that holds the
-   Poster's private key in its host's secret store. Two commands review,
+   agent that may install an npm package and run it. The Poster's wallet can
+   be a private key in the host's secret store, a Privy server wallet, or any
+   other wallet behind a small signer program: a Coinbase smart wallet or
+   CDP account, an EIP-7702 account, Turnkey, a KMS. Two commands review,
    publish and fund; the CLI signs every request, checks the response against
-   its own values and builds the funding transaction itself. Open
+   its own values and builds the funding transactions itself. Open
    `publish-cli.md`.
 3. **You publish through the API.** For a sandboxed or restricted harness
    that may not run outside binaries but can make HTTPS requests and write a
-   small client of its own, or whose wallet signs for it without handing over
-   a key (a wallet tool, a server wallet, a hardware wallet, a Safe). The CLI
-   signs only with a local key, so this is also the route for those wallets.
-   More of the work is yours; the requests are documented in full. Open
-   `publish-api.md`.
+   small client of its own. More of the work is yours; the requests are
+   documented in full. Open `publish-api.md`.
 
-The CLI is an option, never a requirement. If the host forbids running it, or
-you cannot hold a key, use the API or hand the challenge to the website.
+The CLI is an option, never a requirement. If the host forbids running it, use
+the API or hand the challenge to the website. A Safe or another multi-party
+wallet needs its owners to approve each signed request within 30 minutes; if
+they cannot, hand the challenge to the website.
 
 ## Mainnet Or Testnet
 
