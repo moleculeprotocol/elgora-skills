@@ -2,7 +2,7 @@
 name: elgora-guardian-provisioning-skill
 description: Build the machine a Guardian judges on — Node and the CLI, the container Submission code runs in, keys, where data lives, harness settings and monitoring. For the operator provisioning a Guardian host; a Guardian loads it only to diagnose its own broken environment.
 metadata:
-  version: "1.2.1"
+  version: "1.2.2"
   updated: "2026-10-12"
 ---
 
@@ -78,7 +78,7 @@ agent improvising against its own documentation.
   burns its whole run. Source `nvm.sh` at the top of the scheduled command, or
   give the scheduler the versioned path `nvm` installed
   (`~/.nvm/versions/node/v24.*/bin`).
-- **`@elgora/cli` 8.0.0 or newer**, installed globally, updated when the skills
+- **`@elgora/cli` 10.2.0 or newer**, installed globally, updated when the skills
   are — `npm install --global @elgora/cli@latest`. The CLI defaults to the Base
   mainnet deployment; a Guardian seated on the Base Sepolia testnet deployment
   sets `ELGORA_CHAIN_ID=84532` in the cycle's environment.

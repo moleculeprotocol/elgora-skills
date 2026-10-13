@@ -17,11 +17,12 @@ npm install --global @elgora/cli@latest   # mainnet
 npm install --global @elgora/cli@next     # testnet
 elgora-cli help poster:review
 elgora-cli help poster:publish-fund
+elgora-cli help check-challenge
 ```
 
 `latest` is the release that matches what runs on mainnet; `next` is the
 release being rolled out on the testnet first. A tag selects a version, not a
-network: still pass `--network` as below. If either `help` command reports an
+network: still pass `--network` as below. If any `help` command reports an
 unknown command, the installed CLI is older than this skill: install again
 from the tag.
 

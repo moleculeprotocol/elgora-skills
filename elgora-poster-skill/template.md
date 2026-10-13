@@ -220,8 +220,9 @@ that. Where a scientific choice needs specialist input, leave it with the
 Poster and their experts rather than inventing one here.
 
 What stays out is the evaluator's own operation: how it secures execution, what
-it installs, what credentials it holds, and what it does when a step fails.
-Those belong to the operator and cannot be set from here. Omit this section when
+credentials it holds, and what it does when a step fails. Those belong to the
+operator and cannot be set from here. Requiring a tool, package or script the
+work needs is fine; whether it is safe to install is the evaluator's call. Omit this section when
 the acceptance and ranking rules already define the evaluation fully.}
 ```
 
