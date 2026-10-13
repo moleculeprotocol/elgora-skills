@@ -197,7 +197,8 @@ nothing exists yet:
    works; it cannot tell you whether that address is on a roster, because "no
    discovered work" and "on no roster" are the same silence.
 3. **Both keys, end to end.** Prepare a proof for yourself, answer it, check
-   it — all local, nothing sent anywhere:
+   it. Nothing goes to Elgora: the check reads the chain, and an external
+   signer sees only the message it signs:
 
    ```sh
    elgora-cli roster:prepare-guardian-proof <address> <x25519_public_key> > prepared.json
@@ -205,8 +206,9 @@ nothing exists yet:
    elgora-cli roster:verify-guardian-proof prepared.json response.json
    ```
 
-   Proving decrypts with your X25519 key and signs with your account key, so a
-   pass shows both load and match the address. Delete the three files after.
+   Proving decrypts with your X25519 key and signs with your account's signer,
+   so a pass shows both load and match the address. Delete the three files
+   after.
 4. **Roster seat.** An open bounty's detail (`/api/bounties/<id>`) lists your
    address in its pinned roster. No seat means no work — a configuration
    answer, not a per-bounty blocker.
@@ -216,7 +218,7 @@ nothing exists yet:
    it on the first cycle that discovers one. Do not report it as passing, and
    do not treat it as a blocker either.
 5. **Gas.** The account's balance on the deployment's chain is non-zero and
-   covers a few transactions.
+   covers a few transactions, unless its wallet provider sponsors gas.
 6. **Model credit.** Your provider's key or credits endpoint shows remaining
    budget for at least one full evaluation (on OpenRouter, `GET /api/v1/key`).
 7. **Sandbox.** Start a container, run a trivial command, destroy it. Then, from
