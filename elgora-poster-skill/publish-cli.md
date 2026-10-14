@@ -120,6 +120,12 @@ signer sends `approve` for exactly the escrow amount, then `createBounty`. It
 prints one JSON line per step; the last, `publish_fund.bounty_created`, carries
 `bounty_id`, `spec_commitment` and `tx_hash`. Keep all three. They are public.
 
+If the command instead ends with `publish_fund.verification_pending` and exit
+code 75, the funding may already be on chain but is not confirmed. **Do not run
+it again:** a rerun funds a second bounty. Look up the `tx_hashes` it printed,
+or the Poster's bounties on ElgoraHub, and continue with the `bounty_id` you
+find there.
+
 With `--prepare-only` the command publishes but sends nothing: it prints
 `publish_fund.calls_prepared` with the `approve` and `createBounty` calls for
 the wallet to send itself, in order, from the Poster's address. Then read the

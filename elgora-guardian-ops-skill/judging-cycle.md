@@ -1,7 +1,7 @@
 ---
 metadata:
-  version: "1.0.0"
-  updated: "2026-09-22"
+  version: "1.1.0"
+  updated: "2026-10-14"
 ---
 
 # The Judging Cycle
@@ -60,6 +60,10 @@ is about one bounty you are already inside, not a queue of work.
    record, record no Verdict. That is normal for a large bounty — not a failure,
    and never a reason to score from incomplete evidence.
 6. Every Submission resolved: decide, record the Verdict, confirm it on chain.
+   Exit `75` with `guardian_verdict.verification_pending` means it may be on
+   chain but is not confirmed yet: keep the record, keep the decision, and
+   run the same `guardian:verdict` command on the next cycle. An identical
+   Verdict already on chain is a no-op, so the retry never records twice.
 7. Delete every decrypted file for that bounty. Keep the record only while an
    `awarded` Verdict still owes a winning key; once the bounty has settled —
    delivered, or settled with no winner — delete the bounty's whole directory
@@ -118,6 +122,10 @@ answered once and read back from the record.
   looks done. Anchor it to `submission_call_count`.
 - **Partial Verdicts.** There are none. Progress lives in the record and your
   operator reports, never on chain.
+- **Reading exit `75` as a result.** From `guardian:verdict` it is neither
+  recorded nor failed, the same as from `guardian:deliver-key`: retry on the
+  next cycle with the same decision, and report it as pending, never as a
+  recorded Verdict.
 - **Re-deciding settled questions.** Re-reading the skills and re-measuring the
   host every run, and answering differently each time, is the most expensive
   loop a Guardian has — and it judges inconsistently.

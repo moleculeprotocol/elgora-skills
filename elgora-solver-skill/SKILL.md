@@ -202,8 +202,10 @@ The CLI:
 - rechecks that the bounty is Open and before its Submission deadline; and
 - locally verifies the complete four-argument ElgoraHub Submission transaction.
 
-It then sends that transaction and reports `submit.submission_recorded` once a
-receipt succeeds.
+It then sends that transaction and reports `submit.submission_recorded` once
+ElgoraHub shows the Submission. Exit code 75 with `submit.verification_pending`
+means it may be on chain but is not confirmed yet: read
+`activeSubmissionCommitment` or the bounty's `submissions` before resubmitting.
 
 ## Choose The Signer
 

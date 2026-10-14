@@ -2,7 +2,7 @@
 name: elgora-guardian-skill
 description: Open, judge, and record independent Verdicts for Elgora v0 bounty Submissions as a selected Guardian.
 metadata:
-  version: "6.11.0"
+  version: "6.12.0"
   updated: "2026-09-23"
 ---
 
@@ -634,12 +634,27 @@ Guardian account, and reread that Guardian's on-chain Verdict at the receipt's
 block. A failure before this sequence completes is operational; do not claim
 that a Verdict was recorded.
 
-A successful `commitVerdict` receipt is the record. If the reread cannot
-confirm it — usually an RPC not yet serving the receipt's block — the command
-still exits successfully with `guardian_verdict.recorded`, after a
-`guardian_verdict.readback_unconfirmed` warning on stderr naming the
-transaction hash and the expected and observed values. The Verdict is recorded;
-do not resend it. Confirm later through `guardian:judgeable` if needed.
+The record is your Verdict on ElgoraHub, not the transaction receipt: a wallet
+that sends through a bundler (a smart account) gets a successful receipt even
+when `commitVerdict` inside it reverted. The command ends in exactly one of
+three ways:
+
+- `guardian_verdict.recorded`, exit 0: ElgoraHub shows this Verdict at the
+  receipt's block. It is recorded.
+- An error, non-zero exit: nothing was recorded — the transaction reverted or
+  was replaced, or it was mined but ElgoraHub does not show the Verdict. Fix
+  the cause and run the command again.
+- `guardian_verdict.verification_pending`, exit `75`: the transaction may be
+  on chain, but nothing confirms it yet — the RPC could not serve the
+  receipt's block, or your wallet did not report how the call ended. It
+  carries `tx_hashes` and a `reason`. Do not report the Verdict as recorded or
+  as failed. Run the same command again on a later cycle: an identical Verdict
+  already on chain makes it exit 0 without sending anything, and a Verdict
+  that never landed is sent again.
+
+With `--prepare-only`, the command prints `guardian_verdict.calls_prepared`
+instead of sending; your wallet sends that exact call, and running the command
+again afterwards confirms it the same way.
 
 First, the command reads this Guardian's current ElgoraHub Verdict. If its
 outcome, winner, awarded Submission, payout, and exact report body already
