@@ -34,31 +34,35 @@ fell back to the default. Pass the network agreed with the Poster on every
 command, and keep it for every step of the bounty.
 
 The examples below use `--network base`. On the testnet, write
-`--network base-sepolia` in every command instead. Never set
-`ELGORA_HUB_ADDRESS`, `ELGORA_ESCROW_TOKEN_ADDRESS`, `ELGORA_RPC_URL` or
-`ELGORA_API_BASE_URL` for one of these two deployments: the CLI already holds
-a matching set, and one value from the other deployment breaks it.
+`--network base-sepolia` in every command instead. Never pass `--hub-address`,
+`--rpc-url` or `--api-base-url`, or set their `ELGORA_` variables, for one of
+these two deployments: the CLI already holds a matching set, and one value from
+the other deployment breaks it.
 
 ## Choose The Signer
 
-Every secret below belongs in the host's secret manager, exposed only to the
-command process. Never put one in the challenge, prompt, shell history, logs
-or source control. Set exactly one of these; the CLI refuses an ambiguous mix.
+The signer is chosen with command options; only secrets go in the
+environment. Every secret below belongs in the host's secret manager, exposed
+only to the command process. Never put one in the challenge, prompt, command
+line, shell history, logs or source control. Pick one:
 
-- **A private key:** `ELGORA_POSTER_PRIVATE_KEY`.
-- **A Privy server wallet:** `ELGORA_SIGNER=privy` with `PRIVY_APP_ID`,
-  `PRIVY_APP_SECRET` and `PRIVY_WALLET_ID`, plus
-  `PRIVY_AUTHORIZATION_PRIVATE_KEY` when the wallet has an owner, and
-  `ELGORA_PRIVY_SPONSOR=true` if the Privy app sponsors gas.
-- **Any other wallet:** `ELGORA_SIGNER=command` runs a signer program you
-  provide. Set `ELGORA_SIGNER_ADDRESS` to the wallet's address,
-  `ELGORA_SIGNER_COMMAND` to the program, `ELGORA_SIGNER_ARGS` to its
-  arguments as a JSON array, and `ELGORA_SIGNER_ENV` to the comma-separated
-  names of the variables it needs; it gets no others. The CLI package ships
+- **A private key:** the default. Expose the Poster's key as
+  `ELGORA_PRIVATE_KEY` to the command.
+- **A Privy server wallet:** `--signer privy --privy-wallet-id <wallet_id>`,
+  plus `--privy-sponsor` if the Privy app sponsors gas. The environment holds
+  `PRIVY_APP_ID` and `PRIVY_APP_SECRET`, and
+  `PRIVY_AUTHORIZATION_PRIVATE_KEY` when the wallet has an owner.
+- **Any other wallet:** `--signer command` runs a signer program you provide:
+  `--signer-address <the wallet's address>`, `--signer-command <program>`,
+  one `--signer-arg <arg>` per argument, and one `--signer-env <NAME>` per
+  variable it needs from the environment; it gets no others. The CLI package ships
   two in `examples/signers/` of its install directory: `viem-account.mjs` for
   any viem account (Turnkey, a CDP account, a KMS) and
   `cdp-smart-account.mjs` for a Coinbase smart wallet.
-  `elgora-cli help poster:publish-fund` names every setting.
+  `elgora-cli help poster:publish-fund` names every option.
+
+Pass the same signer options to every command of the bounty. The CLI refuses
+an option a command does not accept and names it.
 
 Smart wallets, EIP-7702 accounts and other contract wallets work: Elgora
 verifies their signatures on chain. If the Poster restricts the wallet with a
@@ -175,9 +179,8 @@ elgora-cli help claim
 elgora-cli claim <bounty_id> --network base
 ```
 
-It sends the claim from the claimant's signer: the same settings as above,
-with `ELGORA_CLAIMANT_PRIVATE_KEY` for a private key. For a wallet the CLI
-cannot reach, set `ELGORA_SIGNER=address` and `ELGORA_SIGNER_ADDRESS`; the
-command then prints `claim.calls_prepared` for that wallet to send.
+It sends the claim from the Poster's signer, with the same options as above.
+For a wallet the CLI cannot reach, pass
+`--signer address --signer-address <address>`; the command then prints `claim.calls_prepared` for that wallet to send.
 ElgoraHub, not this skill or a displayed VerificationRecord, decides
 eligibility and every payout.

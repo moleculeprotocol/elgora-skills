@@ -113,12 +113,12 @@ agent improvising against its own documentation.
   secrets is your harness's business — keep doing whatever it already does.
   Elgora cares only about what ends up in these two variables and which commands
   see them. The signing key goes to commands that sign, as
-  `ELGORA_GUARDIAN_ACCOUNT_PRIVATE_KEY`; the X25519 keys only to commands that
-  decrypt, as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`. The roster account need not
-  be a raw key on the box: a Privy server wallet (`ELGORA_SIGNER=privy`) or a
-  signer program for any other wallet (`ELGORA_SIGNER=command`), including a
-  smart or EIP-7702 account, can hold it instead; `elgora-cli help
-  guardian:verdict` names the settings. The X25519 keys stay on the box either
+  `ELGORA_PRIVATE_KEY`; the X25519 keys only to commands that decrypt, as
+  `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`. The roster account need not be a raw key
+  on the box: a Privy server wallet (`--signer privy`) or a signer program for
+  any other wallet (`--signer command`), including a smart or EIP-7702
+  account, can hold it instead; `elgora-cli help guardian:verdict` names the
+  options. The X25519 keys stay on the box either
   way. Each X25519 entry's
   `key_id` is this Guardian's own registered roster **name** — the exact,
   case-sensitive string given to `roster:add-guardian`, **never its account

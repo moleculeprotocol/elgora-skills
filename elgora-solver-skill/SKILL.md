@@ -212,19 +212,23 @@ means it may be on chain but is not confirmed yet: read
 The Solver's wallet signs each upload and preparation request and sends the
 Submission transaction. Keep every secret below in the host's secret manager,
 exposed only to the command process; never put one in a command line, prompt,
-file, shell history, log, or source control. Set exactly one of these:
+file, shell history, log, or source control. Command options choose the
+signer; the environment holds only its secrets. Pick one:
 
-- **A private key:** `ELGORA_SOLVER_PRIVATE_KEY`.
-- **A Privy server wallet:** `ELGORA_SIGNER=privy` with `PRIVY_APP_ID`,
-  `PRIVY_APP_SECRET`, `PRIVY_WALLET_ID`, plus `PRIVY_AUTHORIZATION_PRIVATE_KEY`
-  when the wallet has an owner and `ELGORA_PRIVY_SPONSOR=true` for sponsored
-  gas.
-- **Any other wallet:** `ELGORA_SIGNER=command` runs a signer program with
-  `ELGORA_SIGNER_ADDRESS`, `ELGORA_SIGNER_COMMAND`, `ELGORA_SIGNER_ARGS` (a JSON
-  array) and `ELGORA_SIGNER_ENV` (the variables it may read). The CLI package
-  ships examples in `examples/signers/`: any viem account (Turnkey, a CDP
-  account, a KMS), or a Coinbase smart wallet. `elgora-cli help solver:submit`
-  names every setting.
+- **A private key:** the default. Expose the Solver's key as
+  `ELGORA_PRIVATE_KEY` to the command.
+- **A Privy server wallet:** `--signer privy --privy-wallet-id <wallet_id>`,
+  plus `--privy-sponsor` for sponsored gas. The environment holds
+  `PRIVY_APP_ID`, `PRIVY_APP_SECRET`, and `PRIVY_AUTHORIZATION_PRIVATE_KEY`
+  when the wallet has an owner.
+- **Any other wallet:** `--signer command` runs a signer program:
+  `--signer-address`, `--signer-command`, one `--signer-arg` per argument and
+  one `--signer-env` per variable it may read. The CLI package ships examples
+  in `examples/signers/`: any viem account (Turnkey, a CDP account, a KMS), or
+  a Coinbase smart wallet. `elgora-cli help solver:submit` names every option.
+
+Pass the same signer options to `solver:submit` and `claim`. The CLI refuses
+an option a command does not accept and names it.
 
 Smart wallets, EIP-7702 accounts and other contract wallets work; Elgora
 verifies their signatures on chain. The wallet signs every request within 30
@@ -309,11 +313,10 @@ confirms nothing of the pool has been pulled yet, and prints
 `claim.prepared` with `claimable_amount` before anything is signed. Check that
 amount against `settlement_amount` and stop on any mismatch.
 
-The claim is sent by the claimant's signer: the same settings as in Choose The
-Signer, with `ELGORA_CLAIMANT_PRIVATE_KEY` for a private key. A local key needs
-a gas token balance on the bounty's chain; the command stops rather than
-sending without one. For a wallet the CLI cannot reach, set
-`ELGORA_SIGNER=address` and `ELGORA_SIGNER_ADDRESS`, or pass `--prepare-only`:
+The claim is sent by the Solver's signer, with the same options as in Choose
+The Signer. A local key needs a gas token balance on the bounty's chain; the
+command stops rather than sending without one. For a wallet the CLI cannot
+reach, pass `--signer address --signer-address <address>`, or `--prepare-only`:
 the command prints `claim.calls_prepared`; verify the wallet is on the displayed
 chain and send that exact `to`, `value`, and `data`.
 
