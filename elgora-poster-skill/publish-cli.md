@@ -41,115 +41,28 @@ the other deployment breaks it.
 
 ## Choose The Signer
 
-The signer is chosen with command options; only secrets go in the
-environment. Every secret below belongs in the host's secret manager, exposed
-only to the command process. Never put one in the challenge, prompt, command
-line, shell history, logs or source control. Pick one:
+Pass the same signer options to every command of the bounty, and keep every
+secret in the host's secret manager, exposed only to the command process.
 
-- **A private key:** the default. Expose the Poster's key as
-  `ELGORA_PRIVATE_KEY` to the command.
+- **Your own wallet tooling**, so no key enters the CLI process:
+  `--signer manual --signer-address <address>`. Run the command in the
+  background and read its stdout. For each signature or transaction it prints
+  `signer.request_written` with `request_path`, `response_path` and
+  `expires_at`. The request holds `kind`, `address`, `chain_id`, and
+  `typed_data` (EIP-712, `eth_signTypedData_v4` shape), `message` (hex for
+  `personal_sign`) or `calls`. Sign or send it with your wallet and write the
+  signature, or the transaction hashes separated by spaces, to
+  `response_path` before `expires_at`.
+- **A private key** as `ELGORA_PRIVATE_KEY`, the default.
 - **A Privy server wallet:** `--signer privy --privy-wallet-id <wallet_id>`,
-  plus `--privy-sponsor` if the Privy app sponsors gas. The environment holds
-  `PRIVY_APP_ID` and `PRIVY_APP_SECRET`, and
-  `PRIVY_AUTHORIZATION_PRIVATE_KEY` when the wallet has an owner.
-- **Any wallet the Poster signs with themselves** (a browser extension, a
-  hardware wallet, a phone, a Coinbase smart wallet, an EIP-7702 account):
-  `--signer manual --signer-address <the Poster's address>`. The CLI asks
-  for each signature and transaction, and you relay every question to the
-  Poster. Follow Sign By Hand below.
+  plus `--privy-sponsor` if the app sponsors gas, with `PRIVY_APP_ID`,
+  `PRIVY_APP_SECRET` and, when the wallet has an owner,
+  `PRIVY_AUTHORIZATION_PRIVATE_KEY` in the environment.
 
-`elgora-cli help poster:publish-fund` names every option.
-
-Pass the same signer options to every command of the bounty. The CLI refuses
-an option a command does not accept and names it.
-
-Smart wallets, EIP-7702 accounts and other contract wallets work: Elgora
-verifies their signatures on chain. If the Poster restricts the wallet with a
-policy, allow typed data only in the `Elgora` domain on the deployment's chain
-and ElgoraHub, and calls only to the escrow token's `approve` for ElgoraHub and
-to ElgoraHub itself; both addresses are in `deployments.json`.
-
-## Sign By Hand
-
-With `--signer manual` the Poster keeps their wallet and signs every step
-themselves. You hold no key: you run the command, pass each question to the
-Poster, and hand their answer back to the CLI. Never answer a question
-yourself, and never change an answer.
-
-If the Poster cannot sign an EIP-712 file or send a raw transaction from
-their wallet, the website route (option 1 in `SKILL.md`) is simpler for them:
-the page asks their wallet directly.
-
-### What each command asks
-
-| Command | Signatures | Transactions |
-| --- | --- | --- |
-| `poster:review` | 1 (`POST /api/bounty-challenge-specs/review`) | — |
-| `poster:publish-fund` | 1 (`POST /api/bounty-challenge-specs/prepare-publication`) | one request: `approve` on the escrow token, then `create_bounty` on ElgoraHub |
-| `poster:open-winning-submission` | 2 (`POST /api/bounties/<id>/delivery/retrieve`, then `GET /api/bounties/<id>/submissions/<commitment>/content`) | — |
-| `claim` | — | `claim` on ElgoraHub |
-
-### Run it
-
-1. Ask the Poster for the address of the wallet they will sign with. Pass
-   `--signer manual --signer-address <address>` to every command, and
-   `--signer-dir <dir>` to keep the request files in your workspace.
-2. Start the command in the background and read its stdout as it arrives,
-   one JSON object per line. It does not exit while it waits for an answer.
-3. On a line with `"event":"signer.request_written"`, read the file at
-   `request_path`, check it (below), and pass the question to the Poster.
-4. Write the Poster's answer, exactly as given, to `response_path`:
-
-   ```sh
-   printf '%s\n' '<answer>' > '<response_path>'
-   ```
-
-5. Keep reading stdout. The command asks its next question, or finishes with
-   its usual events.
-
-### Check the question before you relay it
-
-- `kind` is `api_request_approval`: `typed_data.domain.name` is `Elgora`,
-  `chainId` is the bounty's chain, `verifyingContract` is `elgora_hub` in
-  `deployments.json`, `primaryType` is `ApiRequestApproval`,
-  and `message.endpointId` is the route in the table above for this command.
-- `kind` is `send_calls`: `chain_id` is the bounty's chain and every call has
-  `value` `0`. `approve` goes to the escrow token (`escrow_token` in
-  `deployments.json`), with ElgoraHub as spender and exactly the bounty's
-  escrow amount. `create_bounty` and `claim` go to `elgora_hub`.
-
-If anything differs, stop the command, tell the Poster, and relay nothing.
-
-### Ask the Poster
-
-Say what they are signing in plain words, for example "approve Elgora's
-review of your challenge" or "fund bounty: approve 1,000 USDC to ElgoraHub,
-then create it". Then give them:
-
-- **A signature** (`api_request_approval`): the file at `typed_data_path`.
-  It is EIP-712 typed data in the `eth_signTypedData_v4` shape. With
-  Foundry, `cast wallet sign --browser --data --from-file <typed_data_path>`
-  opens their browser wallet, and `--ledger` uses a Ledger. The answer is
-  the signature: `0x` and hex, longer than 65 bytes for a smart wallet.
-- **Transactions** (`send_calls`): each call's `to` and `data` from the
-  request, sent in order, from their wallet on the bounty's chain, with
-  value 0. For example `cast send --browser <to> <data>`, once per call. A
-  wallet that batches may send them as one. The answer is the transaction
-  hashes in order, separated by spaces, or the one hash of the batch.
-
-### When something goes wrong
-
-- **stderr says "Ignored the answer":** the signature is not by this
-  address for this exact request, or it is not hex. The command keeps
-  waiting. Ask the Poster to sign the same file again with the same wallet.
-- **A signature was not answered before `expires_at`** (25 minutes; Elgora
-  refuses an approval older than 30): the command fails and nothing was
-  sent. Run it again; it asks a fresh question.
-- **A transaction was not answered before `expires_at`** (60 minutes): the
-  command ends with `<event>.verification_pending` and exit 75. The Poster
-  may have sent it anyway. Do not run `poster:publish-fund` again: a second
-  run funds a second bounty. Ask the Poster for the hashes, or look for
-  their new bounty on ElgoraHub or the subgraph first.
+Sign only typed data in the `Elgora` domain on the bounty's chain whose
+`verifyingContract` is `elgora_hub` in `deployments.json`, and send only calls
+to `elgora_hub` or `approve` on `escrow_token` for `elgora_hub`. Smart wallets
+and EIP-7702 accounts work: Elgora verifies their signatures on chain.
 
 ## Review Until It Is Green
 
@@ -261,7 +174,7 @@ elgora-cli claim <bounty_id> --network base
 ```
 
 It sends the claim from the Poster's signer, with the same options as above.
-For a wallet the CLI cannot reach, pass
-`--signer address --signer-address <address>`; the command then prints `claim.calls_prepared` for that wallet to send.
+With `--prepare-only`, it prints `claim.calls_prepared` for the Poster's wallet
+to send instead.
 ElgoraHub, not this skill or a displayed VerificationRecord, decides
 eligibility and every payout.

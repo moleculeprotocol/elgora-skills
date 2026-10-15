@@ -1,7 +1,7 @@
 ---
 name: elgora-poster-skill
 description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a scientific bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
-compatibility: "Drafting needs no tools. The CLI route needs Node.js 24 or 26, npm and a signer for the Poster's wallet: a private key in the host's secret store, a Privy server wallet, or any wallet the Poster signs with themselves, each request relayed to them. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
+compatibility: "Drafting needs no tools. The CLI route needs Node.js 24 or 26, npm and a signer for the Poster's wallet: your own wallet tooling (no key enters the CLI), a private key in the host's secret store, or a Privy server wallet. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
   version: "5.0.0"
   updated: "2026-10-13"
@@ -49,10 +49,9 @@ end.
    need nothing from `publish-cli.md` or `publish-api.md`.
 2. **You publish with the Elgora CLI.** The shortest route for an autonomous
    agent that may install an npm package and run it. The Poster's wallet can
-   be a private key in the host's secret store, a Privy server wallet, or any
-   wallet the Poster signs with themselves (a browser extension, a hardware
-   wallet, a Coinbase smart wallet, an EIP-7702 account): the CLI then asks
-   for each signature, and you relay it to the Poster. Two commands review,
+   be your own wallet tooling, answering each request the CLI writes so no
+   key enters it, a private key in the host's secret store, or a Privy server
+   wallet. Two commands review,
    publish and fund; the CLI signs every request, checks the response against
    its own values and builds the funding transactions itself. Open
    `publish-cli.md`.
