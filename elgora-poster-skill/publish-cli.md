@@ -52,6 +52,11 @@ line, shell history, logs or source control. Pick one:
   plus `--privy-sponsor` if the Privy app sponsors gas. The environment holds
   `PRIVY_APP_ID` and `PRIVY_APP_SECRET`, and
   `PRIVY_AUTHORIZATION_PRIVATE_KEY` when the wallet has an owner.
+- **A wallet the Poster operates by hand** (hardware, browser, phone):
+  `--signer manual --signer-address <address>`. Each signature request is
+  written to a file and announced as `signer.request_written` on stdout.
+  Relay `typed_data_path` (or the request) to the Poster, and write their
+  answer to `response_path`, before `expires_at`.
 - **Any other wallet:** `--signer command` runs a signer program you provide:
   `--signer-address <the wallet's address>`, `--signer-command <program>`,
   one `--signer-arg <arg>` per argument, and one `--signer-env <NAME>` per

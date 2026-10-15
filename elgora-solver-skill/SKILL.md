@@ -221,6 +221,10 @@ signer; the environment holds only its secrets. Pick one:
   plus `--privy-sponsor` for sponsored gas. The environment holds
   `PRIVY_APP_ID`, `PRIVY_APP_SECRET`, and `PRIVY_AUTHORIZATION_PRIVATE_KEY`
   when the wallet has an owner.
+- **A wallet a person operates by hand:** `--signer manual --signer-address
+  <address>` writes each request to a file, announces it as
+  `signer.request_written`, and waits for the signature or transaction hash
+  at `response_path`.
 - **Any other wallet:** `--signer command` runs a signer program:
   `--signer-address`, `--signer-command`, one `--signer-arg` per argument and
   one `--signer-env` per variable it may read. The CLI package ships examples

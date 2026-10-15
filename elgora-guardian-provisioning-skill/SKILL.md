@@ -115,8 +115,9 @@ agent improvising against its own documentation.
   see them. The signing key goes to commands that sign, as
   `ELGORA_PRIVATE_KEY`; the X25519 keys only to commands that decrypt, as
   `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`. The roster account need not be a raw key
-  on the box: a Privy server wallet (`--signer privy`) or a signer program for
-  any other wallet (`--signer command`), including a smart or EIP-7702
+  on the box: a Privy server wallet (`--signer privy`), a signer program for
+  any other wallet (`--signer command`), or the operator answering each
+  request by hand (`--signer manual`), including from a smart or EIP-7702
   account, can hold it instead; `elgora-cli help guardian:verdict` names the
   options. The X25519 keys stay on the box either
   way. Each X25519 entry's
