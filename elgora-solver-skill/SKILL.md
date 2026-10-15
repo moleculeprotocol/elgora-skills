@@ -221,15 +221,13 @@ signer; the environment holds only its secrets. Pick one:
   plus `--privy-sponsor` for sponsored gas. The environment holds
   `PRIVY_APP_ID`, `PRIVY_APP_SECRET`, and `PRIVY_AUTHORIZATION_PRIVATE_KEY`
   when the wallet has an owner.
-- **A wallet a person operates by hand:** `--signer manual --signer-address
-  <address>` writes each request to a file, announces it as
-  `signer.request_written`, and waits for the signature or transaction hash
-  at `response_path`.
-- **Any other wallet:** `--signer command` runs a signer program:
-  `--signer-address`, `--signer-command`, one `--signer-arg` per argument and
-  one `--signer-env` per variable it may read. The CLI package ships examples
-  in `examples/signers/`: any viem account (Turnkey, a CDP account, a KMS), or
-  a Coinbase smart wallet. `elgora-cli help solver:submit` names every option.
+- **Any wallet the Solver's owner signs with themselves** (a browser
+  extension, a hardware wallet, a phone, a Coinbase smart wallet, an
+  EIP-7702 account): `--signer manual --signer-address <address>`. The CLI
+  asks for each signature and transaction, and you relay every question to
+  the owner. Follow Sign By Hand below.
+
+`elgora-cli help solver:submit` names every option.
 
 Pass the same signer options to `solver:submit` and `claim`. The CLI refuses
 an option a command does not accept and names it.
@@ -237,6 +235,87 @@ an option a command does not accept and names it.
 Smart wallets, EIP-7702 accounts and other contract wallets work; Elgora
 verifies their signatures on chain. The wallet signs every request within 30
 minutes of the CLI asking.
+
+## Sign By Hand
+
+With `--signer manual` the Solver's owner keeps their wallet and signs every
+step themselves. You hold no key: you run the command, pass each question to
+the owner, and hand their answer back to the CLI. Never answer a question
+yourself, and never change an answer.
+
+### What each command asks
+
+| Command | Signatures | Transactions |
+| --- | --- | --- |
+| `solver:submit` | 2: `POST /api/bounties/<id>/submissions/<solver>/artifact-upload-url`, then `POST /api/bounties/<id>/submissions/<solver>/prepare`; one more for each retry of a stale request | `submit` on ElgoraHub |
+| `claim` | — | `claimAward` on ElgoraHub |
+
+The two signatures of `solver:submit` cover the one encrypted envelope the
+command sealed. Both must come from the same run: never answer a question
+with a signature from an earlier run.
+
+### Run it
+
+1. Ask the owner for the address of the wallet they will sign with. Pass
+   `--signer manual --signer-address <address>` to `solver:submit` and to
+   `claim`, and `--signer-dir <dir>` to keep the request files in your
+   workspace, outside the artifact directory.
+2. Start the command in the background and read its stdout as it arrives,
+   one JSON object per line. It does not exit while it waits for an answer.
+3. On a line with `"event":"signer.request_written"`, read the file at
+   `request_path`, check it (below), and pass the question to the owner.
+4. Write the owner's answer, exactly as given, to `response_path`:
+
+   ```sh
+   printf '%s\n' '<answer>' > '<response_path>'
+   ```
+
+5. Keep reading stdout. The command asks its next question, or finishes with
+   its usual events.
+
+### Check the question before you relay it
+
+- `kind` is `api_request_approval`: `typed_data.domain.name` is `Elgora`,
+  `chainId` is the bounty's chain, `verifyingContract` is `elgora_hub` in
+  `deployments.json`, `primaryType` is `ApiRequestApproval`, and
+  `message.endpointId` is one of the routes in the table above, for this
+  bounty and this Solver's address.
+- `kind` is `send_calls`: `chain_id` is the bounty's chain, and its one call
+  goes to `elgora_hub` with `value` `0` and `function_name` `submit` (or
+  `claim_award` for a claim).
+
+If anything differs, stop the command, tell the owner, and relay nothing.
+
+### Ask the owner
+
+Say what they are signing in plain words, for example "authorize the upload
+of your encrypted Submission to bounty 12". Then give them:
+
+- **A signature** (`api_request_approval`): the file at `typed_data_path`.
+  It is EIP-712 typed data in the `eth_signTypedData_v4` shape. With
+  Foundry, `cast wallet sign --browser --data --from-file <typed_data_path>`
+  opens their browser wallet, and `--ledger` uses a Ledger. The answer is
+  the signature: `0x` and hex, longer than 65 bytes for a smart wallet.
+- **A transaction** (`send_calls`): the call's `to` and `data` from the
+  request, sent from their wallet on the bounty's chain with value 0, for
+  example `cast send --browser <to> <data>`. The answer is its transaction
+  hash.
+
+### When something goes wrong
+
+- **stderr says "Ignored the answer":** the signature is not by this
+  address for this exact request, or it is not hex. The command keeps
+  waiting. Ask the owner to sign the same file again with the same wallet.
+- **A signature was not answered before `expires_at`** (25 minutes; Elgora
+  refuses an approval older than 30): the command fails before anything is
+  submitted on chain. Run it again; it seals a fresh envelope and asks fresh
+  questions.
+- **The `submit` transaction was not answered before `expires_at`** (60
+  minutes): the command ends with `submit.verification_pending` and exit 75.
+  The owner may have sent it anyway. Read `activeSubmissionCommitment` or
+  the bounty's `submissions` before submitting again.
+
+## Send It Yourself
 
 With `--prepare-only`, the CLI does everything except send: it prints
 `submit.calls_prepared` with the exact `submit` call. Verify the wallet is on
