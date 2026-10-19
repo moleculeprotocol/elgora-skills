@@ -52,7 +52,8 @@ secret in the host's secret manager, exposed only to the command process.
   `typed_data` (EIP-712, `eth_signTypedData_v4` shape), `message` (hex for
   `personal_sign`) or `calls`. Sign or send it with your wallet and write the
   signature, or the transaction hashes separated by spaces, to
-  `response_path` before `expires_at`.
+  `response_path` before `expires_at`. See When The Chain Lags for how to
+  write them.
 - **A private key** as `ELGORA_PRIVATE_KEY`, the default.
 - **A Privy server wallet:** `--signer privy --privy-wallet-id <wallet_id>`,
   plus `--privy-sponsor` if the app sponsors gas, with `PRIVY_APP_ID`,
@@ -63,6 +64,21 @@ Sign only typed data in the `Elgora` domain on the bounty's chain whose
 `verifyingContract` is `elgora_hub` in `deployments.json`, and send only calls
 to `elgora_hub` or `approve` on `escrow_token` for `elgora_hub`. Smart wallets
 and EIP-7702 accounts work: Elgora verifies their signatures on chain.
+
+### When The Chain Lags
+
+Nodes can be a few seconds behind the chain, so a step can fail right after
+the one before it worked. Wait and try again; do not treat it as a failure.
+
+- **Your wallet refuses `createBounty` right after `approve`**, often as
+  "transfer amount exceeds allowance": its node has not seen the approval yet,
+  and nothing was sent. Wait 5 to 10 seconds and send it again, up to a few
+  times, or send both calls in one batch if your wallet can.
+- **Write the hash of the mined transaction.** A smart wallet or a Safe may
+  first return a user operation hash or a Safe transaction id. Wait for its
+  receipt and write that receipt's transaction hash, not the first id.
+- **A signature the CLI cannot verify yet** is checked again until
+  `expires_at`, so leave a correct one in place rather than re-signing.
 
 ## Review Until It Is Green
 
@@ -122,7 +138,9 @@ If the command instead ends with `publish_fund.verification_pending` and exit
 code 75, the funding may already be on chain but is not confirmed. **Do not run
 it again:** a rerun funds a second bounty. Look up the `tx_hashes` it printed,
 or the Poster's bounties on ElgoraHub, and continue with the `bounty_id` you
-find there.
+find there. If the `reason` says ElgoraHub could not be read at a block, the
+RPC had not caught up yet: wait a minute and look again. A lookup that does not
+show the bounty yet is not a sign that it failed.
 
 With `--prepare-only` the command publishes but sends nothing: it prints
 `publish_fund.calls_prepared` with the `approve` and `createBounty` calls for
@@ -176,5 +194,11 @@ elgora-cli claim <bounty_id> --network base
 It sends the claim from the Poster's signer, with the same options as above.
 With `--prepare-only`, it prints `claim.calls_prepared` for the Poster's wallet
 to send instead.
+
+If it ends with `claim.verification_pending` and exit code 75, wait a minute
+and run the same `claim` again. Rerunning cannot pay twice: if the first claim
+landed, the command stops with `Poster has no claimable refund`, which means
+the refund is claimed; if it did not land, it is sent again.
+
 ElgoraHub, not this skill or a displayed VerificationRecord, decides
 eligibility and every payout.

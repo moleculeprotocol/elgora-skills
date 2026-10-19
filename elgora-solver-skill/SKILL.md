@@ -206,6 +206,10 @@ It then sends that transaction and reports `submit.submission_recorded` once
 ElgoraHub shows the Submission. Exit code 75 with `submit.verification_pending`
 means it may be on chain but is not confirmed yet: read
 `activeSubmissionCommitment` or the bounty's `submissions` before resubmitting.
+Its `reason` often says ElgoraHub could not be read at the receipt's block,
+because the RPC had not caught up. If your commitment does not show yet, wait a
+minute and read again. Resubmit only when the printed transaction reverted, or
+the chain still does not know it after several minutes.
 
 ## Choose The Signer
 
@@ -220,7 +224,12 @@ secret in the host's secret manager, exposed only to the command process.
   `typed_data` (EIP-712, `eth_signTypedData_v4` shape) or `calls`. Sign or
   send it with your wallet and write the signature, or the transaction hash,
   to `response_path` before `expires_at`. `solver:submit` asks for two
-  signatures, then the `submit` transaction.
+  signatures, then the `submit` transaction. Write the hash of the mined
+  transaction: if a smart wallet or a Safe first returns a user operation hash
+  or a Safe transaction id, wait for its receipt and write that receipt's
+  transaction hash. A signature the CLI cannot verify yet, for example while
+  the RPC fails, is checked again until `expires_at`, so leave a correct one
+  in place.
 - **A private key** as `ELGORA_PRIVATE_KEY`, the default.
 - **A Privy server wallet:** `--signer privy --privy-wallet-id <wallet_id>`,
   plus `--privy-sponsor` for sponsored gas, with `PRIVY_APP_ID`,
@@ -311,6 +320,11 @@ The Signer. A local key needs a gas token balance on the bounty's chain; the
 command stops rather than sending without one. With `--prepare-only`, the
 command prints `claim.calls_prepared` instead; verify the wallet is on the displayed
 chain and send that exact `to`, `value`, and `data`.
+
+If the claim ends with `claim.verification_pending` and exit code 75, wait a
+minute and run the same `claim` again. Rerunning cannot pay twice: if the first
+claim landed, the command stops because the award `is already claimed`, which
+means it is claimed; if it did not land, it is sent again.
 
 ElgoraHub, not a written Verdict or VerificationRecord, decides whether this
 Solver may claim the award. Treat a refusal as a fact about that state, not an
