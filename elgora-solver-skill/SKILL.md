@@ -225,9 +225,10 @@ secret in the host's secret manager, exposed only to the command process.
   send it with your wallet and write the signature, or the transaction hash,
   to `response_path` before `expires_at`. `solver:submit` asks for two
   signatures, then the `submit` transaction. Write the hash of the mined
-  transaction: if a smart wallet or a Safe first returns a user operation hash
-  or a Safe transaction id, wait for its receipt and write that receipt's
-  transaction hash. A signature the CLI cannot verify yet, for example while
+  transaction: the CLI checks only real transactions and never asks a bundler,
+  so if a smart wallet or a Safe first returns a user operation hash or a Safe
+  transaction id, wait until it is mined and write the hash of the transaction
+  it landed in. A signature the CLI cannot verify yet, for example while
   the RPC fails, is checked again until `expires_at`, so leave a correct one
   in place.
 - **A private key** as `ELGORA_PRIVATE_KEY`, the default.

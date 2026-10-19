@@ -74,9 +74,10 @@ the one before it worked. Wait and try again; do not treat it as a failure.
   "transfer amount exceeds allowance": its node has not seen the approval yet,
   and nothing was sent. Wait 5 to 10 seconds and send it again, up to a few
   times, or send both calls in one batch if your wallet can.
-- **Write the hash of the mined transaction.** A smart wallet or a Safe may
-  first return a user operation hash or a Safe transaction id. Wait for its
-  receipt and write that receipt's transaction hash, not the first id.
+- **Write the hash of the mined transaction.** The CLI checks only real
+  transactions and never asks a bundler, so a user operation hash or a Safe
+  transaction id leaves the command pending. If your wallet returns one, wait
+  until it is mined and write the hash of the transaction it landed in.
 - **A signature the CLI cannot verify yet** is checked again until
   `expires_at`, so leave a correct one in place rather than re-signing.
 
