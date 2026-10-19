@@ -2,7 +2,7 @@
 name: elgora-guardian-provisioning-skill
 description: Build the machine a Guardian judges on — Node and the CLI, the container Submission code runs in, keys, where data lives, harness settings and monitoring. For the operator provisioning a Guardian host; a Guardian loads it only to diagnose its own broken environment.
 metadata:
-  version: "1.3.1"
+  version: "1.3.2"
   updated: "2026-10-19"
 ---
 
@@ -394,5 +394,6 @@ that is the case that caused the incident behind this file.
   that starts but does not confine runs every command just as well as one that
   does.
 - **Keep the sources the boundary.** A Guardian installs any tool freely, but
-  only from the public sources the skill names, and only inside the sandbox. A
-  tool with no such source is reported to you rather than fetched.
+  only from the sources `elgora-guardian-skill` names — public archives and
+  registries, or the source an approved challenge names — and only inside the
+  sandbox. A tool with no such source is reported to you rather than fetched.
