@@ -207,8 +207,10 @@ nothing exists yet:
    ```
 
    Proving decrypts with your X25519 key and signs with your account's signer,
-   so a pass shows both load and match the address. Delete the three files
-   after.
+   so a pass shows both load and match the address. The signed message is
+   UTF-8 text: with `--signer manual`, a wallet that signs only text, such as
+   AgentKit's `signMessage`, signs the request's hex `message` decoded to
+   text. Delete the three files after.
 4. **Roster seat.** An open bounty's detail (`/api/bounties/<id>`) lists your
    address in its pinned roster. No seat means no work — a configuration
    answer, not a per-bounty blocker.
