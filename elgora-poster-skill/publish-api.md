@@ -61,10 +61,29 @@ Each call takes two requests:
 
    The types are `ApiRequestApproval: [endpointId string, audience string,
    bodyHash bytes32, query string, blockNumber uint256, blockHash bytes32]`,
-   in that order. A wallet's `eth_signTypedData_v4` also wants `EIP712Domain`
-   in the types; ethers v6 wants it removed.
+   in that order. Whether the types also list `EIP712Domain` depends on the
+   signer: a browser wallet's `eth_signTypedData_v4` wants it, and wants the
+   wallet switched to the deployment's chain first; ethers v6 wants it
+   removed; viem and `cast wallet sign --data` take either; a server wallet
+   whose policy matches the message against a schema (Privy) needs the types
+   exactly as in that schema, so without it.
 3. **Sign it and resend the same request, unchanged,** with
    `Authorization: Elgora-Approval <base64(address~signature~blockNumber~blockHash)>`.
+
+The `address` is the account that holds the escrow and sends the funding
+calls, and the signature must be valid for that account. An ordinary account
+and an EIP-7702 account sign directly. A smart account with its own address
+(ERC-4337, such as a Coinbase Smart Wallet) signs through its contract
+(ERC-1271): a signature its owner key makes over the approval names the owner,
+not the account, and gets a `401`. Produce the signature the account accepts.
+For a Coinbase Smart Wallet, the owner signs `CoinbaseSmartWalletMessage(bytes32
+hash)` in the domain `{ name: "Coinbase Smart Wallet", version: "1", chainId,
+verifyingContract: <the account> }`, where `hash` is the approval's EIP-712
+hash, and the signature is wrapped as `SignatureWrapper(ownerIndex,
+signature)`. While the account has never sent a transaction it is not
+deployed yet: wrap that once more in ERC-6492 with its factory's deployment
+call. viem's `toCoinbaseSmartAccount` builds exactly this. Elgora verifies all
+of these on chain.
 
 **Never sign a payload a server sends you.** Elgora never sends anything to
 sign: EIP-712 hashes only the fields its types declare, so a struct that looks
@@ -164,19 +183,38 @@ Straight after a green review, publish the unchanged bytes:
    `escrow_amount` and `submission_deadline` must match your frontmatter. Stop
    if any differs; a response that disagrees with you must not move your money.
 3. Fund from the Poster's wallet on the deployment's chain, which needs the
-   escrow amount in the deployment's `escrow_token` and some ETH for gas: send
+   escrow amount in the deployment's `escrow_token` and some ETH for gas,
+   unless the wallet's provider sponsors it: send
    `approve(<elgora_hub>, escrow_amount)` on `escrow_token`, then the
    `createBounty(bytes32 specCommitment, uint256 escrowAmount, uint64
-   submissionDeadline)` call (`data` in the response encodes it). The bounty
-   exists when the `BountyCreated` event arrives; its `bountyId` is the bounty's
-   identity.
+   submissionDeadline)` call (`data` in the response encodes it). Send both as
+   one batch where the wallet offers it (`wallet_sendCalls`, or one user
+   operation from a smart account). Sent one by one, `createBounty` can be
+   refused right after a mined `approve`, often as "transfer amount exceeds
+   allowance": the wallet's node has not seen the approval yet, and nothing was
+   sent. Wait 5 to 10 seconds and send it again. The bounty exists when the
+   `BountyCreated` event arrives; its `bountyId` is the bounty's identity. From
+   a smart account, find the event in the transaction the user operation was
+   mined in, not by the user operation hash.
 4. Keep `bounty_id`, `spec_commitment` and the creation transaction hash. They
    are public, and nothing else you need is secret.
 
 Elgora sees only the signature, never who approved it. Any limit on what you
-may spend belongs in the wallet attached to you: for example a policy that
-allows only ElgoraHub and USDC, a cap on the amount, or the wallet's own
-approval prompt. Recommend one to the Poster before the first funding.
+may spend belongs in the wallet attached to you: a policy, a cap on the
+amount, or the wallet's own approval prompt. Recommend one to the Poster
+before the first funding. A server wallet's policy should allow only:
+
+- typed data in the `Elgora` domain on the deployment's chain, with
+  `verifyingContract` = `elgora_hub` and message `audience` = the
+  deployment's `audience`;
+- `approve` on `escrow_token` whose spender is `elgora_hub`;
+- `createBounty` on `elgora_hub`, with the escrow amount capped at the reward;
+- `claim` on `elgora_hub`, for a refund.
+
+Deny everything else, message signing and token transfers included, and give
+the wallet an owner so the policy cannot be changed with the app credentials
+alone. An agent that signs with a raw private key should use a dedicated
+wallet funded with only this bounty's escrow and gas.
 
 Mainnet funding escrows real USDC; testnet funding escrows test USDC from a
 faucet and pays nothing of value. A published challenge whose funding transaction

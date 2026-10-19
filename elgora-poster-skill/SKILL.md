@@ -3,8 +3,8 @@ name: elgora-poster-skill
 description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a scientific bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
 compatibility: "Drafting needs no tools. The CLI route needs Node.js 24 or 26, npm and a signer for the Poster's wallet: your own wallet tooling (no key enters the CLI), a private key in the host's secret store, or a Privy server wallet. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
-  version: "5.0.0"
-  updated: "2026-10-13"
+  version: "5.1.0"
+  updated: "2026-10-19"
   elgora_profile: elgora_markdown_bounty_challenge_v0
 ---
 

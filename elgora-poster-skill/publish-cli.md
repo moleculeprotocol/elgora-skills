@@ -53,17 +53,74 @@ secret in the host's secret manager, exposed only to the command process.
   `personal_sign`) or `calls`. Sign or send it with your wallet and write the
   signature, or the transaction hashes separated by spaces, to
   `response_path` before `expires_at`. See When The Chain Lags for how to
-  write them.
-- **A private key** as `ELGORA_PRIVATE_KEY`, the default.
+  write them, and Signing With Your Own Wallet for what each kind of
+  account needs.
+- **A private key** as `ELGORA_PRIVATE_KEY`, the default. Use a dedicated
+  wallet funded with only this bounty's escrow and gas: the CLI can spend
+  everything the key holds.
 - **A Privy server wallet:** `--signer privy --privy-wallet-id <wallet_id>`,
   plus `--privy-sponsor` if the app sponsors gas, with `PRIVY_APP_ID`,
   `PRIVY_APP_SECRET` and, when the wallet has an owner,
-  `PRIVY_AUTHORIZATION_PRIVATE_KEY` in the environment.
+  `PRIVY_AUTHORIZATION_PRIVATE_KEY` in the environment. Attach the policy in
+  Limit What The Wallet Can Do.
 
 Sign only typed data in the `Elgora` domain on the bounty's chain whose
 `verifyingContract` is `elgora_hub` in `deployments.json`, and send only calls
 to `elgora_hub` or `approve` on `escrow_token` for `elgora_hub`. Smart wallets
 and EIP-7702 accounts work: Elgora verifies their signatures on chain.
+
+### Signing With Your Own Wallet
+
+`--signer-address` is the account that holds the escrow and sends the calls.
+What its wallet must do depends on the kind of account:
+
+- **An ordinary account or an EIP-7702 account** (a browser wallet such as
+  MetaMask, including its smart account; a key-holding tool such as `cast`):
+  sign the request's `typed_data` exactly as written, `EIP712Domain` included,
+  with `eth_signTypedData_v4`. Switch the wallet to the bounty's chain first:
+  a browser wallet refuses typed data for another chain. Before approving,
+  check that the wallet shows the `Elgora` domain, the bounty's chain,
+  `elgora_hub` as verifying contract, and the `endpointId` and `audience` of
+  the step you are on.
+- **A smart account with its own address** (ERC-4337, such as a Coinbase
+  Smart Wallet or a CDP smart account): the account cannot sign; its owner
+  key signs for it, and a signature that only the owner made names the
+  owner's address, so the CLI keeps waiting. Answer with the signature the
+  account itself accepts (ERC-1271). For a Coinbase Smart Wallet, the owner
+  signs `CoinbaseSmartWalletMessage(bytes32 hash)` in the domain
+  `{ name: "Coinbase Smart Wallet", version: "1", chainId, verifyingContract:
+  <the account> }`, where `hash` is the EIP-712 hash of the request's
+  `typed_data`; the answer is that signature wrapped as
+  `SignatureWrapper(ownerIndex, signature)`, and, while the account has never
+  sent a transaction and so is not deployed, wrapped once more in ERC-6492
+  with its factory's deployment call. viem's `toCoinbaseSmartAccount` builds
+  exactly this; another kind of smart account needs its own scheme.
+
+For `send_calls`, send the calls in order from the same account. One batch is
+best where the wallet offers it: `wallet_sendCalls` in a browser wallet, or one
+user operation from a smart account, which also deploys the account if
+needed. Answer with the transaction hash(es) as When The Chain Lags says.
+
+### Limit What The Wallet Can Do
+
+Elgora sees only signatures, so any limit on spending belongs in the wallet.
+For a Privy server wallet, attach a policy that allows only:
+
+- `eth_signTypedData_v4` whose domain `chain_id` is the bounty's chain and
+  `verifying_contract` is `elgora_hub`, and whose message `audience` is the
+  deployment's `audience`. Give the message condition the `ApiRequestApproval`
+  types without `EIP712Domain` as its schema: the CLI sends them that way, and
+  Privy matches only identical types.
+- `eth_sendTransaction` to `escrow_token` for `approve` whose `spender` is
+  `elgora_hub`.
+- `eth_sendTransaction` to `elgora_hub` for `createBounty`, with
+  `escrowAmount` capped at the reward you agreed.
+- `eth_sendTransaction` to `elgora_hub` for `claim`, for a refund.
+
+Everything else, `personal_sign` and token transfers included, stays denied.
+Give the wallet an owner (an authorization key) so the policy cannot be
+changed with the app secret alone. Other wallet providers offer the same kind
+of rules under their own names.
 
 ### When The Chain Lags
 
