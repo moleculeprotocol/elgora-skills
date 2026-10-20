@@ -37,8 +37,9 @@ back as JSON: `error.code`, `error.message`, `error.issues` and
 Elgora has no login, API key or session. Every authenticated call must be
 signed by an EVM account, as one EIP-712 message over that exact request. How
 the Poster produces the signature is its own choice (a wallet skill, a signing
-library, a server wallet, a hardware wallet, a Safe); the key never goes to
-Elgora, and this skill does not need to hold it.
+library or a server wallet, for an ordinary account, an EIP-7702 account or a
+smart account; Safe and other multi-party wallets are not supported yet); the
+key never goes to Elgora, and this skill does not need to hold it.
 
 Each call takes two requests:
 
