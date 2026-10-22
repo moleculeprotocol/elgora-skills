@@ -90,9 +90,9 @@ packs it; never package it yourself for Elgora. Before submitting:
    one Submission folder. Subfolders are fine, at any depth. Use only regular
    files: no symlinks, devices, sockets or empty folders. The CLI never follows
    a symlink, including the folder or file you point it at.
-3. Keep every path, `/` separators included, at most 100 ASCII characters, and
-   name every file and folder starting with a letter or digit, then only
-   letters, digits, `.`, `_`, or `-`. Keep
+3. Name every file and folder with at most 255 ASCII characters, starting with
+   a letter or digit, then only letters, digits, `.`, `_`, or `-`, and keep
+   every path, `/` separators included, at most 1024 characters. Keep
    every path unique case-insensitively, and never use one path for both a file
    and a folder.
 4. Keep the Submission within the limits below. The CLI checks every name, the
@@ -111,8 +111,8 @@ plan a Submission against:
 A Submission is at most 10000 files, packs to at most 50 MiB encrypted, and
 extracts to at most 250 MB unpacked; a challenge may lower the extracted budget,
 never raise it. A Submission is a tree of regular files: each path is relative
-to the Submission root, at most 100 characters, and made of "/"-separated
-names of letters, digits, ".", "_" and "-", each
+to the Submission root, at most 1024 characters, and made of "/"-separated
+names of at most 255 characters of letters, digits, ".", "_" and "-", each
 starting with a letter or digit; paths and folder names are unique case-insensitively, no file
 shares a path with a folder, and there are no symlinks or empty folders. Every
 required deliverable is submitted as bytes: a link (URL, DOI, CID, bucket path,
