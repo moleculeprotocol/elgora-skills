@@ -80,13 +80,10 @@ agent improvising against its own documentation.
   give the scheduler the versioned path `nvm` installed
   (`~/.nvm/versions/node/v24.*/bin`).
 - **The latest `@elgora/cli` (at least 12.0.0)**, installed globally, updated
-  when the skills are — `npm install --global @elgora/cli@latest`. It opens
-  bounties pinning `elgora_markdown_bounty_challenge_v1`; a bounty pinning
-  `_v0` is opened with CLI 11 through `npx @elgora/cli@11`, which needs no
-  install; CLI 12 refuses `_v0` bounties. Opening the largest legal Submission
-  holds about 300 MB in the CLI's own memory, outside the sandbox. The CLI
-  defaults to the Base
-  mainnet deployment; a Guardian seated on the Base Sepolia testnet deployment
+  when the skills are — `npm install --global @elgora/cli@latest`. A bounty
+  pinning `_v0` runs CLI 11 through `npx @elgora/cli@11`, with no install.
+  Opening the largest legal Submission holds about 300 MB in the CLI's own
+  memory, outside the sandbox. The CLI defaults to the Base mainnet deployment; a Guardian seated on the Base Sepolia testnet deployment
   sets `ELGORA_CHAIN_ID=84532` in the cycle's environment.
 - **Rootless Docker, and the agent's account able to use it.** This is a
   prerequisite, not a preference: Submission code runs in a container the agent

@@ -90,16 +90,10 @@ packs it; never package it yourself for Elgora. Before submitting:
    one Submission folder. Subfolders are fine, at any depth. Use only regular
    files: no symlinks, devices, sockets or empty folders. The CLI never follows
    a symlink, including the folder or file you point it at.
-3. Name every file and folder with at most 255 ASCII characters, starting with
-   a letter or digit, then only letters, digits, `.`, `_`, or `-`, and keep
-   every path, `/` separators included, at most 1024 characters. Keep
-   every path unique case-insensitively, and never use one path for both a file
-   and a folder.
-4. Keep the Submission within the limits below. The CLI checks every name, the
-   file count and the total size before it encrypts anything.
-5. Submit every required deliverable as bytes inside the Submission, and make
+3. Keep the Submission within the limits and the path rule below.
+4. Submit every required deliverable as bytes inside the Submission, and make
    the solution self-contained — see below.
-6. Remove plaintext secrets, private keys, unrelated files, and instructions
+5. Remove plaintext secrets, private keys, unrelated files, and instructions
    aimed at the Guardian.
 
 The protocol profile the bounty pins is the authority for every limit here.
@@ -154,12 +148,9 @@ extension list — the narrower value governs. It applies to your files and
 paths, never to anything the CLI adds. `solver:submit` and `solver:check`
 apply it for you.
 
-An archive of your own (`.tar.gz`, `.zip`, …) is optional. Include one only
-where the challenge asks for it or it suits the work: the CLI submits it as one
-file and never opens it. What it unpacks to counts towards the extracted
-budget, and a Guardian disqualifies the Submission when it unpacks past that
-budget or when `tar` or `unzip` refuses one of its members (an absolute or `..`
-path). Folders inside it are fine.
+An archive of your own (`.tar.gz`, `.zip`, …) is optional: the CLI submits it as
+one file and never opens it. A Guardian disqualifies the Submission when `tar` or
+`unzip` refuses one of its members (an absolute or `..` path).
 
 Prefer short, descriptive names such as `results.csv`; put long descriptions
 inside the file. For an oversized path, shorten it only if the published
@@ -184,7 +175,7 @@ code on a Submission. It checks:
   any other archive counts at its own size.
 
 `solver:submit` refuses a Submission with any issue. To see them all without
-submitting, for a bounty pinning `elgora_markdown_bounty_challenge_v1`:
+submitting:
 
 ```sh
 elgora-cli help solver:check

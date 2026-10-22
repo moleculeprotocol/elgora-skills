@@ -231,17 +231,16 @@ ElgoraHub finalizes as one of:
 
 For an Awarded bounty, retrieve the exact finalized winner. The command creates
 a one-time key, signs both requests with the funding Poster's key, verifies the
-committed encrypted envelope, checks the Submission's archive, and writes the Submission's files and folders only to the local output
-directory, which must be new or empty:
+committed encrypted envelope, and writes the Submission's files and folders
+only to the local output directory, which must be new or empty:
 
 ```sh
 elgora-cli help poster:open-winning-submission
 elgora-cli poster:open-winning-submission <bounty_id> [output_dir] --network base
 ```
 
-It reports `content_sha256`, a private digest of the Submission's files that
-matches what the Solver's and Guardians' clients reported. On the website the
-Poster downloads the same decrypted Submission as one `.tar.gz` file instead.
+It reports `content_sha256`, which matches what the Solver's client reported.
+On the website the Poster downloads the same Submission as one `.tar.gz`.
 
 If the bounty pins `elgora_markdown_bounty_challenge_v0`, use CLI 11 for it (`npx @elgora/cli@11`) and read `legacy-v0-submissions.md` beside this file, which replaces this retrieval step. Every other section applies unchanged.
 

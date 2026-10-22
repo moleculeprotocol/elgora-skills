@@ -243,16 +243,10 @@ deliverable compresses poorly.
 Describe what a Submission **contains** — its files, its folders, and their
 paths relative to the Submission root, such as `source/main.py` or a `data/`
 folder of CSV files. Never describe the container: no "upload one zip", no
-"uncompressed", no packaging or compression instructions. Elgora's client packs
-and encrypts every Submission the same way, and a page that dictates how cannot
-be followed as written. Where the work itself is an archive — a model bundle,
-a dataset release — require it as one named file, such as `model.tar.gz`, and
-say what it must hold.
-
-Tightenings in `constraints:` — `required_files` as paths, `allowed_extensions`,
-`max_files`, `max_extracted_bytes` — apply to the Submission's own files and
-paths, never to anything Elgora's client adds around them. Where the required
-outputs cannot fit, resolve it with the Poster rather than dropping evidence or
+"uncompressed", no packaging or compression instructions; Elgora's client packs
+every Submission the same way. Where the work itself is an archive, require it
+as one named file, such as `model.tar.gz`, and say what it must hold. Where the
+required outputs cannot fit, resolve it with the Poster rather than dropping evidence or
 pointing at a URL.
 
 ## Money And Deadline
