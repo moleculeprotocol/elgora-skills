@@ -151,8 +151,8 @@ Verdict.
 When the bounty's `constraints:` frontmatter narrows one of these — a lower
 extracted budget, a lower file count, a required set of paths, an allowed
 extension list — the narrower value governs. It applies to your files and
-paths, never to anything the CLI adds. `solver:check`, below, applies it for
-you.
+paths, never to anything the CLI adds. `solver:submit` and `solver:check`
+apply it for you.
 
 An archive of your own (`.tar.gz`, `.zip`, …) is optional. Include one only
 where the challenge asks for it or it suits the work: the CLI submits it as one
@@ -172,34 +172,28 @@ decryption material, or place a file location on-chain.
 
 ## Check Before You Submit
 
-For a bounty pinning `elgora_markdown_bounty_challenge_v1`, run the checks a
-Guardian runs before you submit, as often as you like:
+`solver:submit`, `solver:check` and a Guardian's `guardian:open` run the same
+code on a Submission. It checks:
+
+- the archive: regular files only, every path under the path rule, no two paths
+  equal ignoring case, no file where a folder is;
+- the challenge's `constraints:`: `max_files`, `max_extracted_bytes`,
+  `required_files`, `allowed_extensions`;
+- what the Submission extracts to, counting what each included `.tar`,
+  `.tar.gz`, `.tgz` or `.gz` unpacks to, against the extracted budget.
+
+`solver:submit` refuses a Submission with any issue. To see them all without
+submitting, for a bounty pinning `elgora_markdown_bounty_challenge_v1`:
 
 ```sh
 elgora-cli help solver:check
 elgora-cli solver:check <bounty_id> <folder_or_file>
 ```
 
-It builds the Submission exactly as `solver:submit` would and reads it back with
-the reader every Guardian's `guardian:open` runs. It then applies the
-challenge's `constraints:`, counting what each `.tar`, `.tar.gz`, `.tgz` or
-`.gz` you included unpacks to against the extracted budget, and stops reading
-one at that budget, so an archive bomb is reported, not unpacked. Any other
-archive, `.zip` included, counts at its own size. It encrypts, uploads and
-signs nothing, so it needs no wallet, and `--network` selects the deployment as
-for `solver:submit`.
-
 It prints `solver_check.passed`, or `solver_check.issues` and exits 1. Each
-issue names what a Guardian would do:
-
-- `refused`: `solver:submit` refuses it, so nothing would be submitted.
-- `disqualifies`: a Guardian disqualifies the Submission from its bytes.
-- `fails_acceptance`: the Submission is judged and fails the criteria — a
-  missing required path, or a file the allowed extensions exclude.
-
-Fix every issue before submitting, and run it again after any
-change. A pass means the form and the constraints hold, never that the work
-meets the acceptance criteria: Guardians judge that.
+issue has an `outcome`: `refused` (the input itself), `disqualifies`, or
+`fails_acceptance`. It needs no wallet. A pass means the form and the
+constraints hold, never that the work meets the acceptance criteria.
 
 ## Submit
 

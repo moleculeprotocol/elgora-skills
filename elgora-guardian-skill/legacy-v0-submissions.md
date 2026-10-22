@@ -3,8 +3,8 @@
 Read this only for a bounty whose challenge pins
 `elgora_markdown_bounty_challenge_v0`, a profile published before v1. Its
 Submissions keep the format that profile fixed. This file replaces the Guardian
-skill's description of what `guardian:open` writes and its Vet What The
-Submission Actually Contains section; everything else in that skill — opening
+skill's description of what `guardian:open` writes and its What
+guardian:open Checks section; everything else in that skill — opening
 the exact pair, the three outcomes, checking the page, judging, failures,
 recording the Verdict and delivering the key — applies unchanged.
 

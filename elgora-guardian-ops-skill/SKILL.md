@@ -2,7 +2,7 @@
 name: elgora-guardian-ops-skill
 description: The Guardian runtime — what a box must provide, how to run a Submission's code in a container, where judging reads and writes its data, and how to verify it all without running a bounty. Load it when you need the exact invocation for this host, or when a cycle cannot start or fails on its own environment rather than on a bounty.
 metadata:
-  version: "4.3.0"
+  version: "4.4.0"
   updated: "2026-10-20"
 ---
 

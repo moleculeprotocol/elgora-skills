@@ -2,7 +2,7 @@
 name: elgora-guardian-skill
 description: Open, judge, and record independent Verdicts for Elgora bounty Submissions as a selected Guardian.
 metadata:
-  version: "7.0.0"
+  version: "7.1.0"
   updated: "2026-10-22"
 ---
 
@@ -250,7 +250,7 @@ position, `submitted_at_block` alone, or a separate RPC call.
 
 ## Open The Exact Submission
 
-If the bounty pins `elgora_markdown_bounty_challenge_v0`, use CLI 11 for it (`npx @elgora/cli@11`) and read `legacy-v0-submissions.md` beside this file, which replaces what this section says `guardian:open` writes, and Vet What The Submission Actually Contains. Every other section applies unchanged.
+If the bounty pins `elgora_markdown_bounty_challenge_v0`, use CLI 11 for it (`npx @elgora/cli@11`) and read `legacy-v0-submissions.md` beside this file, which replaces what this section says `guardian:open` writes, and What guardian:open Checks. Every other section applies unchanged.
 
 For each discovered pair, run:
 
@@ -275,12 +275,10 @@ that holds anything, so opening a Submission again means deleting the earlier
 attempt's directory first, or naming a new one. That refusal is your own call
 to correct, not a blocker.
 
-After decrypting, `guardian:open` checks the Submission's archive against every
-format rule before anything reaches disk — regular files only, each path, the
-file count, and the extracted ceiling, past which it stops inflating — and then
-writes the Submission's tree, folders included, under the
-directory you named. It never follows a symlink and never writes outside that
-directory. `guardian_open.completed` reports `content_sha256`, a digest of the
+After decrypting, `guardian:open` writes the Submission's tree, folders
+included, under the directory you named, never following a symlink or writing
+outside it, and reports what it checked (see What guardian:open Checks).
+`guardian_open.completed` reports `content_sha256`, a digest of the
 Submission's files: keep it in the record and never publish it.
 
 ## Three Outcomes, Never Conflated
@@ -295,17 +293,15 @@ Solver, commitment or ciphertext hash mismatch — a stored ciphertext that does
 not match the hash its own Solver committed is that Solver's failure, since the
 alternative lets one bad upload deny every other Solver a Verdict. Covers a
 Submission that decrypts but that `guardian:open` refuses as "not a valid
-Elgora tar.gz", or refuses to write because a path breaks the path rule: the
-reader is strict and identical in every CLI, and the CLI a Solver submits with
-cannot produce such an archive, so it came from that Solver. Covers an included archive that the
-section below disqualifies. Continue
-opening and judging the others.
+Elgora tar.gz", and every issue it reports as `disqualifies`. Continue opening
+and judging the others.
 
 **2. Fails the acceptance criteria.** A normal judging result, not a
 disqualification and not an open failure. A valid package that opened normally
-but does not meet the challenge — including one offering a link in place of a
-required deliverable, which makes that deliverable missing, and one whose
-solution needs a part that exists only outside the package.
+but does not meet the challenge — including every issue `guardian:open` reports
+as `fails_acceptance`, one offering a link in place of a required deliverable,
+which makes that deliverable missing, and one whose solution needs a part that
+exists only outside the package.
 
 **3. No Verdict this cycle.** The bounty, not the Solver. Retrieval, ciphertext
 download and decryption failures, a CLI that does not know the bounty's
@@ -335,7 +331,7 @@ remove: installing a tool from a public source is expected, not exceptional.
 **One Submission never stops the others.** A problem confined to one Submission
 stays with that Submission, and every other one is judged to the end:
 
-- **The cause is in the Submission** — it is disqualified below, its code does not build
+- **The cause is in the Submission** — `guardian:open` reports an issue, its code does not build
   or run in a working sandbox, a required deliverable is in a form no publicly
   available tool reads and the challenge did not ask for. That is category 1 or 2 for that
   Submission alone.
@@ -364,12 +360,17 @@ it. Neither category 1 nor category 3 is ever evidence for
 `no_valid_submission`, and neither authorizes substituting a different
 Solver–Submission pair.
 
-## Vet What The Submission Actually Contains
+## What guardian:open Checks
 
-Storage checks only the packed size, and `guardian:open` checks the
-Submission's own form. What neither can check is the challenge's own narrower
-rules and what an archive the Solver chose to include unpacks to, so check
-those after opening.
+`guardian:open`, `solver:check` and `solver:submit` run the same code. It
+checks:
+
+- the archive: regular files only, every path under the path rule, no two
+  paths equal ignoring case, no file where a folder is;
+- the challenge's `constraints:`: `max_files`, `max_extracted_bytes`,
+  `required_files`, `allowed_extensions`;
+- what the Submission extracts to, counting what each included `.tar`,
+  `.tar.gz`, `.tgz` or `.gz` unpacks to, against the extracted budget.
 
 A Submission is at most 10000 files, packs to at most 50 MiB encrypted, and
 extracts to at most 250 MB unpacked; a challenge may lower the extracted budget,
@@ -382,42 +383,23 @@ required deliverable is submitted as bytes: a link (URL, DOI, CID, bucket path,
 repository reference) never stands in for one and counts as missing, though
 citing a source beside its bytes is fine.
 
-`guardian:open` enforces every rule in that paragraph except the link rule, the
-budget a challenge lowers, and what an included archive holds. It reports the
-current extracted ceiling as `max_extracted_bytes`; prefer that number over
-this page.
+`guardian_open.completed` lists what it found in `issues`, each with an
+`outcome`: `disqualifies` is category 1 above, `fails_acceptance` category 2.
+Apply each as reported; never re-derive these checks by hand or add to them.
+An empty `issues` means the form and the constraints hold; whether the work
+meets the acceptance criteria is yours to judge.
 
-**A challenge's `constraints:` are yours to apply.** A lower
-`max_extracted_bytes`, a lower `max_files`, `required_files` and
-`allowed_extensions` govern the Submission's own files and paths — never the
-archive the CLI built around them. `max_files` counts every file
-in the Submission as `guardian:open` writes it; an archive the Solver included
-counts as one file, whatever it holds. Missing a required path, or
-carrying a file the allowed extensions exclude, fails the acceptance criteria;
-exceeding a lowered budget or file count disqualifies, like the ceilings above.
-
-**An archive the Solver included is a file like any other.** Unpack it only if
-judging needs its contents, inside the sandbox, with the archiver's defaults:
-`tar -xf` and `unzip` already refuse `..` and absolute member paths and will not
-write through a link they created, and exit non-zero when they refuse anything.
-Never pass `-P`, `--absolute-names` or `-:` to switch that off. Bound the
-extraction to the budget left (`ulimit -f`, or a size-capped scratch folder),
-so an archive bomb stops at the limit instead of filling the disk.
-
-**Disqualify that one Submission** — category 1 above, recorded against that
-Solver and no one else — when an included archive unpacks past the ceiling, or
-past a lower budget the challenge sets, counted with the Submission's other
-files; or when the archiver refuses one of its members. Both follow from the
-Submission's own bytes, so every honest Guardian reaches the same answer.
-Anything else inside an archive — folders, nesting, compression ratio — is
-content, judged against the challenge like the rest of the Submission.
+Unpack an archive the Solver included only if judging needs its contents,
+inside the sandbox, with `tar` or `unzip` defaults — never `-P`,
+`--absolute-names` or `-:`. If the archiver refuses one of its members, that
+disqualifies the Submission.
 
 A link offered where the challenge requires a deliverable is **not** a
 disqualification. Never fetch it or credit its claimed contents — but the Submission is
 valid and opened normally, and deciding that a link stands where a deliverable
 should means reading the challenge's deliverable list, not measuring the
 Submission. The deliverable is missing, so it fails the acceptance criteria:
-category 2 above, not this list.
+category 2 above.
 
 That difference decides more than a label. A category 1 disqualification is
 never evidence for `no_valid_submission`, while a substantive failure is. So
