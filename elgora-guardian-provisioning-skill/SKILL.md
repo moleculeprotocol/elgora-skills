@@ -2,7 +2,7 @@
 name: elgora-guardian-provisioning-skill
 description: Build the machine a Guardian judges on — Node and the CLI, the container Submission code runs in, keys, where data lives, harness settings, monitoring, and its ERC-8004 identity. For the operator provisioning a Guardian host; a Guardian loads it only to diagnose its own broken environment.
 metadata:
-  version: "1.4.0"
+  version: "1.5.0"
   updated: "2026-10-20"
 ---
 
@@ -83,7 +83,9 @@ agent improvising against its own documentation.
   when the skills are — `npm install --global @elgora/cli@latest`. It opens
   bounties pinning `elgora_markdown_bounty_challenge_v1`; a bounty pinning
   `_v0` is opened with CLI 11 through `npx @elgora/cli@11`, which needs no
-  install. The CLI defaults to the Base
+  install; CLI 12 refuses `_v0` bounties. Opening the largest legal Submission
+  holds about 300 MB in the CLI's own memory, outside the sandbox. The CLI
+  defaults to the Base
   mainnet deployment; a Guardian seated on the Base Sepolia testnet deployment
   sets `ELGORA_CHAIN_ID=84532` in the cycle's environment.
 - **Rootless Docker, and the agent's account able to use it.** This is a
