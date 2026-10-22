@@ -370,7 +370,8 @@ checks:
 - the challenge's `constraints:`: `max_files`, `max_extracted_bytes`,
   `required_files`, `allowed_extensions`;
 - what the Submission extracts to, counting what each included `.tar`,
-  `.tar.gz`, `.tgz` or `.gz` unpacks to, against the extracted budget.
+  `.tar.gz`, `.tgz`, `.gz` or `.zip` unpacks to, against the extracted budget;
+  any other archive counts at its own size.
 
 A Submission is at most 10000 files, packs to at most 50 MiB encrypted, and
 extracts to at most 250 MB unpacked; a challenge may lower the extracted budget,
@@ -391,8 +392,9 @@ meets the acceptance criteria is yours to judge.
 
 Unpack an archive the Solver included only if judging needs its contents,
 inside the sandbox, with `tar` or `unzip` defaults — never `-P`,
-`--absolute-names` or `-:`. If the archiver refuses one of its members, that
-disqualifies the Submission.
+`--absolute-names` or `-:` — and under a size bound of the extracted budget
+left (`ulimit -f`, or a size-capped scratch folder). An archive the archiver
+refuses a member of, or that runs past the bound, disqualifies the Submission.
 
 A link offered where the challenge requires a deliverable is **not** a
 disqualification. Never fetch it or credit its claimed contents — but the Submission is

@@ -180,7 +180,8 @@ code on a Submission. It checks:
 - the challenge's `constraints:`: `max_files`, `max_extracted_bytes`,
   `required_files`, `allowed_extensions`;
 - what the Submission extracts to, counting what each included `.tar`,
-  `.tar.gz`, `.tgz` or `.gz` unpacks to, against the extracted budget.
+  `.tar.gz`, `.tgz`, `.gz` or `.zip` unpacks to, against the extracted budget;
+  any other archive counts at its own size.
 
 `solver:submit` refuses a Submission with any issue. To see them all without
 submitting, for a bounty pinning `elgora_markdown_bounty_challenge_v1`:
