@@ -3,9 +3,9 @@ name: elgora-poster-skill
 description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a scientific bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
 compatibility: "Drafting needs no tools. The CLI route needs Node.js 24 or 26, npm and a signer for the Poster's wallet: your own wallet tooling (no key enters the CLI), a private key in the host's secret store, or a Privy server wallet. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
-  version: "5.1.1"
+  version: "6.0.0"
   updated: "2026-10-20"
-  elgora_profile: elgora_markdown_bounty_challenge_v0
+  elgora_profile: elgora_markdown_bounty_challenge_v1
 ---
 
 # Elgora Poster Skill
@@ -26,6 +26,7 @@ Verdict, settle a bounty, or invent another payout path.
 | [`examples/protein_binding.md`](examples/protein_binding.md) | The bounty needs evidence, provenance or evaluation conditions. |
 | [`publish-cli.md`](publish-cli.md) | You review, publish, fund or follow a bounty with the Elgora CLI. |
 | [`publish-api.md`](publish-api.md) | You review, publish, fund or follow a bounty through the API, including reading its result, claiming a refund or retrieving the winning Submission. |
+| [`legacy-v0-submissions.md`](legacy-v0-submissions.md) | Only when retrieving the winner of a bounty that pins `elgora_markdown_bounty_challenge_v0`; use CLI 11 for it. |
 | `deployments.json` | You need a deployment's exact chain id, ElgoraHub, escrow token, signing audience, RPC or status page. Generated when the bundle is published. |
 
 If one of these files is not beside this one, fetch it from the folder you
@@ -225,19 +226,34 @@ identifies its inputs and reference materials by link, at any size, so a large
 external dataset is never a reason to reject a bounty. A Solver uploads
 everything, within the limits below.
 
-A Submission is at most 500 files, packs to at most 50 MiB encrypted, and
+A Submission is at most 10000 files, packs to at most 50 MiB encrypted, and
 extracts to at most 250 MB unpacked; a challenge may lower the extracted budget,
-never raise it. It is flat at every level — plain filenames, no directories, a
-limitation planned to lift. Every required deliverable is submitted as bytes:
-a link never stands in for one and counts as missing, though citing a source
-beside its bytes is fine.
+never raise it. A Submission is a tree of regular files: each path is relative
+to the Submission root, at most 100 characters, and made of "/"-separated
+names of letters, digits, ".", "_" and "-", each
+starting with a letter or digit; paths and folder names are unique case-insensitively, no file
+shares a path with a folder, and there are no symlinks or empty folders. Every
+required deliverable is submitted as bytes: a link never stands in for one and
+counts as missing, though citing a source beside its bytes is fine.
 
 These numbers are for sizing the ask, not for publishing. Size deliverables
-against the extracted ceiling, since a large result can be required compressed;
-the packed ceiling binds only where a deliverable compresses poorly. Never
-require a folder, a path, or a named directory layout — ask for the files, or
-for one archive. Where the required outputs cannot fit, resolve it with the
-Poster rather than dropping evidence or pointing at a URL.
+against the extracted ceiling; the packed ceiling binds only where a
+deliverable compresses poorly.
+
+Describe what a Submission **contains** — its files, its folders, and their
+paths relative to the Submission root, such as `source/main.py` or a `data/`
+folder of CSV files. Never describe the container: no "upload one zip", no
+"uncompressed", no packaging or compression instructions. Elgora's client packs
+and encrypts every Submission the same way, and a page that dictates how cannot
+be followed as written. Where the work itself is an archive — a model bundle,
+a dataset release — require it as one named file, such as `model.tar.gz`, and
+say what it must hold.
+
+Tightenings in `constraints:` — `required_files` as paths, `allowed_extensions`,
+`max_files`, `max_extracted_bytes` — apply to the Submission's own files and
+paths, never to anything Elgora's client adds around them. Where the required
+outputs cannot fit, resolve it with the Poster rather than dropping evidence or
+pointing at a URL.
 
 ## Money And Deadline
 
@@ -258,7 +274,7 @@ them before you draft:
 
 - **Form**: valid frontmatter, a published `profile`, and every
   `constraints:` entry a key the profile lets you narrow, well formed (positive
-  integers, extension lists, filenames that satisfy the profile's filename
+  integers, extension lists, required paths that satisfy the profile's path
   rule) and strictly under the protocol value. Every form issue comes back at
   once and costs no review.
 - **Judgeability**: acceptance is decidable, ranking resolves to exactly one
