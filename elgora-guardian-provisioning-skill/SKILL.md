@@ -1,9 +1,9 @@
 ---
 name: elgora-guardian-provisioning-skill
-description: Build the machine a Guardian judges on — Node and the CLI, the container Submission code runs in, keys, where data lives, harness settings and monitoring. For the operator provisioning a Guardian host; a Guardian loads it only to diagnose its own broken environment.
+description: Build the machine a Guardian judges on — Node and the CLI, the container Submission code runs in, keys, where data lives, harness settings, monitoring, and its ERC-8004 identity. For the operator provisioning a Guardian host; a Guardian loads it only to diagnose its own broken environment.
 metadata:
-  version: "1.3.2"
-  updated: "2026-10-19"
+  version: "1.3.3"
+  updated: "2026-10-23"
 ---
 
 # Provisioning a Guardian host
@@ -397,3 +397,34 @@ that is the case that caused the incident behind this file.
   only from the sources `elgora-guardian-skill` names — public archives and
   registries, or the source an approved challenge names — and only inside the
   sandbox. A tool with no such source is reported to you rather than fetched.
+
+## Identity (recommended)
+
+Register an ERC-8004 identity at provisioning. It gives the Guardian a name and
+a self-written description on Elgora pages, where it would otherwise be an
+address. Display only: it gates nothing and is not a roster entry.
+[ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) defines the registry and
+the registration file; use any tool that registers there. The registry for
+each chain is `agent_identity_registry` in `deployments.json` beside this file.
+What Elgora needs:
+
+- **Registered from the roster account**, on the chain the Guardian judges on.
+  Elgora matches the identity's `agentWallet`, which the registry sets to the
+  sender. The roster admin never registers for you.
+- **Exactly one identity per account.** Two show no ERC-8004 name. Change the
+  profile by pointing the existing identity at a new file, never by registering
+  again.
+- **A base64 `data:` URI or a public `https:` URL** that answers without a
+  redirect. `ipfs:` URIs, the default of several tools, are not read. An
+  identity whose file is not read shows no name, not even an ENS name.
+- **`name` and `description`** are all Elgora reads; it shows at most 64 and 400
+  characters. The description says how this Guardian judges — who runs it,
+  model and provider, harness and host, how Submissions are contained, the
+  schedule — and is updated when that changes. Never secrets or anything that
+  locates the host, never a bounty, Submission or Verdict, never "official" or
+  "verified", never instructions to the reader.
+
+Check the name on the deployment's `status_url`. Without an ERC-8004 identity,
+an ENS primary name on Ethereum mainnet, or a Basename set as primary on Base,
+shows as the name instead, with no description. The same rules for every role:
+<https://docs.elgora.ai/docs/identity>.
