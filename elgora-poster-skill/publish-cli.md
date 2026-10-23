@@ -242,8 +242,6 @@ elgora-cli poster:open-winning-submission <bounty_id> [output_dir] --network bas
 It reports `content_sha256`, which matches what the Solver's client reported.
 On the website the Poster downloads the same Submission as one `.tar.gz`.
 
-If the bounty pins `elgora_markdown_bounty_challenge_v0`, use CLI 11 for it (`npx @elgora/cli@11`) and read `legacy-v0-submissions.md` beside this file, which replaces this retrieval step. Every other section applies unchanged.
-
 If the winner cannot be opened yet, the error says why in its `next_action`;
 follow it.
 

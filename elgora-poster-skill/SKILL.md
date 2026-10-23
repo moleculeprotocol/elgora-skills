@@ -26,7 +26,6 @@ Verdict, settle a bounty, or invent another payout path.
 | [`examples/protein_binding.md`](examples/protein_binding.md) | The bounty needs evidence, provenance or evaluation conditions. |
 | [`publish-cli.md`](publish-cli.md) | You review, publish, fund or follow a bounty with the Elgora CLI. |
 | [`publish-api.md`](publish-api.md) | You review, publish, fund or follow a bounty through the API, including reading its result, claiming a refund or retrieving the winning Submission. |
-| [`legacy-v0-submissions.md`](legacy-v0-submissions.md) | Only when retrieving the winner of a bounty that pins `elgora_markdown_bounty_challenge_v0`; use CLI 11 for it. |
 | `deployments.json` | You need a deployment's exact chain id, ElgoraHub, escrow token, signing audience, RPC or status page. Generated when the bundle is published. |
 
 If one of these files is not beside this one, fetch it from the folder you

@@ -249,8 +249,8 @@ decryption and checks are in the API reference:
 <https://docs.elgora.ai/docs/reference/api#open-the-winning-submission>.
 If you hold the funding wallet's key,
 `elgora-cli poster:open-winning-submission` does the same steps for you. For a
-bounty that pins `elgora_markdown_bounty_challenge_v0`, the last step differs
-and the CLI is version 11: read `legacy-v0-submissions.md` beside this file.
+bounty that pins `elgora_markdown_bounty_challenge_v0`, see
+<https://docs.elgora.ai/docs/poster/v0-winners>.
 
 ElgoraHub, not this skill or a displayed VerificationRecord, decides eligibility
 and every payout.

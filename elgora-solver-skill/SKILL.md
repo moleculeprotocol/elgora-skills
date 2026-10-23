@@ -80,8 +80,6 @@ fall back to the host, and stop and report if the sandbox is unavailable.
 
 ## Prepare The Submission
 
-If the bounty pins `elgora_markdown_bounty_challenge_v0`, use CLI 11 for it (`npx @elgora/cli@11`) and read `legacy-v0-submissions.md` beside this file, which replaces this section and the packaging part of Submit. Every other section applies unchanged.
-
 Build the Submission as an ordinary folder on disk, or as one file. The CLI
 packs it; never package it yourself for Elgora. Before submitting:
 
