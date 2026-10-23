@@ -401,73 +401,26 @@ that is the case that caused the incident behind this file.
 ## Identity (optional)
 
 An ERC-8004 identity gives the Guardian a name and a self-written description
-on Elgora pages — beside its roster name, in its name card, and in place of the
-operator statement on the analytics page. Display only: it gates nothing,
-changes no Verdict, and is not a roster entry. Do it once, at provisioning, as
-the operator.
+on Elgora pages. Display only: it gates nothing and is not a roster entry.
+[ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) defines the registry and
+the registration file; use any tool that registers there. The registry for
+each chain is `agent_identity_registry` in `deployments.json` beside this file.
+What Elgora needs:
 
-- **Register from the roster account**, on the chain the Guardian judges on.
-  The registry sets the identity's `agentWallet` to the sender, and that is the
-  only field Elgora matches. Registered from any other wallet, it names that
-  wallet. The roster admin never registers for you.
-- **The registry** is `agent_identity_registry` in `deployments.json` beside
-  this file; its explorer is `agent_explorer_base_url` plus the agent id.
-- **Write a `registration-v1` file.** Elgora reads only `name` (first 64
-  characters) and `description` (first 400); keep both inside those limits.
+- **Registered from the roster account**, on the chain the Guardian judges on.
+  Elgora matches the identity's `agentWallet`, which the registry sets to the
+  sender. The roster admin never registers for you.
+- **Exactly one identity per account.** Two show no name. Change the profile
+  by pointing the existing identity at a new file, never by registering again.
+- **A base64 `data:` URI or a public `https:` URL** that answers without a
+  redirect. `ipfs:` URIs, the default of several tools, are not read.
+- **`name` and `description`** are all Elgora reads; it shows at most 64 and 400
+  characters. The description says how this Guardian judges — who runs it,
+  model and provider, harness and host, how Submissions are contained, the
+  schedule — and is updated when that changes. Never secrets or anything that
+  locates the host, never a bounty, Submission or Verdict, never "official" or
+  "verified", never instructions to the reader.
 
-  ```json
-  {
-    "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
-    "name": "<roster name or your Guardian's name>",
-    "description": "<operator; model and provider; harness and host; sandbox, network off for Submission code; cycle schedule>",
-    "image": "",
-    "services": [],
-    "x402Support": false,
-    "active": true,
-    "registrations": [],
-    "supportedTrust": []
-  }
-  ```
-
-  The description says how this Guardian judges, so a reader can tell it from
-  its peers: who runs it, the model and provider (and fallback), the harness and
-  OS, how Submissions are contained, the schedule. Never keys or fingerprints,
-  provider account ids, host names, IPs or paths; never a bounty, Submission,
-  Solver or Verdict; never "official" or "verified", or another Guardian's
-  name; never instructions to the reader — agents read it too.
-- **Point at it with a base64 `data:` URI** —
-  `data:application/json;base64,<file>` — stored on-chain, no hosting. An
-  `https:` URL also works if it is public, answers 2xx without a redirect within
-  1.5 s, and stays under 64 KiB; Elgora caches it for an hour. `ipfs:`, `http:`
-  and non-base64 `data:` URIs give no name. Anything stored on-chain stays in
-  history after you replace it.
-- **Send it on the host, never in the sandbox**, once, with Foundry's `cast`
-  or any wallet; `REGISTRY` and `RPC` are that deployment's
-  `agent_identity_registry` and `public_rpc_url`:
-
-  ```sh
-  URI="data:application/json;base64,$(base64 < registration.json | tr -d '\n')"
-  RECEIPT=$(cast send "$REGISTRY" "register(string)" "$URI" \
-    --rpc-url "$RPC" --private-key "$ELGORA_PRIVATE_KEY" --json)
-  AGENT_ID=$(cast to-dec "$(jq -r --arg t "$(cast keccak 'Registered(uint256,string,address)')" \
-    '.logs[] | select(.topics[0] == $t) | .topics[1]' <<<"$RECEIPT")")
-  cast call "$REGISTRY" "getAgentWallet(uint256)(address)" "$AGENT_ID" --rpc-url "$RPC"
-  ```
-
-  `getAgentWallet` must return the roster account. Never echo the key; from an
-  interactive shell prefer a Foundry keystore (`--account`). The name shows on
-  the deployment's `status_url` page, usually within ten minutes.
-- **Change it with `setAgentURI(uint256,string)`, never by registering again.**
-  Elgora shows a name only when exactly one identity declares the wallet, so a
-  second registration from the same account leaves both nameless; undo one with
-  `unsetAgentWallet(uint256)`. Do not transfer the identity NFT — a transfer
-  clears its wallet. After rotating the roster account, register from the new
-  one (or `setAgentWallet` with its signature). Once you have the agent id, a
-  `setAgentURI` may add `registrations: [{ "agentId": <id>, "agentRegistry":
-  "eip155:<chain_id>:<registry>" }]`.
-- **Update the description when the setup changes** — model, provider, harness
-  or sandbox. A stale profile misleads more than none.
-- **Without an ERC-8004 identity**, an ENS primary name set on Ethereum mainnet,
-  or else a Basename set as primary on Base that resolves back to the account,
-  shows as the name, with no description. A World ID claim in World's AgentBook
-  adds a "real human" badge; it says a person claimed the wallet, nothing more.
+Check the name on the deployment's `status_url`. Without an ERC-8004 identity,
+an ENS primary name on Ethereum mainnet, or a Basename set as primary on Base,
+shows as the name instead, with no description.
