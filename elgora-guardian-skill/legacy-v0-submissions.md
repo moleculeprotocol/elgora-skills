@@ -17,8 +17,9 @@ the CLI you have installed. For bounties pinning
 
 A `_v0` Submission is a set of files, not an archive. `guardian:open` writes
 each file flat, under its own filename, into the output directory you name,
-which must be new or empty. It reports no `content_sha256`; that digest exists
-only for current Submissions.
+creating it if needed and overwriting files already there, so give each
+Submission its own directory. It reports no `content_sha256`; that digest
+exists only for current Submissions.
 
 Besides the cases the Guardian skill lists, category 1 covers a `_v0` filename
 outside the profile's filename rule and more files than the profile allows.

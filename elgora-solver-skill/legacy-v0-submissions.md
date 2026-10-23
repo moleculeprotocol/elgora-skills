@@ -80,7 +80,7 @@ required name cannot be submitted.
 ## Submit
 
 ```sh
-elgora-cli solver:submit <bounty_id> <artifact_dir>
+npx @elgora/cli@11 solver:submit <bounty_id> <artifact_dir>
 ```
 
 Point it at the flat `<artifact_dir>`; a single file is not accepted on a `_v0`
