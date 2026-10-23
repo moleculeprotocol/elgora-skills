@@ -126,7 +126,7 @@ agent improvising against its own documentation.
   case-sensitive string given to `roster:add-guardian`, **never its account
   address** — with the suite
   `hpke-dhkem-x25519-hkdf-sha256+hkdf-sha256+aes-256-gcm@1`, and the 32-byte
-  private key as unpadded base64url. A Solver seals every private artifact
+  private key as unpadded base64url. A Solver seals every Submission
   against that same name, read from the pinned roster; get it wrong and
   `guardian:open` decrypts nothing for this Guardian — its failure now names
   the key_id(s) the envelope expected against the key_id(s) configured, so
