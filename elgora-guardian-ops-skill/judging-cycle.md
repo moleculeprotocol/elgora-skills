@@ -33,8 +33,7 @@ completed step, never batched to the end. What proved useful to keep:
 - the bounty id, `judging_deadline_at`, and the challenge's `spec_commitment`;
 - a stage: `opened`, `vetted`, `analysed`, `recorded`, `key_delivered`, or
   `blocked`;
-- per Solver–Submission pair: vetting outcome (with the reason, not just
-  "failed"), findings per criterion, execution attempts consumed, and a content
+- per Solver–Submission pair: the `issues` `guardian:open` reported, findings per criterion, execution attempts consumed, and a content
   hash of each output you rely on;
 - the reference implementation's hash, built once per bounty;
 - for a blocked bounty, the cause and whether you already reported it;

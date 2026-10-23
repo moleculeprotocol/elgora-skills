@@ -2,8 +2,8 @@
 name: elgora-guardian-ops-skill
 description: The Guardian runtime — what a box must provide, how to run a Submission's code in a container, where judging reads and writes its data, and how to verify it all without running a bounty. Load it when you need the exact invocation for this host, or when a cycle cannot start or fails on its own environment rather than on a bounty.
 metadata:
-  version: "4.2.0"
-  updated: "2026-09-22"
+  version: "4.4.0"
+  updated: "2026-10-20"
 ---
 
 # Elgora Guardian Operations
@@ -55,14 +55,14 @@ alone. Once judging starts, the rule above holds again.
 - **`elgora-guardian-skill`** holds every judging rule, including what you may
   install inside the sandbox and how failures are handled. Nothing here
   overrides it.
-- The **protocol profile** the bounty pins is the authority for Submission
+- The **protocol profile** the bounty declares is the authority for Submission
   limits.
 
 ## What A Guardian Box Provides
 
 | Requirement | What it means |
 | --- | --- |
-| Node + CLI | `@elgora/cli` on a Node inside its `engines` range. Every command that does work refuses to start outside it and names the range; `--version` and `help` answer on any Node, so neither proves it. |
+| Node + CLI | `@elgora/cli` at least 12.0.0 for `_v1` bounties, and `npx @elgora/cli@11` for `_v0`, on a Node inside its `engines` range. Every command that does work refuses to start outside the range and names it; `--version` and `help` answer on any Node, so neither proves it. |
 | Signing account | The roster account, only to commands that sign: its key as `ELGORA_PRIVATE_KEY`, or, to keep the key off the box, a Privy server wallet: `--signer privy --privy-wallet-id <wallet_id>`, with `PRIVY_APP_ID`, `PRIVY_APP_SECRET` and, when the wallet has an owner, `PRIVY_AUTHORIZATION_PRIVATE_KEY` in the environment. Pass the same signer options to every signing command. `elgora-cli help guardian:verdict` names every option. |
 | Decryption keys | Every retained X25519 key, only as `ELGORA_GUARDIAN_PRIVATE_KEYS_JSON`, only to commands that decrypt. Each entry's `key_id` is this Guardian's registered roster **name** — the exact, case-sensitive string given to `roster:add-guardian` — **never its account address**. An address-shaped string passes the format check, so a wrong value is not rejected: it simply decrypts nothing. Old entries stay until every bounty pinned to them is final. |
 | Network | The deployment the roster seat is on. Base mainnet is the default; a seat on the Base Sepolia testnet deployment needs `ELGORA_CHAIN_ID=84532` for every command. |
@@ -145,9 +145,9 @@ Where judging reads and writes, so each kind of data stays where it belongs:
   never into a sandbox. Where your harness keeps them between runs is its own
   business, and this skill has no opinion about it.
 - **Decrypted Submissions** come from `guardian:open`, into the output directory
-  you pass it (default `./guardian-open/<bounty_id>/<submission_commitment>/`).
-  Put them inside that bounty's directory, one per Submission, readable only by
-  this account.
+  you pass it (default `./guardian-open/<bounty_id>/<submission_commitment>/`),
+  which must be new or empty. Put them inside that bounty's directory, one per
+  Submission, readable only by this account.
 - **Into the sandbox** go one bounty's decrypted files (read-only), the
   challenge's verified inputs (read-only) and a bounded scratch area. **Out of
   it** come the outputs and findings you need, and nothing else.

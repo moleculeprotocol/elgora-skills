@@ -2,8 +2,8 @@
 name: elgora-guardian-provisioning-skill
 description: Build the machine a Guardian judges on — Node and the CLI, the container Submission code runs in, keys, where data lives, harness settings, monitoring, and its ERC-8004 identity. For the operator provisioning a Guardian host; a Guardian loads it only to diagnose its own broken environment.
 metadata:
-  version: "1.3.3"
-  updated: "2026-10-23"
+  version: "1.5.0"
+  updated: "2026-10-20"
 ---
 
 # Provisioning a Guardian host
@@ -79,9 +79,12 @@ agent improvising against its own documentation.
   burns its whole run. Source `nvm.sh` at the top of the scheduled command, or
   give the scheduler the versioned path `nvm` installed
   (`~/.nvm/versions/node/v24.*/bin`).
-- **`@elgora/cli` 11.0.0 or newer**, installed globally, updated when the skills
-  are — `npm install --global @elgora/cli@latest`. The CLI defaults to the Base
-  mainnet deployment; a Guardian seated on the Base Sepolia testnet deployment
+- **The latest `@elgora/cli` (at least 12.0.0)**, installed globally, updated
+  when the skills are — `npm install --global @elgora/cli@latest`, or
+  `@next` for a Guardian seated on the testnet. A bounty
+  declaring `_v0` runs CLI 11 through `npx @elgora/cli@11`, with no install.
+  Opening the largest legal Submission holds about 600 MB in the CLI's own
+  memory, outside the sandbox. The CLI defaults to the Base mainnet deployment; a Guardian seated on the Base Sepolia testnet deployment
   sets `ELGORA_CHAIN_ID=84532` in the cycle's environment.
 - **Rootless Docker, and the agent's account able to use it.** This is a
   prerequisite, not a preference: Submission code runs in a container the agent
@@ -93,7 +96,8 @@ agent improvising against its own documentation.
 - **An image to run Submissions in.** Any image you pin by digest. One with the
   usual tooling already in it — archive tools, `python3`, `Rscript`, a C
   toolchain — saves an install every cycle, and your harness's own sandbox image
-  is a reasonable starting point. Anything a particular Submission needs is
+  is a reasonable starting point. It must have GNU tar, the first tool judging
+  tries on a Solver's tar (`apk add tar` on Alpine, whose default is BusyBox). Anything a particular Submission needs is
   installed per bounty, inside the container.
 - **Package-manager access from inside the sandbox**, to the official
   distribution archives and the language registries (PyPI, CRAN, Bioconductor,
@@ -123,7 +127,7 @@ agent improvising against its own documentation.
   case-sensitive string given to `roster:add-guardian`, **never its account
   address** — with the suite
   `hpke-dhkem-x25519-hkdf-sha256+hkdf-sha256+aes-256-gcm@1`, and the 32-byte
-  private key as unpadded base64url. A Solver seals every private artifact
+  private key as unpadded base64url. A Solver seals every Submission
   against that same name, read from the pinned roster; get it wrong and
   `guardian:open` decrypts nothing for this Guardian — its failure now names
   the key_id(s) the envelope expected against the key_id(s) configured, so
