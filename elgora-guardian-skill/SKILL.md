@@ -365,9 +365,9 @@ checks:
   paths equal ignoring case, no file where a folder is;
 - the challenge's `constraints:`: `max_files`, `max_extracted_bytes`,
   `required_files`, `allowed_extensions`;
-- what the Submission extracts to, counting what each included `.tar`,
-  `.tar.gz`, `.tgz`, `.gz` or `.zip` unpacks to, against the extracted budget;
-  any other archive counts at its own size.
+- the total size of the Submission's files against the extracted budget. An
+  archive the Solver included counts at its own size here; Guardians count what
+  it unpacks to once they unpack it.
 
 A Submission is at most 10000 files, packs to at most 50 MiB encrypted, and
 extracts to at most 250 MB unpacked; a challenge may lower the extracted budget,
@@ -387,14 +387,11 @@ An empty `issues` means the form and the constraints hold; whether the work
 meets the acceptance criteria is yours to judge.
 
 Unpack an archive the Solver included only if judging needs its contents,
-inside the sandbox, under a size bound of the extracted budget left (a
-size-capped scratch folder). A run past the bound disqualifies the Submission.
-Otherwise your job is to get at the contents, not to fault the archive: when
-one tool fails or refuses, try the next — GNU tar (`gtar` on macOS), `bsdtar`,
-`unzip`, Python's `tarfile` or `zipfile` — and install what you need. Never use
-an option that writes outside the folder (`-P`, `--absolute-names`, `-:`). A
-member no tool extracts safely is left out, never a disqualification on its
-own; judge the rest. An archive made on a Mac may hold macOS metadata: `._<name>`
+inside the sandbox, never with an option that writes outside the folder (`-P`,
+`--absolute-names`, `-:`). If what it unpacks to takes the Submission past the
+extracted budget, the Submission is disqualified. If one tool fails, try
+another (GNU tar, `bsdtar`, `unzip`); if none works, or a part looks wrong,
+skip that part and judge the rest. An archive made on a Mac may hold macOS metadata: `._<name>`
 files beside the real ones, `.DS_Store`, a `__MACOSX/` folder. Its bytes count
 toward the extracted budget like any member, but it is not the Solver's work:
 never judge it, credit it, or count it as a deliverable.

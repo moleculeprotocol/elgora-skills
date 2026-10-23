@@ -149,9 +149,9 @@ paths, never to anything the CLI adds. `solver:submit` and `solver:check`
 apply it for you.
 
 An archive of your own (`.tar.gz`, `.zip`, …) is optional: the CLI submits it as
-one file, reading it only to count what it unpacks to. Until Guardians decrypt
-the Submission, nobody but you can look inside it. Guardians unpack it with
-whatever tool works; only unpacking past the extracted budget disqualifies.
+one file and never opens it. Guardians unpack it when judging needs its
+contents, and a Submission whose archives unpack past the extracted budget is
+disqualified, so size them by what they unpack to.
 
 Prefer short, descriptive names such as `results.csv`; put long descriptions
 inside the file. For an oversized path, shorten it only if the published
@@ -171,9 +171,9 @@ code on a Submission. It checks:
   equal ignoring case, no file where a folder is;
 - the challenge's `constraints:`: `max_files`, `max_extracted_bytes`,
   `required_files`, `allowed_extensions`;
-- what the Submission extracts to, counting what each included `.tar`,
-  `.tar.gz`, `.tgz`, `.gz` or `.zip` unpacks to, against the extracted budget;
-  any other archive counts at its own size.
+- the total size of the Submission's files against the extracted budget. An
+  archive the Solver included counts at its own size here; Guardians count what
+  it unpacks to once they unpack it.
 
 `solver:submit` refuses a Submission with any issue. To see them all without
 submitting:
