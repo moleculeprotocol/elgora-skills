@@ -149,8 +149,9 @@ paths, never to anything the CLI adds. `solver:submit` and `solver:check`
 apply it for you.
 
 An archive of your own (`.tar.gz`, `.zip`, …) is optional: the CLI submits it as
-one file and never opens it. A Guardian disqualifies the Submission when `tar` or
-`unzip` refuses one of its members (an absolute or `..` path).
+one file, reading it only to count what it unpacks to. Until Guardians decrypt
+the Submission, nobody but you can look inside it. Guardians unpack it with
+whatever tool works; only unpacking past the extracted budget disqualifies.
 
 Prefer short, descriptive names such as `results.csv`; put long descriptions
 inside the file. For an oversized path, shorten it only if the published

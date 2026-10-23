@@ -387,12 +387,14 @@ An empty `issues` means the form and the constraints hold; whether the work
 meets the acceptance criteria is yours to judge.
 
 Unpack an archive the Solver included only if judging needs its contents,
-inside the sandbox, with `tar` or `unzip` defaults — never `-P`,
-`--absolute-names` or `-:` — and under a size bound of the extracted budget
-left (a size-capped scratch folder). A run past the bound disqualifies the
-Submission. A tar that looks broken is retried with GNU tar (`gtar` on macOS)
-before you judge it; a member GNU tar still refuses is left out, never a
-disqualification on its own.
+inside the sandbox, under a size bound of the extracted budget left (a
+size-capped scratch folder). A run past the bound disqualifies the Submission.
+Otherwise your job is to get at the contents, not to fault the archive: when
+one tool fails or refuses, try the next — GNU tar (`gtar` on macOS), `bsdtar`,
+`unzip`, Python's `tarfile` or `zipfile` — and install what you need. Never use
+an option that writes outside the folder (`-P`, `--absolute-names`, `-:`). A
+member no tool extracts safely is left out, never a disqualification on its
+own; judge the rest.
 
 A link offered where the challenge requires a deliverable is **not** a
 disqualification. Never fetch it or credit its claimed contents — but the Submission is
