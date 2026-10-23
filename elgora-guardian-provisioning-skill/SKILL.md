@@ -80,7 +80,9 @@ agent improvising against its own documentation.
   give the scheduler the versioned path `nvm` installed
   (`~/.nvm/versions/node/v24.*/bin`).
 - **The latest `@elgora/cli` (at least 12.0.0)**, installed globally, updated
-  when the skills are — `npm install --global @elgora/cli@latest`. A bounty
+  when the skills are, between judging cycles and never during one —
+  `npm install --global @elgora/cli@latest`. Every 12.x gives a Submission the
+  same verdict, so no exact version is pinned. A bounty
   pinning `_v0` runs CLI 11 through `npx @elgora/cli@11`, with no install.
   Opening the largest legal Submission holds about 600 MB in the CLI's own
   memory, outside the sandbox. The CLI defaults to the Base mainnet deployment; a Guardian seated on the Base Sepolia testnet deployment
