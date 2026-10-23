@@ -55,7 +55,7 @@ alone. Once judging starts, the rule above holds again.
 - **`elgora-guardian-skill`** holds every judging rule, including what you may
   install inside the sandbox and how failures are handled. Nothing here
   overrides it.
-- The **protocol profile** the bounty pins is the authority for Submission
+- The **protocol profile** the bounty declares is the authority for Submission
   limits.
 
 ## What A Guardian Box Provides

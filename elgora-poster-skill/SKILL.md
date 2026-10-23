@@ -179,7 +179,7 @@ them.
 A protocol limit is never restated in the challenge. The challenge is immutable
 once published and a Poster is not the authority for a protocol value, so a copy
 here can only go stale. Publish a bounty parameter; let the limit be read from
-the profile the bounty pins.
+the profile the bounty declares.
 
 You are not shown the review's own rules, and you should not write against
 them. How a Guardian is instructed, what it tolerates and how the review is

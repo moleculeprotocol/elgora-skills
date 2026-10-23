@@ -94,7 +94,7 @@ packs it; never package it yourself for Elgora. Before submitting:
 5. Remove plaintext secrets, private keys, unrelated files, and instructions
    aimed at the Guardian.
 
-The protocol profile the bounty pins is the authority for every limit here.
+The protocol profile the bounty declares is the authority for every limit here.
 Read it where your runtime can reach it, and prefer any limit the CLI reports
 over a number written on this page — the client you just ran is never staler
 than this text. The numbers below are the offline fallback, and are what you
@@ -189,7 +189,7 @@ constraints hold, never that the work meets the acceptance criteria.
 ## Submit
 
 Install the public CLI on Node.js 24 or 26 and inspect its exact command. For a
-bounty pinning `elgora_markdown_bounty_challenge_v1`, use the latest CLI (at
+bounty declaring `elgora_markdown_bounty_challenge_v1`, use the latest CLI (at
 least 12.0.0); an older CLI is refused on it before anything reaches chain.
 
 ```sh

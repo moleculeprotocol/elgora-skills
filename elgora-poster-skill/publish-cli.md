@@ -10,7 +10,7 @@ website needs neither file.
 ## Install And Configure
 
 Install the CLI on Node.js 24 or 26 from the npm tag that matches the network
-agreed with the Poster, and inspect its commands. Bounties pinning
+agreed with the Poster, and inspect its commands. Bounties declaring
 `elgora_markdown_bounty_challenge_v1` need the latest CLI (at least 12.0.0):
 
 ```sh
@@ -140,7 +140,7 @@ the one before it worked. Wait and try again; do not treat it as a failure.
 
 ## Review Until It Is Green
 
-1. **Check the challenge offline.** This checks the frontmatter, pinned profile and
+1. **Check the challenge offline.** This checks the frontmatter, declared profile and
    declared limits without a model, network request or review quota. Fix its
    reported issues before going on.
 
