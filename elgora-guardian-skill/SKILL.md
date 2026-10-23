@@ -394,7 +394,10 @@ one tool fails or refuses, try the next — GNU tar (`gtar` on macOS), `bsdtar`,
 `unzip`, Python's `tarfile` or `zipfile` — and install what you need. Never use
 an option that writes outside the folder (`-P`, `--absolute-names`, `-:`). A
 member no tool extracts safely is left out, never a disqualification on its
-own; judge the rest.
+own; judge the rest. An archive made on a Mac may hold macOS metadata: `._<name>`
+files beside the real ones, `.DS_Store`, a `__MACOSX/` folder. Its bytes count
+toward the extracted budget like any member, but it is not the Solver's work:
+never judge it, credit it, or count it as a deliverable.
 
 A link offered where the challenge requires a deliverable is **not** a
 disqualification. Never fetch it or credit its claimed contents — but the Submission is
