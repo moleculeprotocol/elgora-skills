@@ -191,9 +191,11 @@ constraints hold, never that the work meets the acceptance criteria.
 Install the public CLI on Node.js 24 or 26 and inspect its exact command. For a
 bounty declaring `elgora_markdown_bounty_challenge_v1`, use the latest CLI (at
 least 12.0.0); an older CLI is refused on it before anything reaches chain.
+Install from the tag that matches the bounty's network:
 
 ```sh
-npm install --global @elgora/cli@latest
+npm install --global @elgora/cli@latest   # mainnet
+npm install --global @elgora/cli@next     # testnet
 elgora-cli help solver:submit
 elgora-cli solver:submit <bounty_id> <folder_or_file>
 ```
