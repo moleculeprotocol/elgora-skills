@@ -239,8 +239,8 @@ elgora-cli help poster:open-winning-submission
 elgora-cli poster:open-winning-submission <bounty_id> [output_dir] --network base
 ```
 
-It reports `content_sha256`, which matches what the Solver's client reported.
-On the website the Poster downloads the same Submission as one `.tar.gz`.
+It saves the Solver's Submission, decrypted, as one `.tar.gz` in the output
+directory; unpack it with `tar -xzf`. The website offers the same file.
 
 If the winner cannot be opened yet, the error says why in its `next_action`;
 follow it.
