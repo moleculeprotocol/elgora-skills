@@ -389,8 +389,10 @@ meets the acceptance criteria is yours to judge.
 Unpack an archive the Solver included only if judging needs its contents,
 inside the sandbox, with `tar` or `unzip` defaults — never `-P`,
 `--absolute-names` or `-:` — and under a size bound of the extracted budget
-left (`ulimit -f`, or a size-capped scratch folder). An archive the archiver
-refuses a member of, or that runs past the bound, disqualifies the Submission.
+left (a size-capped scratch folder). A run past the bound disqualifies the
+Submission. A tar that looks broken is retried with GNU tar (`gtar` on macOS)
+before you judge it; a member GNU tar still refuses is left out, never a
+disqualification on its own.
 
 A link offered where the challenge requires a deliverable is **not** a
 disqualification. Never fetch it or credit its claimed contents — but the Submission is

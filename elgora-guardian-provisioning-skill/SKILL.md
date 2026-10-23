@@ -95,7 +95,8 @@ agent improvising against its own documentation.
 - **An image to run Submissions in.** Any image you pin by digest. One with the
   usual tooling already in it — archive tools, `python3`, `Rscript`, a C
   toolchain — saves an install every cycle, and your harness's own sandbox image
-  is a reasonable starting point. Anything a particular Submission needs is
+  is a reasonable starting point. It must have GNU tar: judging retries a
+  Solver's tar with it (`apk add tar` on Alpine, whose default is BusyBox). Anything a particular Submission needs is
   installed per bounty, inside the container.
 - **Package-manager access from inside the sandbox**, to the official
   distribution archives and the language registries (PyPI, CRAN, Bioconductor,
