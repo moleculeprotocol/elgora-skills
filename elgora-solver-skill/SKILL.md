@@ -105,7 +105,7 @@ plan a Submission against:
 A Submission is at most 10000 files, packs to at most 50 MiB encrypted, and
 extracts to at most 250 MB unpacked; a challenge may lower the extracted budget,
 never raise it. A Submission is a tree of regular files: each path is relative
-to the Submission root, at most 1024 characters, and made of "/"-separated
+to the Submission root, at most 768 characters, and made of "/"-separated
 names of at most 255 characters of letters, digits, ".", "_" and "-", each
 starting with a letter or digit; paths and folder names are unique case-insensitively, no file
 shares a path with a folder, and there are no symlinks or empty folders. Every
