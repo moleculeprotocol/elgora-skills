@@ -1,7 +1,7 @@
 ---
 metadata:
-  version: "1.1.0"
-  updated: "2026-10-14"
+  version: "1.2.0"
+  updated: "2026-10-26"
 ---
 
 # The Judging Cycle
@@ -37,7 +37,21 @@ completed step, never batched to the end. What proved useful to keep:
   hash of each output you rely on;
 - the reference implementation's hash, built once per bounty;
 - for a blocked bounty, the cause and whether you already reported it;
-- while a run works it, which run holds it and since when.
+- while a run works it, which run holds it and since when;
+- each long job in flight: its container name, what it covers, and where its
+  results land.
+
+Keep it short: state, not narrative. Every run re-reads it, so progress prose
+belongs in your report. Write a result into it the moment the result lands, not
+on a later run.
+
+**Every session claims the hold, scheduled or interactive.** Before writing to
+a bounty's directory, read the hold; if another session holds it, leave the
+bounty alone until that hold outlives your runtime's maximum run time. An
+operator redirecting a session onto a bounty, or saying nothing else is
+running, does not replace that check: on bounty 1 a scheduled run and an
+interactive one worked the same directory for hours, and launched measurement
+jobs side by side.
 
 Never keep in it: keys or credentials, plaintext beyond what resuming needs, or
 an outcome you have not yet recorded on chain — a run cut off between choosing a
@@ -54,16 +68,23 @@ is about one bounty you are already inside, not a queue of work.
 3. Work through unresolved Submissions in `submission_call_count` order, the
    same order every run, so an interrupted run resumes in a stable place.
 4. Write the record after each completed step. Trust a stored step only if its
-   hash still matches what is on disk; otherwise redo that step alone.
-5. Out of budget before every Submission is resolved: stop cleanly, write the
+   hash still matches what is on disk; otherwise redo that step alone. Use the
+   bytes a stored step verified rather than deriving them again — re-extracting
+   the challenge through `jq` changed one Guardian's copy by a newline.
+5. A job the record names is still running: collect any results that landed,
+   say "in progress" in one line, and end the run. Do not re-verify finished
+   work, re-read logs or re-list processes to say the same thing.
+6. Out of budget before every Submission is resolved: stop cleanly, write the
    record, record no Verdict. That is normal for a large bounty — not a failure,
    and never a reason to score from incomplete evidence.
-6. Every Submission resolved: decide, record the Verdict, confirm it on chain.
+7. Every Submission resolved: decide, record the Verdict, confirm it on chain.
    Exit `75` with `guardian_verdict.verification_pending` means it may be on
    chain but is not confirmed yet: keep the record, keep the decision, and
    run the same `guardian:verdict` command on the next cycle. An identical
    Verdict already on chain is a no-op, so the retry never records twice.
-7. Delete every decrypted file for that bounty. Keep the record only while an
+   After an `awarded` Verdict, schedule the key-delivery follow-up before the
+   run ends.
+8. Delete every decrypted file for that bounty. Keep the record only while an
    `awarded` Verdict still owes a winning key; once the bounty has settled —
    delivered, or settled with no winner — delete the bounty's whole directory
    and stop tracking it.
@@ -99,18 +120,47 @@ answered once and read back from the record.
 - **Check whether you need multiple runs at all:** the challenge's
   per-Submission budget times the active Submissions, against what one run can
   do. If it fits, judge in one pass.
+- **Probe, then plan.** Before the first full run, time and size the most
+  expensive step once on the largest input (see "Sizing And Long Runs" in the
+  operations skill), multiply it out against the time left before
+  `judging_deadline_at`, and write the plan into the record. Five minutes of
+  probing would have saved one bounty-1 Guardian about three hours of
+  containers killed for memory.
+- **Map every Submission at vetting, in one pass.** Read each one's run
+  instructions and put its encode, decode, test or output interface into your
+  harness together, and look at every Submission's output format before writing
+  the parser that reads them. Normalise results into one shape as you collect
+  them; a harness that meets a new interface mid-run fails mid-run.
+- **Settle what you can early.** Stop a Submission once its result is settled,
+  as the judging skill allows; start the likely winner's longest runs first,
+  since it is the one whose every criterion must be confirmed.
 - **Build the reference once per bounty**, from the challenge's fixed inputs,
   and compare every Submission to it. A Submission that reproduces it has met
   that criterion; save deep review for one that disagrees or that static
   inspection flagged.
 - **Split narrowly.** One worker per Submission, given the challenge, the
   reference and its own Submission — nothing about the others — at most two at a
-  time. Workers return findings into the record; you decide, and only you
-  touch keys and transactions.
+  time, and never two compared measurements at once. Workers return findings
+  into the record; you decide, and only you touch keys and transactions.
 - **Report per run:** bounties advanced and to which stage, Verdicts recorded,
   spend per bounty.
 
 ## Pitfalls that cost real Guardians
+
+- **Waiting by polling.** A run that sleeps and checks, or a schedule that wakes
+  the agent only to report "still running", resends the whole context each
+  time to learn nothing. On bounty 1 that was the largest avoidable spend for
+  every Guardian. Wait on the job (`docker wait`, notify-on-complete), or end
+  the run and let the next scheduled one collect the result.
+- **Fixing your harness under a running job.** A job that loaded the old script
+  keeps writing results with the old bug. Stop it and rerun, or mark everything
+  it produces as untrusted — and remove any correction overlay once the
+  re-measurement replaces it, or the stale overlay outvotes the real result.
+- **Hand-copied identifiers.** Image digests, transaction hashes and
+  commitments are read from their source (`docker images`, JSON output, the
+  chain), never retyped.
+- **Resuming a failed unit as done.** A resumable job skips only units that
+  succeeded; one that recorded a failure is retried.
 
 - **Stale scratch space.** Decrypted files from an abandoned attempt pile up.
   Check disk headroom before a reproduction and remove scratch for bounties

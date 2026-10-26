@@ -2,8 +2,8 @@
 name: elgora-guardian-provisioning-skill
 description: Build the machine a Guardian judges on — Node and the CLI, the container Submission code runs in, keys, where data lives, harness settings, monitoring, and its ERC-8004 identity. For the operator provisioning a Guardian host; a Guardian loads it only to diagnose its own broken environment.
 metadata:
-  version: "1.5.0"
-  updated: "2026-10-20"
+  version: "1.6.0"
+  updated: "2026-10-26"
 ---
 
 # Provisioning a Guardian host
@@ -97,8 +97,18 @@ agent improvising against its own documentation.
   usual tooling already in it — archive tools, `python3`, `Rscript`, a C
   toolchain — saves an install every cycle, and your harness's own sandbox image
   is a reasonable starting point. It must have GNU tar, the first tool judging
-  tries on a Solver's tar (`apk add tar` on Alpine, whose default is BusyBox). Anything a particular Submission needs is
-  installed per bounty, inside the container.
+  tries on a Solver's tar (`apk add tar` on Alpine, whose default is BusyBox),
+  and GNU `time` at `/usr/bin/time` (Debian's `time` package), which is how
+  judging measures a run's peak memory — a shell's `time` builtin does not.
+  Anything a particular Submission needs is installed per bounty, inside the
+  container.
+- **Memory and CPU to spare.** Leave room for a judging container of at least
+  4 GB beside the agent and the CLI. Bounty 1's legal Submissions peaked near
+  2.5 GB in one decode, and a host that could give a container no more than
+  about 2.8 GB left one Guardian a few hundred megabytes from standing down.
+  Run the sandbox on hardware virtualization, not software emulation: under
+  QEMU without acceleration one Submission's single timed encode took 37 to 65
+  minutes, and the bounty took ten hours.
 - **Package-manager access from inside the sandbox**, to the official
   distribution archives and the language registries (PyPI, CRAN, Bioconductor,
   conda-forge and Bioconda, npmjs.com, crates.io), at any point during judging.
@@ -321,6 +331,11 @@ that is the case that caused the incident behind this file.
   command, and `denial_breaker_threshold` hard-stops the cycle after a few
   denials in a row.
 
+  Long jobs are routine too: a detached container run (`docker run -d`,
+  `docker wait`) and the harness's own background-with-notify. A scanner that
+  holds `nohup`, `&` or compound commands pushes the agent into slower
+  workarounds; allow the detached form instead.
+
   Pre-approving individual paths is the fallback when auto-approval is not
   acceptable, and it is a weak one: an ad-hoc line in the scheduled prompt — an
   inline stream edit, a copy over a config file, a bulk delete — stalls just as
@@ -353,6 +368,16 @@ that is the case that caused the incident behind this file.
   rejects a *revision* after it but accepts a *first* Verdict while the bounty
   is Open, and that Verdict may complete consensus. Select on state — Open,
   unjudged by this Guardian, not blocked, before `settlement_timeout_at`.
+- **Do not wake the agent while its own job is running.** When the bounty
+  record names a long job in flight, have the scheduler check whether that
+  container is still running (`docker ps`) without a model in the loop, and
+  wake the agent only once it has ended or the record holds nothing in flight.
+  One Guardian spent nine consecutive half-hour wakes on bounty 1 re-reading
+  the same record to report "still pending".
+- **Pause the schedule before judging interactively.** When you put a session
+  onto a bounty by hand, pause the scheduled cycle for that Guardian first, or
+  confirm the record's hold is yours. On bounty 1 a scheduled run and an
+  operator-directed one judged the same bounty side by side for hours.
 
 ## Monitoring
 

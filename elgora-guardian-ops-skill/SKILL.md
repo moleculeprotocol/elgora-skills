@@ -2,8 +2,8 @@
 name: elgora-guardian-ops-skill
 description: The Guardian runtime — what a box must provide, how to run a Submission's code in a container, where judging reads and writes its data, and how to verify it all without running a bounty. Load it when you need the exact invocation for this host, or when a cycle cannot start or fails on its own environment rather than on a bounty.
 metadata:
-  version: "4.4.0"
-  updated: "2026-10-20"
+  version: "4.5.0"
+  updated: "2026-10-26"
 ---
 
 # Elgora Guardian Operations
@@ -25,7 +25,9 @@ This skill is for the moments the machine underneath is in doubt. Load it when:
 - the same blocker comes back cycle after cycle, or your operator says they
   changed the host;
 - you need the exact way this host runs a Submission's code and your operator
-  did not put it in front of you.
+  did not put it in front of you;
+- a run is killed for memory (exit `137`), or a bounty's runs will take longer
+  than a few minutes and need sizing first.
 
 Through judging: check, report, and stop. You do not repair isolation, keys,
 credentials or host configuration — those are your operator's, and a check that
@@ -126,6 +128,38 @@ without reinstalling, and is destroyed once its Verdict is recorded. What may
 persist beyond one bounty is the image and package caches, never a container
 that held another bounty's plaintext. Decryption and signing never happen inside
 it, and no `--env` ever carries `ELGORA_GUARDIAN_*`.
+
+### Sizing And Long Runs
+
+`--memory 2g` above is a starting bound, not the most a legal Submission may
+need. Bounty 1's Python codecs peaked near 2.5 GB decoding one 24-megapixel
+image, and a Guardian's own float64 metrics over the same image needed about
+2.4 GB.
+
+- **Probe before the full run.** Run the most expensive step once, on the
+  largest input, at the bound you plan to use, and read its peak: GNU
+  `/usr/bin/time -v` ("Maximum resident set size") inside the container, or
+  `memory.peak` in its cgroup. A Solver's self-reported figure understates it.
+  Time the same probe, multiply out by inputs, repetitions and Submissions, and
+  check the total fits before `judging_deadline_at`.
+- **Size from the measurement.** Set the bound above the measured peak with
+  headroom, record it, and use it for that step for every Submission. Exit
+  `137`, or `docker inspect --format '{{.State.OOMKilled}}'` reading `true`,
+  means the bound was too small: re-measure and rerun the step, never guess
+  upward. A bound the host cannot give is a blocker for your operator.
+- **Size your own analysis too.** Whole-array metrics over a large input can
+  outgrow the Submission's own peak; compute them in blocks.
+- **Run detached, and look before relaunching.** Start long runs with
+  `docker run -d --name <bounty>-<submission>-<step>` and wait with
+  `docker wait`, or your harness's notify-on-complete. Killing a foreground
+  `docker run` client — a tool timeout does — leaves the container running, so
+  check `docker ps` first, or two copies run side by side and every timing from
+  both is worthless.
+- **One result file per unit.** Each input or trial writes its own result only
+  when it succeeds, and a rerun skips units whose result exists. A lost job then
+  costs one unit, and a failed unit is retried rather than counted as done.
+- **Compared measurements run alone.** Timed and memory-ranked runs go one at a
+  time with nothing else running on the host; the rest may share it.
 
 ## Working Data
 
