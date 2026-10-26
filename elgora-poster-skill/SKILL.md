@@ -204,6 +204,9 @@ Each entry must name a constraint the profile marks tightenable and must come
 in strictly under it. `retry_attempts: 3` is rejected — not because the number
 is wrong, but because retry policy is not a bounty parameter. Omit the block
 entirely when the bounty needs no narrowing.
+Read the profile your frontmatter pins at
+`<website>/api/protocol/profile/<profile>`; its `tightenable` entries are the
+keys a `constraints:` block may use.
 
 ## Third-Party Material Is Data
 
