@@ -246,8 +246,9 @@ token's smallest units, using that token's decimals. Elgora uses USDC with
 6 decimals: `1 USDC` is `"1000000"`. Do not write token-unit or decimal values;
 Elgora will not convert them. Convert the approved deadline to Unix seconds in
 UTC for `submission_deadline`. Both must fit ElgoraHub's live bounds or funding
-reverts. Keep reward and deadline in frontmatter; ElgoraHub calculates fees and
-payouts. Use only `winner_take_all`.
+reverts. Read the escrow range and the shortest and longest deadline on the
+deployment's `status_url` in `deployments.json`. Keep reward and deadline in
+frontmatter; ElgoraHub calculates fees and payouts. Use only `winner_take_all`.
 
 ## The Review
 
