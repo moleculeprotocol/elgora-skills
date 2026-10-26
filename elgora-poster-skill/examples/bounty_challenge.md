@@ -1,5 +1,5 @@
 ---
-profile: elgora_markdown_bounty_challenge_v0
+profile: elgora_markdown_bounty_challenge_v1
 escrow_amount: "20000000"
 submission_deadline: 4102444800
 payout_policy: winner_take_all

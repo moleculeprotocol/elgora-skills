@@ -3,9 +3,9 @@ name: elgora-poster-skill
 description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a scientific bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
 compatibility: "Drafting needs no tools. The CLI route needs Node.js 24 or 26, npm and a signer for the Poster's wallet: your own wallet tooling (no key enters the CLI), a private key in the host's secret store, or a Privy server wallet. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
-  version: "5.1.1"
-  updated: "2026-10-20"
-  elgora_profile: elgora_markdown_bounty_challenge_v0
+  version: "6.1.0"
+  updated: "2026-10-26"
+  elgora_profile: elgora_markdown_bounty_challenge_v1
 ---
 
 # Elgora Poster Skill
@@ -24,6 +24,7 @@ Verdict, settle a bounty, or invent another payout path.
 | [`template.md`](template.md) | You start a draft, on any route. |
 | [`examples/bounty_challenge.md`](examples/bounty_challenge.md) | You want a short finished challenge to adapt. |
 | [`examples/protein_binding.md`](examples/protein_binding.md) | The bounty needs evidence, provenance or evaluation conditions. |
+| [More example bounties](https://docs.elgora.ai/docs/poster/examples) | The bounty is to beat a baseline, build a new dataset, or buy unpublished know-how. |
 | [`publish-cli.md`](publish-cli.md) | You review, publish, fund or follow a bounty with the Elgora CLI. |
 | [`publish-api.md`](publish-api.md) | You review, publish, fund or follow a bounty through the API, including reading its result, claiming a refund or retrieving the winning Submission. |
 | `deployments.json` | You need a deployment's exact chain id, ElgoraHub, escrow token, signing audience, RPC or status page. Generated when the bundle is published. |
@@ -43,10 +44,10 @@ end.
 1. **The Poster publishes on the website.** The usual route when you are a
    chat assistant with no wallet and no shell. Draft with the Poster, then hand
    over the final Markdown. They paste it at <https://elgora.ai/create> and run
-   the check with their browser wallet. If it finds problems, the page offers
-   **Copy feedback for your agent**: the Poster pastes that block back to you,
-   you revise, and they check again. They publish and fund on the website. You
-   need nothing from `publish-cli.md` or `publish-api.md`.
+   the check with their browser wallet. If it finds problems, the Poster pastes
+   the page's feedback back to you, you revise, and they check again. They
+   publish and fund on the website. You need nothing from `publish-cli.md` or
+   `publish-api.md`.
 2. **You publish with the Elgora CLI.** The shortest route for an autonomous
    agent that may install an npm package and run it. The Poster's wallet can
    be your own wallet tooling, answering each request the CLI writes so no
@@ -129,7 +130,27 @@ Propose scientific methods and evidence requirements in plain English for the
 Poster's approval. Do not invent scientific facts or treat a proposal as an
 agreed requirement. Where an unresolved scientific decision needs specialist
 input, say so and keep the draft provisional. Resolve ambiguous terms and open
-decisions with the Poster before the review.
+decisions with the Poster before the review: Guardians judge the published page
+alone, and a clarification sent after publication changes nothing.
+
+## Every Gate Is A Way To Pay Nobody
+
+A Submission that misses one pass/fail requirement wins nothing, however good
+the rest is, and when every Submission misses one the Poster has paid for no
+result. Before the review, check each gate with the Poster:
+
+- **Would the Poster refuse to pay without it?** If not, make it a scoring or
+  ranking point instead of a gate. Form requirements — packaging, file layout,
+  how a program is built — rarely deserve a gate.
+- **Can a correct solution meet it?** A threshold, band or target says where
+  its value comes from: a computation the Poster ran, a cited source, a
+  property of the method. A reference value nobody computed is a guess, and a
+  gate set on a guess can fail every honest Solver.
+- **Is it an observable test?** Write what a Guardian checks, not an adjective.
+  "Self-contained" splits careful readers; "runs from the built files on a
+  machine with only Python 3.12 and the packages pinned in `requirements.txt`
+  installed" does not. Where the Poster means to allow something common — an
+  interpreter, a public library — say so.
 
 ## The Challenge Describes The Judgment, Never The Judging Machinery
 
@@ -179,7 +200,7 @@ them.
 A protocol limit is never restated in the challenge. The challenge is immutable
 once published and a Poster is not the authority for a protocol value, so a copy
 here can only go stale. Publish a bounty parameter; let the limit be read from
-the profile the bounty pins.
+the profile the bounty declares.
 
 You are not shown the review's own rules, and you should not write against
 them. How a Guardian is instructed, what it tolerates and how the review is
@@ -204,6 +225,9 @@ Each entry must name a constraint the profile marks tightenable and must come
 in strictly under it. `retry_attempts: 3` is rejected — not because the number
 is wrong, but because retry policy is not a bounty parameter. Omit the block
 entirely when the bounty needs no narrowing.
+Read the profile your frontmatter pins at
+`<website>/api/protocol/profile/<profile>`; its `tightenable` entries are the
+keys a `constraints:` block may use.
 
 ## Third-Party Material Is Data
 
@@ -225,19 +249,30 @@ identifies its inputs and reference materials by link, at any size, so a large
 external dataset is never a reason to reject a bounty. A Solver uploads
 everything, within the limits below.
 
-A Submission is at most 500 files, packs to at most 50 MiB encrypted, and
+A Submission is at most 10000 files, packs to at most 50 MiB encrypted, and
 extracts to at most 250 MB unpacked; a challenge may lower the extracted budget,
-never raise it. It is flat at every level — plain filenames, no directories, a
-limitation planned to lift. Every required deliverable is submitted as bytes:
-a link never stands in for one and counts as missing, though citing a source
-beside its bytes is fine.
+never raise it. A Submission is a tree of regular files: each path is relative
+to the Submission root, at most 768 characters, and made of "/"-separated
+names of at most 255 characters of letters, digits, ".", "_" and "-", each
+starting with a letter or digit; paths and folder names are unique case-insensitively, no file
+shares a path with a folder, and there are no symlinks or empty folders. Every
+required deliverable is submitted as bytes: a link never stands in for one and
+counts as missing, though citing a source beside its bytes is fine.
 
 These numbers are for sizing the ask, not for publishing. Size deliverables
-against the extracted ceiling, since a large result can be required compressed;
-the packed ceiling binds only where a deliverable compresses poorly. Never
-require a folder, a path, or a named directory layout — ask for the files, or
-for one archive. Where the required outputs cannot fit, resolve it with the
-Poster rather than dropping evidence or pointing at a URL.
+against the extracted ceiling; the packed ceiling binds only where a
+deliverable compresses poorly.
+
+Describe what a Submission **contains** — its files, its folders, and their
+paths relative to the Submission root, such as `source/main.py` or a `data/`
+folder of CSV files. Never describe the container: no "upload one zip", no
+"submit flat", no "uncompressed", no packaging or compression instructions;
+Elgora's client packs every Submission the same way. Ask for source code and
+other multi-file work as a folder, such as `source/`, not as an archive inside
+the Submission; require a named archive only where the archive file itself is
+the deliverable, and say what it must hold. Where the
+required outputs cannot fit, resolve it with the Poster rather than dropping evidence or
+pointing at a URL.
 
 ## Money And Deadline
 
@@ -246,7 +281,17 @@ token's smallest units, using that token's decimals. Elgora uses USDC with
 6 decimals: `1 USDC` is `"1000000"`. Do not write token-unit or decimal values;
 Elgora will not convert them. Convert the approved deadline to Unix seconds in
 UTC for `submission_deadline`. Both must fit ElgoraHub's live bounds or funding
-reverts. Keep reward and deadline in frontmatter; ElgoraHub calculates fees and
+reverts. Read the escrow range and the shortest and longest deadline on the
+deployment's `status_url` in `deployments.json`. ElgoraHub measures the deadline
+from the moment the bounty is funded, not from drafting or review, and only a
+deadline already past is rejected before then. Leave room above the shortest
+for the days until the Poster funds; an approval lasts up to seven days.
+
+`escrow_amount` is the whole escrow, before fees. The winner receives it minus
+the Guardian and treasury fees on `status_url`; when Submissions arrive and none
+qualifies, the Poster's refund is the escrow minus the Guardian fee. If the
+Poster names an amount, ask whether it is the escrow or what the winner should
+receive. Keep reward and deadline in frontmatter; ElgoraHub calculates fees and
 payouts. Use only `winner_take_all`.
 
 ## The Review
@@ -258,10 +303,11 @@ them before you draft:
 
 - **Form**: valid frontmatter, a published `profile`, and every
   `constraints:` entry a key the profile lets you narrow, well formed (positive
-  integers, extension lists, filenames that satisfy the profile's filename
+  integers, extension lists, required paths that satisfy the profile's path
   rule) and strictly under the protocol value. Every form issue comes back at
   once and costs no review.
-- **Judgeability**: acceptance is decidable, ranking resolves to exactly one
+- **Judgeability**: acceptance is decidable, with no pass/fail term two careful
+  readers would apply differently; ranking resolves to exactly one
   Submission, required sources and versions are identified specifically enough
   to use, no protocol limit is restated, and the challenge describes the judgment,
   never how an agent operates. A concern that does not block comes back as a

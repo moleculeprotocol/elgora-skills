@@ -10,8 +10,8 @@ website needs neither file.
 ## Install And Configure
 
 Install the CLI on Node.js 24 or 26 from the npm tag that matches the network
-agreed with the Poster, and inspect its commands. This file needs CLI 11.0.0
-or newer:
+agreed with the Poster, and inspect its commands. Bounties declaring
+`elgora_markdown_bounty_challenge_v1` need the latest CLI (at least 12.0.0):
 
 ```sh
 npm install --global @elgora/cli@latest   # mainnet
@@ -140,7 +140,7 @@ the one before it worked. Wait and try again; do not treat it as a failure.
 
 ## Review Until It Is Green
 
-1. **Check the challenge offline.** This checks the frontmatter, pinned profile and
+1. **Check the challenge offline.** This checks the frontmatter, declared profile and
    declared limits without a model, network request or review quota. Fix its
    reported issues before going on.
 
@@ -231,13 +231,16 @@ ElgoraHub finalizes as one of:
 
 For an Awarded bounty, retrieve the exact finalized winner. The command creates
 a one-time key, signs both requests with the funding Poster's key, verifies the
-committed encrypted envelope, and writes plaintext only to the local output
-directory:
+committed encrypted envelope, and writes the Submission's files and folders
+only to the local output directory, which must be new or empty:
 
 ```sh
 elgora-cli help poster:open-winning-submission
 elgora-cli poster:open-winning-submission <bounty_id> [output_dir] --network base
 ```
+
+It saves the Solver's Submission, decrypted, as one `.tar.gz` in the output
+directory; unpack it with `tar -xzf`. The website offers the same file.
 
 If the winner cannot be opened yet, the error says why in its `next_action`;
 follow it.

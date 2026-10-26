@@ -11,7 +11,7 @@ verbatim on the bounty page. A surviving brace blocks publication.
 
 ```markdown
 ---
-profile: elgora_markdown_bounty_challenge_v0
+profile: elgora_markdown_bounty_challenge_v1
 escrow_amount: "{escrow_amount}"
 submission_deadline: {submission_deadline}
 payout_policy: winner_take_all
@@ -32,12 +32,16 @@ state its required content, purpose, and whether it is mandatory or optional.
 Explain how related outputs fit together, including which evidence supports
 which result or claim.
 
-Specify files, artifacts, reports, datasets or code as relevant to the task.
-State any format, organization, naming or size requirements needed to use or
-evaluate them. Every required deliverable must be submitted as bytes inside the
-Submission: judgment reads only what the sealed package contains, so a link
-never stands in for a required artifact. Cite external sources as references
-supporting a deliverable, not as the deliverable.
+Specify files, folders, reports, datasets or code as relevant to the task.
+Name each by its path relative to the Submission root, such as `RUN.md` or
+`source/main.py`, and state any format, organization, naming or size
+requirements needed to use or evaluate them. Ask for code as a folder such as
+`source/`, not as an archive. Describe what the Submission contains, never how
+it is packaged or compressed. Every required deliverable
+must be submitted as bytes inside the Submission: judgment reads only what the
+Submission contains, so a link never stands in for a required file. Cite
+external sources as references supporting a deliverable, not as the
+deliverable.
 
 Define Submission completeness here: which outputs and required content must
 be present. Refer to Acceptance Criteria for what those outputs must demonstrate,
@@ -56,7 +60,7 @@ Adapt the columns to the task.
 
 | Deliverable | Required or optional | Required content | Format or access requirements | Purpose or related criterion |
 |---|---|---|---|---|
-| {output or artifact} | {required/optional} | {what it must contain} | {applicable requirements} | {what it demonstrates or supports} |
+| {file, folder or path} | {required/optional} | {what it must contain} | {applicable requirements} | {what it demonstrates or supports} |
 
 ## Inputs, Materials and References
 {List required inputs and useful references. Put small inputs directly in the
@@ -90,7 +94,9 @@ keys, seed phrases, transactions, token approvals, or unrelated signatures.}
 {Define what each required deliverable must demonstrate to pass, referring to
 its required content under Deliverables rather than reproducing the output
 checklist. Specify any thresholds, tolerances, comparisons or qualitative
-standards needed for that decision. Identify the evidence supporting each
+standards needed for that decision. Keep pass/fail gates to what the Poster
+would refuse to pay without, say where each threshold comes from, and write
+each as a test a Guardian can observe. Identify the evidence supporting each
 criterion, referring to Evidence, Provenance and Verification where further
 detail is needed. Explain how missing, incomplete or conflicting results affect
 acceptance where relevant. Make each decision clear enough to apply from the
