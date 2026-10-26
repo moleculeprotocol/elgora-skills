@@ -103,12 +103,9 @@ agent improvising against its own documentation.
   Anything a particular Submission needs is installed per bounty, inside the
   container.
 - **Memory and CPU to spare.** Leave room for a judging container of at least
-  4 GB beside the agent and the CLI. Bounty 1's legal Submissions peaked near
-  2.5 GB in one decode, and a host that could give a container no more than
-  about 2.8 GB left one Guardian a few hundred megabytes from standing down.
-  Run the sandbox on hardware virtualization, not software emulation: under
-  QEMU without acceleration one Submission's single timed encode took 37 to 65
-  minutes, and the bounty took ten hours.
+  4 GB beside the agent and the CLI; legal Submissions can need more than the
+  2 GB starting bound. Run the sandbox on hardware virtualization, not software
+  emulation, which can stretch a minutes-long run into hours.
 - **Package-manager access from inside the sandbox**, to the official
   distribution archives and the language registries (PyPI, CRAN, Bioconductor,
   conda-forge and Bioconda, npmjs.com, crates.io), at any point during judging.
@@ -370,15 +367,12 @@ that is the case that caused the incident behind this file.
   wake while the bounty record names a job of this Guardian's still running
   (`docker ps`). Do **not** skip on `judging_deadline_at`: ElgoraHub rejects a
   *revision* after it but accepts a *first* Verdict while the bounty is Open,
-  and that Verdict may complete consensus. On bounties 0 and 1, wakes that
-  found nothing to do were the largest avoidable spend: one Guardian ran 21
-  no-op sessions after recording its Verdict, another nine "still pending"
-  runs in a row.
+  and that Verdict may complete consensus. A wake that finds nothing to do is
+  the most common avoidable cost a Guardian has.
 - **Pause the schedule before judging interactively.** When you put a session
   onto a bounty by hand, pause the scheduled cycle for that Guardian first, or
-  confirm the record's hold is yours. On both bounties a scheduled run and an
-  operator-directed one worked the same bounty side by side, and on bounty 0
-  both sent a Verdict.
+  confirm the record's hold is yours; otherwise both can work the bounty side
+  by side and both send a Verdict.
 
 ## Monitoring
 

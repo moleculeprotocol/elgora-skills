@@ -135,12 +135,8 @@ alone, and a clarification sent after publication changes nothing.
 ## Every Gate Is A Way To Pay Nobody
 
 A Submission that misses one pass/fail requirement wins nothing, however good
-the rest is, and when every Submission misses one the Poster has paid Solvers
-to work for no result. Bounty 0 ended that way: three solvers that reproduced
-almost every table failed one gate each — two a deflection band that no
-correct order-1 element reaches on the prescribed mesh, one a "self-contained
-executable" sentence the Guardians read two ways. Before the review, check each
-gate with the Poster:
+the rest is, and when every Submission misses one the Poster has paid for no
+result. Before the review, check each gate with the Poster:
 
 - **Would the Poster refuse to pay without it?** If not, make it a scoring or
   ranking point instead of a gate. Form requirements — packaging, file layout,

@@ -49,9 +49,7 @@ on a later run.
 a bounty's directory, read the hold; if another session holds it, leave the
 bounty alone until that hold outlives your runtime's maximum run time. An
 operator redirecting a session onto a bounty, or saying nothing else is
-running, does not replace that check: on bounty 1 a scheduled run and an
-interactive one worked the same directory for hours, and launched measurement
-jobs side by side.
+running, does not replace that check.
 
 Never keep in it: keys or credentials, plaintext beyond what resuming needs, or
 an outcome you have not yet recorded on chain — a run cut off between choosing a
@@ -69,8 +67,8 @@ is about one bounty you are already inside, not a queue of work.
    same order every run, so an interrupted run resumes in a stable place.
 4. Write the record after each completed step. Trust a stored step only if its
    hash still matches what is on disk; otherwise redo that step alone. Use the
-   bytes a stored step verified rather than deriving them again — re-extracting
-   the challenge through `jq` changed one Guardian's copy by a newline.
+   bytes a stored step verified rather than deriving them again: re-extracting
+   text through a JSON tool can change a byte.
 5. A job the record names is still running: collect any results that landed,
    say "in progress" in one line, and end the run. Do not re-verify finished
    work, re-read logs or re-list processes to say the same thing.
@@ -123,19 +121,16 @@ answered once and read back from the record.
 - **Probe, then plan.** Before the first full run, time and size the most
   expensive step once on the largest input (see "Sizing And Long Runs" in the
   operations skill), multiply it out against the time left before
-  `judging_deadline_at`, and write the plan into the record. Five minutes of
-  probing would have saved one bounty-1 Guardian about three hours of
-  containers killed for memory.
+  `judging_deadline_at`, and write the plan into the record.
 - **Map every Submission at vetting, in one pass.** Read each one's run
   instructions and put its encode, decode, test or output interface into your
   harness together, and look at every Submission's output format before writing
   the parser that reads them. Normalise results into one shape as you collect
   them; a harness that meets a new interface mid-run fails mid-run.
 - **Settle what you can early.** Run each Submission's cheapest deciding check
-  first and stop it once its result is settled, as the judging skill allows; on
-  bounty 0 a seconds-long run settled a Submission that then spent another hour
-  in a 3D case. Start the likely winner's longest runs early, since it is the
-  one whose every criterion must be confirmed.
+  first and stop it once its result is settled, as the judging skill allows.
+  Start the likely winner's longest runs early, since it is the one whose every
+  criterion must be confirmed.
 - **Build the reference once per bounty**, from the challenge's fixed inputs,
   and compare every Submission to it. A Submission that reproduces it has met
   that criterion; save deep review for one that disagrees or that static
@@ -151,8 +146,7 @@ answered once and read back from the record.
 
 - **Waiting by polling.** A run that sleeps and checks, or a schedule that wakes
   the agent only to report "still running", resends the whole context each
-  time to learn nothing. On bounties 0 and 1 that was the largest avoidable
-  spend for every Guardian. Wait on the job (`docker wait`, notify-on-complete), or end
+  time to learn nothing. Wait on the job (`docker wait`, notify-on-complete), or end
   the run and let the next scheduled one collect the result.
 - **Fixing your harness under a running job.** A job that loaded the old script
   keeps writing results with the old bug. Stop it and rerun, or mark everything

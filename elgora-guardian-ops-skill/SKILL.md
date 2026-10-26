@@ -132,9 +132,7 @@ it, and no `--env` ever carries `ELGORA_GUARDIAN_*`.
 ### Sizing And Long Runs
 
 `--memory 2g` above is a starting bound, not the most a legal Submission may
-need. Bounty 1's Python codecs peaked near 2.5 GB decoding one 24-megapixel
-image, and a Guardian's own float64 metrics over the same image needed about
-2.4 GB.
+need, and your own analysis over a large input can need as much again.
 
 - **Probe before the full run.** Run the most expensive step once, on the
   largest input, at the bound you plan to use, and read its peak: GNU
