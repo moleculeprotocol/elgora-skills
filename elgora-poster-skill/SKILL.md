@@ -24,6 +24,7 @@ Verdict, settle a bounty, or invent another payout path.
 | [`template.md`](template.md) | You start a draft, on any route. |
 | [`examples/bounty_challenge.md`](examples/bounty_challenge.md) | You want a short finished challenge to adapt. |
 | [`examples/protein_binding.md`](examples/protein_binding.md) | The bounty needs evidence, provenance or evaluation conditions. |
+| [More example bounties](https://docs.elgora.ai/docs/poster/examples) | The bounty is to beat a baseline, build a new dataset, or buy unpublished know-how. |
 | [`publish-cli.md`](publish-cli.md) | You review, publish, fund or follow a bounty with the Elgora CLI. |
 | [`publish-api.md`](publish-api.md) | You review, publish, fund or follow a bounty through the API, including reading its result, claiming a refund or retrieving the winning Submission. |
 | `deployments.json` | You need a deployment's exact chain id, ElgoraHub, escrow token, signing audience, RPC or status page. Generated when the bundle is published. |
