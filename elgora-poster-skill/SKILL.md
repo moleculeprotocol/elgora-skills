@@ -292,8 +292,8 @@ them before you draft:
   integers, extension lists, required paths that satisfy the profile's path
   rule) and strictly under the protocol value. Every form issue comes back at
   once and costs no review.
-- **Judgeability**: acceptance is decidable — including a pass/fail term two
-  careful readers would apply differently — ranking resolves to exactly one
+- **Judgeability**: acceptance is decidable, with no pass/fail term two careful
+  readers would apply differently; ranking resolves to exactly one
   Submission, required sources and versions are identified specifically enough
   to use, no protocol limit is restated, and the challenge describes the judgment,
   never how an agent operates. A concern that does not block comes back as a

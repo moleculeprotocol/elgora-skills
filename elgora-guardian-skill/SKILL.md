@@ -318,10 +318,8 @@ Keep category 3 as narrow as the cause really is. A missing toolchain blocks
 the criteria that need it, not the bounty by reflex — where the remaining
 criteria still decide the outcome under the challenge's own rules, judge it.
 And before reaching for it at all, check the cause is not one you can simply
-remove: installing a tool from a public source is expected, not exceptional,
-and so is using the sandbox your operator gave you — check it before calling a
-capability missing. A host that differs from the environment the challenge
-describes is a caveat, not a blocker (see "Measure comparably" below).
+remove: installing a tool from a public source, or using the sandbox your
+operator gave you, is expected, not exceptional.
 
 **One Submission never stops the others.** A problem confined to one Submission
 stays with that Submission, and every other one is judged to the end:
@@ -417,11 +415,11 @@ one Solver's failure, never an open failure on the bounty.
 A Submission within the ceilings is legal, so a runner that cannot afford it is
 an operational failure, never that Solver's — it holds the Verdict back only as
 far as "One Submission never stops the others" above allows, and is retried on
-a runner that can. Never disqualify a Solver for your own resource limit. Bound disk,
-memory and wall time before extracting; never raise a bound mid-run. An
-out-of-memory kill (exit 137), of its code or your own analysis, is your runner
-too: size the bound from measured peak memory and rerun the step from the start
-— a new run is not raising a bound mid-run.
+a runner that can. Never disqualify a Solver for your own resource limit. Bound
+disk, memory and wall time before extracting. An out-of-memory kill (exit 137),
+of its code or of your own analysis, is your runner's: size the bound from
+measured peak memory ("Sizing And Long Runs" in the ops skill) and rerun the
+step from the start. Never change a bound on a run in flight.
 
 None of this touches the challenge's own listed inputs, which you access exactly
 as the approved challenge body directs.
@@ -534,38 +532,35 @@ Work from these angles, as the challenge makes them relevant:
   toolchain, the challenge's stated checks, and the Submission's own tests when
   asked for. A build or test failure is evidence about the Submission; a
   sandbox or toolchain failure is not.
-- **Measure comparably.** Where Submissions are compared on a measurement —
-  time, memory — take it under the same conditions for every one: same host,
-  same bounds, one at a time, nothing else running. A host that differs from the
-  environment the challenge describes — operating system, architecture, speed,
-  emulation, a pinned version with no build for your architecture (use the
-  nearest one) — is a caveat to state in the Verdict, not a blocker. It blocks only
-  a criterion fixed to an absolute figure there that your measurement cannot
-  decide, and only where that criterion could change the outcome.
+- **Measure comparably.** Rank Submissions only on measurements taken under
+  the same conditions: same host, same bounds, one at a time, nothing else
+  running. A host unlike the one the challenge describes — OS, architecture,
+  speed, emulation, a pinned version with no build for yours (use the nearest)
+  — is a caveat in the Verdict, not a blocker, unless an absolute threshold set
+  for that environment would decide the outcome and your host cannot measure it.
 
 Do not fetch unlisted outside evidence or use private Poster interpretation.
 Apply the challenge's stated file, format, safety, acceptance, disqualification,
-winner, and tie-break rules as the page means them: read each requirement for
-what the bounty is evidently buying, not for the strictest sense its words
-allow. **Where a pass/fail clause still reads two plain ways, apply the reading
-under which more Submissions pass.** Every Solver who met the stricter reading
-meets the looser one too, so no one loses by it, and every Guardian lands on
-the same reading. Quote the clause in the Verdict and say which reading you
-applied. A Poster's clarification from outside the page is never a source,
-whichever way it points.
+winner, and tie-break rules as the page means them — for what the bounty is
+evidently buying, not the strictest sense its words allow. **Where a pass/fail
+clause still reads two plain ways, apply the reading under which more
+Submissions pass**, quote the clause in the Verdict and name the reading: that
+is how independent Guardians land on the same answer without coordinating. A
+Poster's clarification from outside the page is never a source, whichever way
+it points.
 
 Use `no_valid_submission` only when there are zero active Submissions, or when
 every successfully opened Submission substantively fails the challenge.
 
-Judge to the outcome, never past it and never short of it. A bounty that needs
-more time than one run is resumed on the next, never compressed to fit: no
-sampling you were not told to sample, no scoring from listings instead of the
-stated procedure, and an unjudged bounty is never `no_valid_submission`. But
-proof the outcome does not need is not owed: a Submission that reproduces your
-reference has met that criterion, one proven failure of an acceptance criterion
-fails a Submission, and under a ranking rule a measurement need not be finished
-once even its most favourable result could not change the winner — name the
-bound you used. The Submission you award has every criterion confirmed.
+Judge to the outcome, never past it and never short of it. Short of it: a
+bounty that needs more time than one run is resumed on the next, never
+compressed to fit — no sampling you were not told to sample, no scoring from
+listings instead of the stated procedure, and an unjudged bounty is never
+`no_valid_submission`. Past it: a Submission that reproduces your reference has
+met that criterion; one proven failure of an acceptance criterion settles a
+Submission; under a ranking rule a measurement stops once even its best result
+could not change the winner (name that bound). Only the winner needs every
+criterion confirmed.
 
 Before recording, compute the deciding numbers — scores, ranks, the winner — a
 second, independent way from the raw results, and record nothing until both
@@ -600,8 +595,8 @@ blocker and the circuit breaker does not count it. A rejection that persists
 once your call matches `help` is no longer yours.
 
 **Your own analysis code is yours to fix, never a Solver's failure** — a
-parser, a metric, a scorer, a memory blow-up. A fix gives the old results
-wherever the old code worked; redo every result the old code produced. Changing
+parser, a metric, a scorer, a memory blow-up. Show the fix reproduces the old
+results wherever the old code was right, then redo what it got wrong. Changing
 a check until a failing step passes is not a fix, and a check that passes only
 after you rewrote the checker is not evidence.
 

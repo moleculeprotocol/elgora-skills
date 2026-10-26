@@ -147,13 +147,12 @@ need, and your own analysis over a large input can need as much again.
   upward. A bound the host cannot give is a blocker for your operator.
 - **Size your own analysis too.** Whole-array metrics over a large input can
   outgrow the Submission's own peak; compute them in blocks.
-- **Run detached, and look before relaunching.** Start long runs with
-  `docker run -d --name <bounty>-<submission>-<step>` and wait with
-  `docker wait`, or your harness's notify-on-complete. Killing a foreground
-  `docker run` client — a tool timeout does — leaves the container running, and
-  after any interruption or context break you will not remember what you
-  launched, so check `docker ps` first, or two copies run side by side and every timing from
-  both is worthless.
+- **Run detached, and look before relaunching.** Start a long run with
+  `docker run -d --name <bounty>-<submission>-<step>` and wait on it with
+  `docker wait` or your harness's notify-on-complete; killing a foreground
+  client (a tool timeout does) leaves the container running. After any
+  interruption, `docker ps` before launching anything, or two copies run side
+  by side and both timings are worthless.
 - **One result file per unit.** Each input or trial writes its own result only
   when it succeeds, in the bounty's directory rather than anywhere a copy-back
   or cleanup replaces, and a rerun skips units whose result exists. A lost job then

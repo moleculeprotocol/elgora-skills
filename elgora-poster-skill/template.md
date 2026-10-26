@@ -94,11 +94,9 @@ keys, seed phrases, transactions, token approvals, or unrelated signatures.}
 {Define what each required deliverable must demonstrate to pass, referring to
 its required content under Deliverables rather than reproducing the output
 checklist. Specify any thresholds, tolerances, comparisons or qualitative
-standards needed for that decision. A Submission that misses one pass/fail
-requirement wins nothing, so keep those to what the Poster would refuse to pay
-without and let the rest rank; say where each threshold's value comes from;
-write each as a test a Guardian can observe, not an adjective such as
-"self-contained". Identify the evidence supporting each
+standards needed for that decision. Keep pass/fail gates to what the Poster
+would refuse to pay without, say where each threshold comes from, and write
+each as a test a Guardian can observe. Identify the evidence supporting each
 criterion, referring to Evidence, Provenance and Verification where further
 detail is needed. Explain how missing, incomplete or conflicting results affect
 acceptance where relevant. Make each decision clear enough to apply from the

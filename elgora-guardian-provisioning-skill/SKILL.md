@@ -367,8 +367,7 @@ that is the case that caused the incident behind this file.
   wake while the bounty record names a job of this Guardian's still running
   (`docker ps`). Do **not** skip on `judging_deadline_at`: ElgoraHub rejects a
   *revision* after it but accepts a *first* Verdict while the bounty is Open,
-  and that Verdict may complete consensus. A wake that finds nothing to do is
-  the most common avoidable cost a Guardian has.
+  and that Verdict may complete consensus.
 - **Pause the schedule before judging interactively.** When you put a session
   onto a bounty by hand, pause the scheduled cycle for that Guardian first, or
   confirm the record's hold is yours; otherwise both can work the bounty side

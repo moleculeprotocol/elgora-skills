@@ -45,11 +45,10 @@ Keep it short: state, not narrative. Every run re-reads it, so progress prose
 belongs in your report. Write a result into it the moment the result lands, not
 on a later run.
 
-**Every session claims the hold, scheduled or interactive.** Before writing to
-a bounty's directory, read the hold; if another session holds it, leave the
-bounty alone until that hold outlives your runtime's maximum run time. An
-operator redirecting a session onto a bounty, or saying nothing else is
-running, does not replace that check.
+**Every session claims the hold first, scheduled or interactive.** Before
+writing to a bounty's directory, read the hold; if another session holds it
+and the hold is younger than your runtime's maximum run time, leave the bounty
+alone — an operator's word that nothing else is running does not replace this.
 
 Never keep in it: keys or credentials, plaintext beyond what resuming needs, or
 an outcome you have not yet recorded on chain — a run cut off between choosing a
@@ -123,10 +122,9 @@ answered once and read back from the record.
   operations skill), multiply it out against the time left before
   `judging_deadline_at`, and write the plan into the record.
 - **Map every Submission at vetting, in one pass.** Read each one's run
-  instructions and put its encode, decode, test or output interface into your
-  harness together, and look at every Submission's output format before writing
-  the parser that reads them. Normalise results into one shape as you collect
-  them; a harness that meets a new interface mid-run fails mid-run.
+  instructions and output format before writing the harness that drives them
+  and the parser that reads them, and normalise results into one shape as they
+  land. A harness that meets a new interface mid-run fails mid-run.
 - **Settle what you can early.** Run each Submission's cheapest deciding check
   first and stop it once its result is settled, as the judging skill allows.
   Start the likely winner's longest runs early, since it is the one whose every
@@ -150,8 +148,7 @@ answered once and read back from the record.
   the run and let the next scheduled one collect the result.
 - **Fixing your harness under a running job.** A job that loaded the old script
   keeps writing results with the old bug. Stop it and rerun, or mark everything
-  it produces as untrusted — and remove any correction overlay once the
-  re-measurement replaces it, or the stale overlay outvotes the real result.
+  it produces untrusted and replace it; never patch over it.
 - **Hand-copied identifiers.** Image digests, transaction hashes and
   commitments are read from their source (`docker images`, JSON output, the
   chain), never retyped.
