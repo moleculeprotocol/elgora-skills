@@ -152,11 +152,13 @@ image, and a Guardian's own float64 metrics over the same image needed about
 - **Run detached, and look before relaunching.** Start long runs with
   `docker run -d --name <bounty>-<submission>-<step>` and wait with
   `docker wait`, or your harness's notify-on-complete. Killing a foreground
-  `docker run` client — a tool timeout does — leaves the container running, so
-  check `docker ps` first, or two copies run side by side and every timing from
+  `docker run` client — a tool timeout does — leaves the container running, and
+  after any interruption or context break you will not remember what you
+  launched, so check `docker ps` first, or two copies run side by side and every timing from
   both is worthless.
 - **One result file per unit.** Each input or trial writes its own result only
-  when it succeeds, and a rerun skips units whose result exists. A lost job then
+  when it succeeds, in the bounty's directory rather than anywhere a copy-back
+  or cleanup replaces, and a rerun skips units whose result exists. A lost job then
   costs one unit, and a failed unit is retried rather than counted as done.
 - **Compared measurements run alone.** Timed and memory-ranked runs go one at a
   time with nothing else running on the host; the rest may share it.

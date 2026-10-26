@@ -362,22 +362,23 @@ that is the case that caused the incident behind this file.
   its own elsewhere the first time a task does not obviously fit. Neither
   harness's workspace is a filesystem boundary, so this is a naming convention
   plus the canary, not something the harness enforces.
-- **Let the cycle's bounty selector skip** blocked bounties, and past-deadline
-  bounties this Guardian has already judged, so a refused one is not re-picked
-  every 30 minutes. Do **not** skip on `judging_deadline_at` alone: ElgoraHub
-  rejects a *revision* after it but accepts a *first* Verdict while the bounty
-  is Open, and that Verdict may complete consensus. Select on state — Open,
-  unjudged by this Guardian, not blocked, before `settlement_timeout_at`.
-- **Do not wake the agent while its own job is running.** When the bounty
-  record names a long job in flight, have the scheduler check whether that
-  container is still running (`docker ps`) without a model in the loop, and
-  wake the agent only once it has ended or the record holds nothing in flight.
-  One Guardian spent nine consecutive half-hour wakes on bounty 1 re-reading
-  the same record to report "still pending".
+- **Wake the agent only for work.** A scheduled cycle that finds nothing to do
+  still pays for a full model turn, so let the scheduler decide without a model
+  first. Wake for a bounty that is Open, holds no Verdict of this Guardian's
+  (`guardian_verdict` is `null` in discovery), is not `blocked`, and is before
+  `settlement_timeout_at`; and for a key-delivery follow-up that is due. Do not
+  wake while the bounty record names a job of this Guardian's still running
+  (`docker ps`). Do **not** skip on `judging_deadline_at`: ElgoraHub rejects a
+  *revision* after it but accepts a *first* Verdict while the bounty is Open,
+  and that Verdict may complete consensus. On bounties 0 and 1, wakes that
+  found nothing to do were the largest avoidable spend: one Guardian ran 21
+  no-op sessions after recording its Verdict, another nine "still pending"
+  runs in a row.
 - **Pause the schedule before judging interactively.** When you put a session
   onto a bounty by hand, pause the scheduled cycle for that Guardian first, or
-  confirm the record's hold is yours. On bounty 1 a scheduled run and an
-  operator-directed one judged the same bounty side by side for hours.
+  confirm the record's hold is yours. On both bounties a scheduled run and an
+  operator-directed one worked the same bounty side by side, and on bounty 0
+  both sent a Verdict.
 
 ## Monitoring
 

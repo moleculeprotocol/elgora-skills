@@ -35,8 +35,9 @@ which result or claim.
 Specify files, folders, reports, datasets or code as relevant to the task.
 Name each by its path relative to the Submission root, such as `RUN.md` or
 `source/main.py`, and state any format, organization, naming or size
-requirements needed to use or evaluate them. Describe what the Submission
-contains, never how it is packaged or compressed. Every required deliverable
+requirements needed to use or evaluate them. Ask for code as a folder such as
+`source/`, not as an archive. Describe what the Submission contains, never how
+it is packaged or compressed. Every required deliverable
 must be submitted as bytes inside the Submission: judgment reads only what the
 Submission contains, so a link never stands in for a required file. Cite
 external sources as references supporting a deliverable, not as the
@@ -93,7 +94,11 @@ keys, seed phrases, transactions, token approvals, or unrelated signatures.}
 {Define what each required deliverable must demonstrate to pass, referring to
 its required content under Deliverables rather than reproducing the output
 checklist. Specify any thresholds, tolerances, comparisons or qualitative
-standards needed for that decision. Identify the evidence supporting each
+standards needed for that decision. A Submission that misses one pass/fail
+requirement wins nothing, so keep those to what the Poster would refuse to pay
+without and let the rest rank; say where each threshold's value comes from;
+write each as a test a Guardian can observe, not an adjective such as
+"self-contained". Identify the evidence supporting each
 criterion, referring to Evidence, Provenance and Verification where further
 detail is needed. Explain how missing, incomplete or conflicting results affect
 acceptance where relevant. Make each decision clear enough to apply from the

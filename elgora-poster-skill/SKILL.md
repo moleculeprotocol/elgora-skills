@@ -3,8 +3,8 @@ name: elgora-poster-skill
 description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a scientific bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
 compatibility: "Drafting needs no tools. The CLI route needs Node.js 24 or 26, npm and a signer for the Poster's wallet: your own wallet tooling (no key enters the CLI), a private key in the host's secret store, or a Privy server wallet. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
-  version: "6.0.0"
-  updated: "2026-10-20"
+  version: "6.1.0"
+  updated: "2026-10-26"
   elgora_profile: elgora_markdown_bounty_challenge_v1
 ---
 
@@ -129,7 +129,31 @@ Propose scientific methods and evidence requirements in plain English for the
 Poster's approval. Do not invent scientific facts or treat a proposal as an
 agreed requirement. Where an unresolved scientific decision needs specialist
 input, say so and keep the draft provisional. Resolve ambiguous terms and open
-decisions with the Poster before the review.
+decisions with the Poster before the review: Guardians judge the published page
+alone, and a clarification sent after publication changes nothing.
+
+## Every Gate Is A Way To Pay Nobody
+
+A Submission that misses one pass/fail requirement wins nothing, however good
+the rest is, and when every Submission misses one the Poster has paid Solvers
+to work for no result. Bounty 0 ended that way: three solvers that reproduced
+almost every table failed one gate each — two a deflection band that no
+correct order-1 element reaches on the prescribed mesh, one a "self-contained
+executable" sentence the Guardians read two ways. Before the review, check each
+gate with the Poster:
+
+- **Would the Poster refuse to pay without it?** If not, make it a scoring or
+  ranking point instead of a gate. Form requirements — packaging, file layout,
+  how a program is built — rarely deserve a gate.
+- **Can a correct solution meet it?** A threshold, band or target says where
+  its value comes from: a computation the Poster ran, a cited source, a
+  property of the method. A reference value nobody computed is a guess, and a
+  gate set on a guess can fail every honest Solver.
+- **Is it an observable test?** Write what a Guardian checks, not an adjective.
+  "Self-contained" splits careful readers; "runs from the built files on a
+  machine with only Python 3.12 and the packages pinned in `requirements.txt`
+  installed" does not. Where the Poster means to allow something common — an
+  interpreter, a public library — say so.
 
 ## The Challenge Describes The Judgment, Never The Judging Machinery
 
@@ -242,9 +266,11 @@ deliverable compresses poorly.
 Describe what a Submission **contains** — its files, its folders, and their
 paths relative to the Submission root, such as `source/main.py` or a `data/`
 folder of CSV files. Never describe the container: no "upload one zip", no
-"uncompressed", no packaging or compression instructions; Elgora's client packs
-every Submission the same way. Where the work itself is an archive, require it
-as one named file, such as `model.tar.gz`, and say what it must hold. Where the
+"submit flat", no "uncompressed", no packaging or compression instructions;
+Elgora's client packs every Submission the same way. Ask for source code and
+other multi-file work as a folder, such as `source/`, not as an archive inside
+the Submission; require a named archive only where the archive file itself is
+the deliverable, and say what it must hold. Where the
 required outputs cannot fit, resolve it with the Poster rather than dropping evidence or
 pointing at a URL.
 
@@ -270,7 +296,8 @@ them before you draft:
   integers, extension lists, required paths that satisfy the profile's path
   rule) and strictly under the protocol value. Every form issue comes back at
   once and costs no review.
-- **Judgeability**: acceptance is decidable, ranking resolves to exactly one
+- **Judgeability**: acceptance is decidable — including a pass/fail term two
+  careful readers would apply differently — ranking resolves to exactly one
   Submission, required sources and versions are identified specifically enough
   to use, no protocol limit is restated, and the challenge describes the judgment,
   never how an agent operates. A concern that does not block comes back as a
