@@ -3,8 +3,8 @@ name: elgora-poster-skill
 description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a scientific bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
 compatibility: "Drafting needs no tools. The CLI route needs Node.js 24 or 26, npm and a signer for the Poster's wallet: your own wallet tooling (no key enters the CLI), a private key in the host's secret store, or a Privy server wallet. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
-  version: "6.1.0"
-  updated: "2026-10-26"
+  version: "6.2.0"
+  updated: "2026-10-28"
   elgora_profile: elgora_markdown_bounty_challenge_v1
 ---
 
@@ -22,9 +22,9 @@ Verdict, settle a bounty, or invent another payout path.
 | File | Open it when |
 | --- | --- |
 | [`template.md`](template.md) | You start a draft, on any route. |
-| [`examples/bounty_challenge.md`](examples/bounty_challenge.md) | You want a short finished challenge to adapt. |
-| [`examples/protein_binding.md`](examples/protein_binding.md) | The bounty needs evidence, provenance or evaluation conditions. |
-| [More example bounties](https://docs.elgora.ai/docs/poster/examples) | The bounty is to beat a baseline, build a new dataset, or buy unpublished know-how. |
+| [`examples/bounty_challenge.md`](examples/bounty_challenge.md) | You need to see the format of a short finished challenge. |
+| [`examples/protein_binding.md`](examples/protein_binding.md) | You need an illustration of pinning an external input and limiting what its analysis proves. |
+| [More example bounties](https://docs.elgora.ai/docs/poster/examples) | The Poster wants inspiration; optional, not needed to draft or publish. |
 | [`publish-cli.md`](publish-cli.md) | You review, publish, fund or follow a bounty with the Elgora CLI. |
 | [`publish-api.md`](publish-api.md) | You review, publish, fund or follow a bounty through the API, including reading its result, claiming a refund or retrieving the winning Submission. |
 | `deployments.json` | You need a deployment's exact chain id, ElgoraHub, escrow token, signing audience, RPC or status page. Generated when the bundle is published. |
@@ -109,29 +109,31 @@ wins whenever any qualifies. The ranking and its tie-break are the Poster's.
 If no ranking was supplied, or a comparison value or tie-break is undefined,
 ask before the first review.
 
-Establish what the Poster is purchasing, and connect the deliverables,
-evidence, acceptance criteria and winner rules to that result. Ask about
-inputs, formats, limits, exclusions and evidence only where they affect this
-bounty's judgment or a protocol requirement. Leave presentation and
-implementation choices open. Keep optional suggestions separate from the
-decisions the Poster has to make.
+Establish what the Poster is purchasing, what the Solver must deliver, what
+evidence makes acceptance decidable, and how one eligible Submission wins.
+Identify the authoritative inputs and the conditions that affect judgment.
+Define each requirement once; refer to it rather than adding another gate.
 
-Define each requirement once and refer to it elsewhere. Check that every input
-needed to produce or judge a deliverable is identifiable, and resolve any
-conflict between calling an input optional and requiring work that depends
-on it.
+Keep a requirement only when it follows from the Poster's agreed task, an
+Elgora rule, or a decision needed to judge this bounty. Propose new scientific
+methods, thresholds and evidence requirements for the Poster's approval;
+never treat a suggestion as an agreed requirement. Leave implementation and
+presentation choices open unless they affect the purchased result.
 
-The Poster defines success but need not know the solution in advance. Solvers
-supply implementation detail and any run instructions; Guardian operators own
-infrastructure. Do not replace a requested reproduction with a proxy for a
-different claim.
+For example, buying a prediction result need not prescribe the Solver's
+algorithm; buying a reproduction of a particular experiment does require the
+conditions that define that experiment. Preserve the requested claim rather
+than replacing it with an easier proxy. If a scientific or trust decision
+needs specialist input, keep the draft provisional and say what is unresolved.
 
-Propose scientific methods and evidence requirements in plain English for the
-Poster's approval. Do not invent scientific facts or treat a proposal as an
-agreed requirement. Where an unresolved scientific decision needs specialist
-input, say so and keep the draft provisional. Resolve ambiguous terms and open
-decisions with the Poster before the review: Guardians judge the published page
-alone, and a clarification sent after publication changes nothing.
+Examples illustrate drafting choices, not allowed bounty types. Read one only
+to resolve a drafting question; a task need not match any example. Transfer the
+principle, not its filenames, methods, thresholds, exclusions or tie-break.
+Use values and requirements agreed for this bounty. Public examples are
+optional inspiration, never additional protocol rules.
+
+Resolve ambiguous terms and open decisions before review: Guardians judge the
+published page alone, and a clarification sent after publication changes nothing.
 
 ## Every Gate Is A Way To Pay Nobody
 
@@ -353,9 +355,10 @@ to the challenge, however small, needs a new review, and a challenge past
 
 ## Release Snapshot
 
-This bundle is self-contained. A ready-to-edit challenge is included at
+This bundle is self-contained. A short format example is included at
 [`examples/bounty_challenge.md`](examples/bounty_challenge.md). Its deadline is
-an example sentinel; replace every example value before publishing.
+an example sentinel, not a proposed deadline. If adapting an example, replace
+its values and retain only requirements justified by the new task.
 
 See [the protein-binding example](examples/protein_binding.md) for a bounded
 analysis of published 2026 experimental results. Its selection rules are

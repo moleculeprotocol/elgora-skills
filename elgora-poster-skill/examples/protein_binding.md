@@ -131,8 +131,7 @@ The audit is reproduced from `b2b_summary.csv` alone. The authoritative file
 has 304 data records and 47,902 bytes; a file with a different record count is
 not the specified input. All 304 records are in scope.
 
-The check runs in three parts: the input source and its row-to-candidate links,
-then the eligibility audit, then the calculation and the selected candidate. A
-Submission passes only when every required result is correct and within the
-stated size limit. Extra explanatory prose is allowed unless it contradicts
-those results.
+A Submission passes only when the input hash, the row-to-candidate links, the
+row and candidate eligibility audit, the candidate means, and the selected
+candidate are all correct, and `result.md` is within the stated size limit.
+Extra explanatory prose is allowed unless it contradicts those results.

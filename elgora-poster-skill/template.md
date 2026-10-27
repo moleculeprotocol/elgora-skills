@@ -1,13 +1,11 @@
 # Elgora Challenge Template
 
-Use the template below, preserving its frontmatter structure. Remove
-inapplicable supporting sections rather than filling them with `None`.
-Equivalent headings and ordering are allowed. Include conditional detail only
-when relevant, and keep requirements consistent across sections.
+Use the five core sections below. Add a supporting section only when it resolves
+an acceptance or ranking decision for this bounty; omit it otherwise. Headings
+and ordering may vary. Tables are optional. Keep a simple task brief.
 
-A `{braced}` span is a prompt addressed to you: replace it with the text it
-asks for and remove its braces. Unbraced prose is literal and is published
-verbatim on the bounty page. A surviving brace blocks publication.
+Replace every `{braced}` prompt with the agreed content and remove the braces.
+Read the drafting rules in `SKILL.md`; examples are optional, not prerequisites.
 
 ```markdown
 ---
@@ -20,219 +18,96 @@ payout_policy: winner_take_all
 # {Bounty Title}
 
 ## Summary
-{Briefly explain the task and desired result.}
+{What is the Poster purchasing? State the task and desired result briefly.}
 
 ## Challenge details
-{Explain what the Solver should accomplish and the scope of the task.
-Define only terms needed to understand the result.}
+{Explain the task, scope and definitions needed to understand the result.
+Preserve any agreed method or conditions that define the work; leave other
+implementation choices to the Solver.}
 
 ## What you need to submit (Deliverables)
-{Define the complete set of outputs the Solver must submit. For each deliverable,
-state its required content, purpose, and whether it is mandatory or optional.
-Explain how related outputs fit together, including which evidence supports
-which result or claim.
-
-Specify files, folders, reports, datasets or code as relevant to the task.
-Name each by its path relative to the Submission root, such as `RUN.md` or
-`source/main.py`, and state any format, organization, naming or size
-requirements needed to use or evaluate them. Ask for code as a folder such as
-`source/`, not as an archive. Describe what the Submission contains, never how
-it is packaged or compressed. Every required deliverable
-must be submitted as bytes inside the Submission: judgment reads only what the
-Submission contains, so a link never stands in for a required file. Cite
-external sources as references supporting a deliverable, not as the
-deliverable.
-
-Define Submission completeness here: which outputs and required content must
-be present. Refer to Acceptance Criteria for what those outputs must demonstrate,
-and to any applicable evidence requirements for their evidentiary support. Leave
-implementation choices to the Solver unless a particular method is part of
-the bounty's agreed requirements.}
-
-{For datasets or evidence reviews, define the intended coverage and inclusion
-and exclusion rules. Explain how missing, duplicate or conflicting records
-affect completeness or acceptance where relevant.}
-
-### Deliverable Table (Optional)
-
-Use prose, a list or a table, whichever makes the required outputs clearest.
-Adapt the columns to the task.
-
-| Deliverable | Required or optional | Required content | Format or access requirements | Purpose or related criterion |
-|---|---|---|---|---|
-| {file, folder or path} | {required/optional} | {what it must contain} | {applicable requirements} | {what it demonstrates or supports} |
-
-## Inputs, Materials and References
-{List required inputs and useful references. Put small inputs directly in the
-challenge, or provide external links to files, datasets, papers and other supporting
-material. Distinguish required evaluation inputs from background references;
-background reading does not introduce unstated acceptance requirements. Identify
-which sources are authoritative for evaluation or verification. Omit this
-section only when neither inputs nor references are needed.}
-
-{Where the task depends on materials, facilities or an external verification
-service, state what the Poster provides, what the Solver must arrange, who
-covers the cost, and when it becomes available. Required external evidence must
-be identified and reachable from the challenge alone: nothing may depend on private
-clarification or on an approval given after submission.}
-
-| File or reference | Purpose | Required input or background | Link or access instructions | Version or snapshot, if relevant |
-|---|---|---|---|---|
-| {file, dataset, paper or other reference} | {why it is useful} | {role in this bounty} | {external link or access instructions} | {governing version or release/observation boundary for required inputs} |
-
-{State the authoritative version or release boundary for each required input,
-its content hash where one exists, and the location where it stays reachable for
-the whole judging window. A mutable link alone is insufficient when different
-contents could change acceptance or ranking; a hash is not mandatory, but a
-supplied hash must match. Replacing a specified fixed input requires a new
-bounty. For evidence observed later, name the governing source and the
-observation boundary; a hash need not exist at publication. State access
-restrictions that affect the task. Never include credentials or ask for private
-keys, seed phrases, transactions, token approvals, or unrelated signatures.}
+{Name the files or folders and the content needed to judge the result. State
+which are required and which are optional. Specify a format or layout only
+where it matters. Describe paths relative to the Submission root, not packaging
+or compression. Required deliverables must be submitted as bytes; a link to
+code, data or a report cannot replace the deliverable. External inputs and
+citations may be linked.}
 
 ## Acceptance Criteria
-{Define what each required deliverable must demonstrate to pass, referring to
-its required content under Deliverables rather than reproducing the output
-checklist. Specify any thresholds, tolerances, comparisons or qualitative
-standards needed for that decision. Keep pass/fail gates to what the Poster
-would refuse to pay without, say where each threshold comes from, and write
-each as a test a Guardian can observe. Identify the evidence supporting each
-criterion, referring to Evidence, Provenance and Verification where further
-detail is needed. Explain how missing, incomplete or conflicting results affect
-acceptance where relevant. Make each decision clear enough to apply from the
-challenge alone; put additional comparison conditions in Evaluation Procedure
-when needed. Use concrete descriptions or examples where they clarify the expected
-result.}
-
-{Where relevant, state whether negative or inconclusive results satisfy the
-bounty. Distinguish reliable work that finds no effect from evidence that
-cannot support a conclusion, and from incomplete or invalid work. Define
-acceptance according to the outcome or work the bounty purchases. For
-replication or validation, identify the specific finding being tested and what
-counts as agreement, disagreement or an inconclusive result.}
-
-### Evidence, Provenance and Verification (When Applicable)
-{If acceptance depends on qualifications or independence, define what qualifies,
-independence from whom or what, and what evidence establishes those
-requirements.}
-
-{Clarify whether the claim concerns a prediction, existing data or new work,
-and require evidence appropriate to it. For claims about real-world events or
-external sources, define what is independently checkable, the trust
-assumptions involved, and what remains unverified. Identify any accepted
-verification source, why it is acceptable, and how its evidence connects to the
-claim. For new experimental work, explain which records establish that the work
-happened, who produced them, and how they connect the tested sample to the
-reported result. If acceptance depends on when the work occurred, state whether
-existing work qualifies or when new work must occur, and what evidence
-establishes that timing.}
-
-{State which underlying data, methods and quality checks are in scope for
-verification, what they must show, and how missing or contradictory evidence
-affects acceptance. Name any verification source in the challenge so it is
-reachable from the challenge alone. A Solver assertion, file hash or signature alone does not prove that
-claimed work occurred. A hash proves bytes, not origin or validity; a signature
-identifies a key, not the truth of its claims. Leave unresolved scientific or
-trust decisions with the Poster rather than inventing a protocol or
-verification procedure.}
-
-{Where relevant, require Solvers to explain material limitations, uncertainty
-and conflicting evidence, and distinguish what the results establish from
-what they only suggest.}
-
-{Check required evidence before ranking. Historical-data analysis needs
-traceable sources and faithful analysis, not proof of new lab work when it
-makes no such claim. Omit this subsection when the deliverable itself supplies
-all evidence needed to judge the task.}
-
-### Scoring (When Applicable)
-{For a score, define the inputs, calculation and how the result affects
-acceptance or ranking. Include units, thresholds, rounding or a worked example
-when they clarify that decision.}
-
-{When applicable, define how partially correct predictions, confidence estimates
-and permitted abstentions affect acceptance and ranking.}
+{State the observable conditions that make a Submission valid. Keep gates to
+what the Poster would refuse to pay without. For each threshold, state its
+source; for each claim, identify the evidence that supports the decision.
+Define relevant tolerances and how missing or conflicting evidence affects
+acceptance. Do not repeat the deliverables checklist. Where it matters, decide
+whether a negative or inconclusive result fulfils the requested work.}
 
 ## How is the winner selected?
-{Define how one winning Submission is selected from those meeting all
-acceptance criteria and not disqualified. State the selection method and the
-evidence or attributes used to compare eligible Submissions. If using scores,
-define the calculation, weights and ranking order, or refer to their definition
-above. Numerical scores are optional. For qualitative judging, explain what
-makes one eligible Submission better than another. Define terms such as
-clarity, usefulness or traceability, and state which standards take priority.
-If any Submission qualifies, select exactly one winner. If a comparison can use
-several values from one Submission, define which value is used. Define
-comparisons and tie groups unambiguously, and ensure every remaining tie
-reaches a final unique tie-break. If the Poster chooses earliest-wins, end
-with these two sentences unchanged: "Among Submissions still tied, the active
-Submission with the lowest `submission_call_count` wins. `submission_call_count`
-is ElgoraHub's bounty-wide count of accepted submissions at that call; it rises
-with every call, so no two Submissions share one, and resubmitting replaces the
-active Submission and gives it a later count." If none qualifies, the outcome
-is no_valid_submission. Keep these rules consistent with acceptance
-criteria and the evaluation procedure.}
-
-## Disqualification Conditions
-{State which failures make a Submission ineligible regardless of its score.
-Reference the requirements already defined in this bounty rather than creating
-a second checklist. Relevant conditions may include a confirmed missing required
-deliverable, failure of required evidence to establish the claimed work or sample
-identity, or material explicitly prohibited by this bounty. Include only
-conditions that apply to this task. A stated condition must be established before
-it disqualifies a Submission. A higher score cannot compensate for that failure.}
-
-{If negative or inconclusive results make a Submission ineligible, reference
-the applicable acceptance criterion. Do not treat those results as
-automatically disqualifying.}
-
-## Out Of Scope
-{State relevant exclusions or restrictions.}
-
-## Evaluation Procedure (When Applicable)
-{When the bounty requires improvement over a baseline, identify the reference
-result, the measure of improvement, and the conditions needed for a fair
-comparison. State any minimum improvement required for acceptance and how
-uncertainty affects the comparison, where relevant.}
-
-{For predictive benchmarks, distinguish data available during development from
-data used for final evaluation. Define any restrictions needed to prevent
-evaluation answers from influencing the submitted solution, and what evidence
-demonstrates compliance.}
-
-{For forecasts judged against later observations, identify the reference
-evidence and who supplies it. State when predictions become final, when outcomes
-become available, and what evidence establishes that predictions were fixed
-before outcome disclosure. Ensure evidence availability allows judgment within Elgora's
-protocol deadlines; the bounty cannot extend them. A timestamp proves ordering,
-not that the Solver lacked earlier access to the answers.}
-
-{Where the bounty is for work done a particular way, define the conditions that
-define it. This is not only benchmarks and reproductions: an agreed laboratory
-procedure, specified equipment or measurement method, a Poster's own model,
-dataset or reference point, and which variables are held fixed while others
-vary can each be the question being asked.
-
-Specify the models, datasets, reference points, methods, versions and test
-conditions — including what stays fixed and what may vary — wherever they
-define the task or affect acceptance or ranking. State what evidence must be
-submitted to show the conditions were met, and how a deviation or an
-inconclusive result affects acceptance. Leave every implementation choice that
-does not affect the result open.
-
-Specifying a requirement does not establish that the work was performed or that
-its result is scientifically valid; the evidence rules above are what carry
-that. Where a scientific choice needs specialist input, leave it with the
-Poster and their experts rather than inventing one here.
-
-What stays out is the evaluator's own operation: how it secures execution, what
-credentials it holds, and what it does when a step fails. Those belong to the
-operator and cannot be set from here. Requiring a tool, package or script the
-work needs is fine; whether it is safe to install is the evaluator's call. Omit this section when
-the acceptance and ranking rules already define the evaluation fully.}
+{Explain how valid Submissions rank and how every remaining tie is broken.
+Define comparison terms, priorities and any calculation, including which value
+is used if a Submission supplies several. Numerical scoring is optional.
+Select exactly one winner whenever any Submission qualifies; otherwise the
+outcome is no_valid_submission. Confirm the ranking and tie-break with the
+Poster rather than copying an example's choice.}
 ```
 
-Out Of Scope and Disqualification Conditions answer different questions. If
-doing something should make a Submission ineligible, put it under
-Disqualification Conditions. If it is only work the bounty does not pay for,
-put it under Out Of Scope. Never put the same thing in both.
+## Supporting sections — only where needed
+
+Insert the relevant sections into the draft, in whichever order reads best.
+These prompts are questions to resolve, not requirements to impose on every
+bounty. Do not leave empty sections or instructional text in the published page.
+
+### Inputs, Materials and References
+
+Identify required inputs separately from background reading. State where they
+are available and which version or observation boundary governs judgment.
+Pin the content when different contents could change the outcome; include a
+hash when available, and verify it. For later evidence, identify the governing
+source and when it becomes available within the protocol's judging window.
+Clarify who provides any required materials or access and who pays for them.
+No essential decision may depend on private clarification after publication.
+
+### Evidence, Provenance and Verification
+
+State what evidence supports each material claim, what can be independently
+checked, the trust assumptions and what remains unverified. A hash establishes
+bytes, not truth; a signature identifies a key, not the validity of its claims.
+Where acceptance depends on origin, timing, qualifications or independence,
+define the requirement and how evidence establishes it. For new work, connect
+the reported result to the work and sample claimed. Do not require proof of new
+work when the task is analysis of existing data. Leave unresolved scientific
+or trust choices with the Poster and their experts.
+
+### Evaluation Procedure
+
+Define only conditions needed to evaluate or compare the requested results:
+authoritative inputs, methods, versions, what stays fixed, what may vary, and
+any metric, units, rounding or tolerance. State the evidence for compliance
+and the effect of deviations or inconclusive results. For a benchmark, identify
+the baseline and any separation of development data from evaluation answers.
+For later outcomes, define when predictions become final and how that ordering
+is established. State what the result demonstrates and its limits.
+
+Describe the judgment, not Guardian operations: no sandbox configuration,
+credentials, retries or handling of unavailable sources. A method can be part
+of the purchased work without prescribing how a Guardian operates.
+
+### Disqualification Conditions
+
+Include only additional failures that make a Submission ineligible regardless
+of rank. Refer to an existing acceptance requirement instead of repeating it.
+Do not disqualify a Solver for a platform retrieval or decryption failure.
+
+### Out Of Scope
+
+State relevant work the bounty does not purchase. If an action instead makes a
+Submission ineligible, put that rule under acceptance or disqualification.
+
+## If the Poster chooses earliest Submission as the final tie-break
+
+Use these sentences unchanged:
+
+> Among Submissions still tied, the active Submission with the lowest
+> `submission_call_count` wins. `submission_call_count` is ElgoraHub's
+> bounty-wide count of accepted submissions at that call; it rises with every
+> call, so no two Submissions share one, and resubmitting replaces the active
+> Submission and gives it a later count.
