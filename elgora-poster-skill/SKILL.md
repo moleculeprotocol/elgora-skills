@@ -357,8 +357,7 @@ to the challenge, however small, needs a new review, and a challenge past
 
 This bundle is self-contained. A short format example is included at
 [`examples/bounty_challenge.md`](examples/bounty_challenge.md). Its deadline is
-an example sentinel, not a proposed deadline. If adapting an example, replace
-its values and retain only requirements justified by the new task.
+an example sentinel; replace it before publication.
 
 See [the protein-binding example](examples/protein_binding.md) for a bounded
 analysis of published 2026 experimental results. Its selection rules are

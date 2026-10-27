@@ -1,11 +1,13 @@
 # Elgora Challenge Template
 
 Use the five core sections below. Add a supporting section only when it resolves
-an acceptance or ranking decision for this bounty; omit it otherwise. Headings
-and ordering may vary. Tables are optional. Keep a simple task brief.
+an acceptance or ranking decision for this bounty; omit it otherwise. Keep the
+five core headings as written; order supporting sections as reads best. Tables
+are optional.
 
 Replace every `{braced}` prompt with the agreed content and remove the braces.
-Read the drafting rules in `SKILL.md`; examples are optional, not prerequisites.
+Unbraced text inside the draft block is published as written; remove drafting
+instructions. Read the drafting rules in `SKILL.md`.
 
 ```markdown
 ---
@@ -47,17 +49,19 @@ Define comparison terms, priorities and any calculation, including which value
 is used if a Submission supplies several. Numerical scoring is optional.
 Select exactly one winner whenever any Submission qualifies; otherwise the
 outcome is no_valid_submission. Confirm the ranking and tie-break with the
-Poster rather than copying an example's choice.}
+Poster.}
 ```
 
 ## Supporting sections — only where needed
 
-Insert the relevant sections into the draft, in whichever order reads best.
+Insert relevant sections into the draft with `##` headings, in whichever order
+reads best.
 These prompts are questions to resolve, not requirements to impose on every
 bounty. Do not leave empty sections or instructional text in the published page.
 
 ### Inputs, Materials and References
 
+An input labelled optional must not be necessary for required work.
 Identify required inputs separately from background reading. State where they
 are available and which version or observation boundary governs judgment.
 Pin the content when different contents could change the outcome; include a
@@ -85,7 +89,8 @@ any metric, units, rounding or tolerance. State the evidence for compliance
 and the effect of deviations or inconclusive results. For a benchmark, identify
 the baseline and any separation of development data from evaluation answers.
 For later outcomes, define when predictions become final and how that ordering
-is established. State what the result demonstrates and its limits.
+is established. A timestamp proves ordering, not that the Solver lacked earlier
+access to the answers. State what the result demonstrates and its limits.
 
 Describe the judgment, not Guardian operations: no sandbox configuration,
 credentials, retries or handling of unavailable sources. A method can be part
