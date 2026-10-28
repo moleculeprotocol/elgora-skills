@@ -23,7 +23,7 @@ Verdict, settle a bounty, or invent another payout path.
 | --- | --- |
 | [`template.md`](template.md) | You start a draft, on any route. |
 | [`examples/bounty_challenge.md`](examples/bounty_challenge.md) | You need to see the format of a short finished challenge. |
-| [More example bounties](https://docs.elgora.ai/docs/poster/examples) | The Poster wants inspiration; optional, not needed to draft or publish. |
+| [More example bounties](https://docs.elgora.ai/docs/poster/examples) | The Poster wants use-case inspiration. |
 | [`publish-cli.md`](publish-cli.md) | You review, publish, fund or follow a bounty with the Elgora CLI. |
 | [`publish-api.md`](publish-api.md) | You review, publish, fund or follow a bounty through the API, including reading its result, claiming a refund or retrieving the winning Submission. |
 | `deployments.json` | You need a deployment's exact chain id, ElgoraHub, escrow token, signing audience, RPC or status page. Generated when the bundle is published. |
@@ -128,8 +128,7 @@ needs specialist input, keep the draft provisional and say what is unresolved.
 Examples illustrate drafting choices, not allowed bounty types. Read one only
 to resolve a drafting question; a task need not match any example. Transfer the
 principle, not its filenames, methods, thresholds, exclusions or tie-break.
-Use values and requirements agreed for this bounty. Public examples are
-optional inspiration, never additional protocol rules.
+Use values and requirements agreed for this bounty.
 
 Resolve ambiguous terms and open decisions before review: Guardians judge the
 published page alone, and a clarification sent after publication changes nothing.
