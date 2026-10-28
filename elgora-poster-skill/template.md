@@ -70,6 +70,16 @@ source and when it becomes available within the protocol's judging window.
 Clarify who provides any required materials or access and who pays for them.
 No essential decision may depend on private clarification after publication.
 
+For a fixed external file, this optional row illustrates the information to
+resolve. Replace every placeholder with verified values or remove the row
+before publication; never invent a hash.
+
+| Input | Access and selected version | SHA-256 |
+| --- | --- | --- |
+| `{filename}` | `{URL or access method for the selected version}` | `{verified file hash}` |
+
+Bytes with a different hash are not the selected input.
+
 ### Evidence, Provenance and Verification
 
 State what evidence supports each material claim, what can be independently

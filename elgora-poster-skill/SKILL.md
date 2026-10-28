@@ -23,7 +23,6 @@ Verdict, settle a bounty, or invent another payout path.
 | --- | --- |
 | [`template.md`](template.md) | You start a draft, on any route. |
 | [`examples/bounty_challenge.md`](examples/bounty_challenge.md) | You need to see the format of a short finished challenge. |
-| [`examples/protein_binding.md`](examples/protein_binding.md) | You need an illustration of pinning an external input and limiting what its analysis proves. |
 | [More example bounties](https://docs.elgora.ai/docs/poster/examples) | The Poster wants inspiration; optional, not needed to draft or publish. |
 | [`publish-cli.md`](publish-cli.md) | You review, publish, fund or follow a bounty with the Elgora CLI. |
 | [`publish-api.md`](publish-api.md) | You review, publish, fund or follow a bounty through the API, including reading its result, claiming a refund or retrieving the winning Submission. |
@@ -358,11 +357,6 @@ to the challenge, however small, needs a new review, and a challenge past
 This bundle is self-contained. A short format example is included at
 [`examples/bounty_challenge.md`](examples/bounty_challenge.md). Its deadline is
 an example sentinel; replace it before publication.
-
-See [the protein-binding example](examples/protein_binding.md) for a bounded
-analysis of published 2026 experimental results. Its selection rules are
-illustrative, not a laboratory protocol, specialist approval, or evidence of a
-new binder. Adapt the claim and rules with the Poster before publication.
 
 Compare this file's `metadata.version` with the
 [latest public Poster bundle](https://elgora.ai/skills/elgora-poster-skill/SKILL.md).
