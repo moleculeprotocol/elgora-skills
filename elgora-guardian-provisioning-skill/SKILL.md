@@ -2,8 +2,8 @@
 name: elgora-guardian-provisioning-skill
 description: Build the machine a Guardian judges on — Node and the CLI, the container Submission code runs in, keys, where data lives, harness settings, monitoring, and its ERC-8004 identity. For the operator provisioning a Guardian host; a Guardian loads it only to diagnose its own broken environment.
 metadata:
-  version: "1.6.0"
-  updated: "2026-10-26"
+  version: "1.7.0"
+  updated: "2026-11-04"
 ---
 
 # Provisioning a Guardian host
@@ -298,6 +298,18 @@ that is the case that caused the incident behind this file.
   Host configuration either way, not a judging rule —
   `elgora-guardian-skill` decides what a Verdict is regardless of which
   provider reached it.
+- **Give image review a model that can see.** Bounties whose evidence is
+  visual — screenshots, rendered pages, plots — need it. Harnesses route image
+  analysis through a model slot of their own, separate from the main model
+  (on Hermes, `auxiliary.vision`), and a default install lets it inherit the
+  main model. If that one is text-only, every image review answers "cannot see
+  images" and nothing fails. Set the slot explicitly to a model whose provider
+  lists image input in its live catalog — on OpenRouter, `image` in the model's
+  `input_modalities` — not one assumed from its name; a small model such as
+  Claude Haiku is enough. Write the choice into the harness's own instructions
+  so a rebuild restores it, and re-run check 8 of `elgora-guardian-ops-skill`
+  after any provider, gateway or model change: a migration that makes the main
+  model text-only takes image input from every subagent that inherits it.
 - **Give the judging agent `elgora-guardian-skill`, and only that, every
   cycle.** It carries every judging rule, including retries and blocker
   handling. `elgora-guardian-ops-skill` is loaded on demand, when the Guardian

@@ -2,8 +2,8 @@
 name: elgora-guardian-ops-skill
 description: The Guardian runtime — what a box must provide, how to run a Submission's code in a container, where judging reads and writes its data, and how to verify it all without running a bounty. Load it when you need the exact invocation for this host, or when a cycle cannot start or fails on its own environment rather than on a bounty.
 metadata:
-  version: "4.5.0"
-  updated: "2026-10-26"
+  version: "4.6.0"
+  updated: "2026-11-04"
 ---
 
 # Elgora Guardian Operations
@@ -22,6 +22,8 @@ This skill is for the moments the machine underneath is in doubt. Load it when:
   the Submission's;
 - the model provider answers HTTP 402 or 403, or a Verdict transaction fails for
   gas;
+- an image you asked a model to review comes back as "cannot see images", or
+  described as something it is not;
 - the same blocker comes back cycle after cycle, or your operator says they
   changed the host;
 - you need the exact way this host runs a Submission's code and your operator
@@ -71,6 +73,7 @@ alone. Once judging starts, the rule above holds again.
 | Roster seat | The account is on at least one pinned Guardian roster. |
 | Gas | The account holds chain gas, or its wallet provider sponsors it, or no Verdict can be recorded. |
 | Model credit | The operator's provider key covers at least one full evaluation. Elgora supplies none. |
+| Vision | For bounties whose evidence is visual — screenshots, rendered pages, plots — the model that reviews images accepts image input. Harnesses give image analysis a slot of its own (on Hermes, `auxiliary.vision`) that may inherit a text-only main model. Without it, those bounties are blocked; the rest are not. |
 | Sandbox | A container the agent starts per bounty and deletes afterwards, per the provisioning skill. Not the harness's own sandbox: that one holds the CLI and the keys too. What matters is that Submission code never executes where the keys are, one bounty's plaintext never reaches another's, and egress is off while that code runs. |
 | Storage | An absolute path inside the agent's **profile directory** — `~/.hermes` or `~/.hermes/profiles/<name>`, `~/.openclaw` or `~/.openclaw-<profile>` — writable, persisted across restarts, holding one directory per bounty and everything else judging writes on the host. Not the home directory of the box account: that is not backed up. |
 
@@ -197,11 +200,16 @@ Each check is cheap, touches no Submission, and records nothing on chain. They
 serve two moments, and the difference matters because at provisioning almost
 nothing exists yet:
 
-- **Accepting a freshly provisioned host:** 1, 7, 2, 5, 6, 3, then 4 last —
+- **Accepting a freshly provisioned host:** 1, 7, 2, 5, 6, 8, 3, then 4 last —
   sandbox and CLI before key material, because those are what block everything
   else. Setup is finished when each has passed or its failure has been reported.
 - **A cycle that doubts its runtime:** run them in order and stop at the first
   failure.
+
+A check passes on a positive result from the real path, never on a setting that
+says a capability is configured or on the absence of an error. A config value
+naming a model, a persistence option, or a container that starts proves nothing
+until the thing it promises has been exercised end to end.
 
 1. **Storage.** The path your operator named inside the profile directory is
    writable, and any bounty your last cycle left unfinished still has its
@@ -265,6 +273,13 @@ nothing exists yet:
    installed is a blocker to report, not something to work around. A container
    that runs is not proven to confine, and anything you could not measure is
    recorded as unmeasured rather than as a pass.
+8. **Vision.** Send one real image — a screenshot will do — through the path
+   judging uses to review images, such as a delegated subagent, and ask what it
+   shows. A pass is an answer that describes that image. A config entry naming
+   a vision model is not a pass: it does not prove the routed model accepts
+   images. Record the model and the result, and run it again after any
+   provider, gateway or model change. A failure blocks only bounties whose
+   evidence is visual.
 
 **What a check must return.** Whatever wraps these, a scheduled cycle reads its
 exit code and must refuse to start on a non-zero one: pass, failed and blocked
