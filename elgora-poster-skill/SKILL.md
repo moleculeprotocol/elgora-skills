@@ -113,16 +113,17 @@ Identify the authoritative inputs and the conditions that affect judgment.
 Define each requirement once; refer to it rather than adding another gate.
 
 Keep a requirement only when it follows from the Poster's agreed task, an
-Elgora rule, or a decision needed to judge this bounty. Propose new scientific
-methods, thresholds and evidence requirements for the Poster's approval;
-never treat a suggestion as an agreed requirement. Leave implementation and
+Elgora rule, or a decision needed to judge this bounty. Propose new methods,
+thresholds and evidence requirements for the Poster's approval; never treat a
+suggestion as an agreed requirement. Leave implementation and
 presentation choices open unless they affect the purchased result.
 
 For example, buying a prediction result need not prescribe the Solver's
 algorithm; buying a reproduction of a particular experiment does require the
 conditions that define that experiment. Preserve the requested claim rather
-than replacing it with an easier proxy. If a scientific or trust decision
-needs specialist input, keep the draft provisional and say what is unresolved.
+than replacing it with an easier proxy. If a subject-matter or trust
+decision needs specialist input, keep the draft provisional and say what is
+unresolved.
 
 Examples illustrate drafting choices, not allowed bounty types. Read one only
 to resolve a drafting question; a task need not match any example. Transfer the

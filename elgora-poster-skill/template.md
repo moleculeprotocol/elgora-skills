@@ -88,7 +88,7 @@ bytes, not truth; a signature identifies a key, not the validity of its claims.
 Where acceptance depends on origin, timing, qualifications or independence,
 define the requirement and how evidence establishes it. For new work, connect
 the reported result to the work and sample claimed. Do not require proof of new
-work when the task is analysis of existing data. Leave unresolved scientific
+work when the task is analysis of existing data. Leave unresolved subject-matter
 or trust choices with the Poster and their experts.
 
 ### Evaluation Procedure
