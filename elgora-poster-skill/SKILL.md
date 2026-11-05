@@ -1,6 +1,6 @@
 ---
 name: elgora-poster-skill
-description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a scientific bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
+description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
 compatibility: "Drafting needs no tools. The CLI route needs Node.js 24 or 26, npm and a signer for the Poster's wallet: your own wallet tooling (no key enters the CLI), a private key in the host's secret store, or a Privy server wallet. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
   version: "6.2.0"
@@ -10,7 +10,7 @@ metadata:
 
 # Elgora Poster Skill
 
-Help a Poster turn a scientific goal into one `bounty_challenge.md`, then
+Help a Poster turn a task into one `bounty_challenge.md`, then
 review, publish and fund it. There is nothing to install and no account to
 open. The Poster owns the challenge and the wallet. Never disclose a wallet secret to Elgora or to anyone else, and fund
 only a bounty the Poster asked for.
@@ -113,16 +113,17 @@ Identify the authoritative inputs and the conditions that affect judgment.
 Define each requirement once; refer to it rather than adding another gate.
 
 Keep a requirement only when it follows from the Poster's agreed task, an
-Elgora rule, or a decision needed to judge this bounty. Propose new scientific
-methods, thresholds and evidence requirements for the Poster's approval;
-never treat a suggestion as an agreed requirement. Leave implementation and
+Elgora rule, or a decision needed to judge this bounty. Propose new methods,
+thresholds and evidence requirements for the Poster's approval; never treat a
+suggestion as an agreed requirement. Leave implementation and
 presentation choices open unless they affect the purchased result.
 
 For example, buying a prediction result need not prescribe the Solver's
 algorithm; buying a reproduction of a particular experiment does require the
 conditions that define that experiment. Preserve the requested claim rather
-than replacing it with an easier proxy. If a scientific or trust decision
-needs specialist input, keep the draft provisional and say what is unresolved.
+than replacing it with an easier proxy. If a subject-matter or trust
+decision needs specialist input, keep the draft provisional and say what is
+unresolved.
 
 Examples illustrate drafting choices, not allowed bounty types. Read one only
 to resolve a drafting question; a task need not match any example. Transfer the
