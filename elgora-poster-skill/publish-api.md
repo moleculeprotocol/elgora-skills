@@ -6,21 +6,21 @@ run the Elgora CLI can let `publish-cli.md` do all of this in two commands.
 
 ## Pick The Deployment
 
-`deployments.json` beside this file lists every deployment's exact values:
+[`deployments.json`](https://elgora.ai/deployments.json) lists every deployment's exact values:
 `api_base_url`, `audience`, `chain_id`, `elgora_hub`, `escrow_token` (USDC,
 6 decimals; test USDC on the testnet), `public_rpc_url` (for the funding
-transactions; any RPC for that chain works) and `status_url`. It
-is generated from Elgora's own records whenever the bundle is published. Take
+transactions; any RPC for that chain works) and `status_url`. Elgora
+renders it from its own records on every deploy. Take
 the one entry for the network agreed with the Poster (`"network": "mainnet"`
 unless they asked for a test) and use it for every request, signature and
 transaction of the bounty. Never mix entries: a signature, review approval or
 transaction made for one deployment is rejected by, or lands on, the other.
-Read the values from the file; never type them from memory.
+Read the values from it; never type them from memory.
 
 Each deployment's `status_url` shows its live ElgoraHub and escrow token, and
 every publication response names the chain and Hub it expects. If either
-disagrees with your `deployments.json`, your copy of the bundle is out of
-date: stop, sign nothing, and load the latest bundle.
+disagrees with `deployments.json`, stop and sign nothing: fetch it again and
+load the latest bundle.
 
 ## Talking To The Elgora API
 
