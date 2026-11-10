@@ -65,7 +65,7 @@ secret in the host's secret manager, exposed only to the command process.
   Limit What The Wallet Can Do.
 
 Sign only typed data in the `Elgora` domain on the bounty's chain whose
-`verifyingContract` is `elgora_hub` in `deployments.json`, and send only calls
+`verifyingContract` is `elgora_hub` in [`deployments.json`](https://elgora.ai/deployments.json), and send only calls
 to `elgora_hub` or `approve` on `escrow_token` for `elgora_hub`. Smart wallets
 and EIP-7702 accounts work: Elgora verifies their signatures on chain.
 

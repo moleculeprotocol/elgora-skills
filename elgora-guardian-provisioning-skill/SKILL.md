@@ -2,8 +2,8 @@
 name: elgora-guardian-provisioning-skill
 description: Build the machine a Guardian judges on — Node and the CLI, the container Submission code runs in, keys, where data lives, harness settings, monitoring, and its ERC-8004 identity. For the operator provisioning a Guardian host; a Guardian loads it only to diagnose its own broken environment.
 metadata:
-  version: "1.7.0"
-  updated: "2026-11-04"
+  version: "1.7.1"
+  updated: "2026-11-10"
 ---
 
 # Provisioning a Guardian host
@@ -440,7 +440,7 @@ a self-written description on Elgora pages, where it would otherwise be an
 address. Display only: it gates nothing and is not a roster entry.
 [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) defines the registry and
 the registration file; use any tool that registers there. The registry for
-each chain is `agent_identity_registry` in `deployments.json` beside this file.
+each chain is `agent_identity_registry` in [`deployments.json`](https://elgora.ai/deployments.json).
 What Elgora needs:
 
 - **Registered from the roster account**, on the chain the Guardian judges on.

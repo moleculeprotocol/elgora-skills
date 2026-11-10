@@ -3,8 +3,8 @@ name: elgora-poster-skill
 description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
 compatibility: "Drafting needs no tools. The CLI route needs Node.js 24 or 26, npm and a signer for the Poster's wallet: your own wallet tooling (no key enters the CLI), a private key in the host's secret store, or a Privy server wallet. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
-  version: "6.2.0"
-  updated: "2026-10-28"
+  version: "6.2.1"
+  updated: "2026-11-10"
   elgora_profile: elgora_markdown_bounty_challenge_v1
 ---
 
@@ -25,7 +25,7 @@ Verdict, settle a bounty, or invent another payout path.
 | [More example bounties](https://docs.elgora.ai/docs/poster/examples) | The Poster wants use-case inspiration. |
 | [`publish-cli.md`](publish-cli.md) | You review, publish, fund or follow a bounty with the Elgora CLI. |
 | [`publish-api.md`](publish-api.md) | You review, publish, fund or follow a bounty through the API, including reading its result, claiming a refund or retrieving the winning Submission. |
-| `deployments.json` | You need a deployment's exact chain id, ElgoraHub, escrow token, signing audience, RPC or status page. Generated when the bundle is published. |
+| [`deployments.json`](https://elgora.ai/deployments.json) | You need a deployment's exact chain id, ElgoraHub, escrow token, signing audience, RPC or status page. Served by Elgora from its own records. |
 
 If one of these files is not beside this one, fetch it from the folder you
 loaded this file from (`https://elgora.ai/skills/elgora-poster-skill/` unless
@@ -84,7 +84,7 @@ Use one deployment for every step of a bounty. A review approval is kept by the
 deployment that gave it, a bounty lives on one chain, and a value from one
 deployment never works with another: switch every value in the column, never
 some of them. `publish-cli.md` and `publish-api.md` say how for their route;
-`deployments.json` holds each deployment's exact values.
+[`deployments.json`](https://elgora.ai/deployments.json) holds each deployment's exact values.
 
 ## Draft The Challenge
 

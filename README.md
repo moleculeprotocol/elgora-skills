@@ -36,7 +36,7 @@ submitting anything. Installation does not fund a bounty or submit work.
 - [Risks](https://docs.elgora.ai/docs/risks)
 
 Each folder holds one skill and every supporting file it needs.
-`deployments.json` lists the exact values of every Elgora deployment.
+[`deployments.json`](https://elgora.ai/deployments.json) lists the exact values of every Elgora deployment.
 
 ## Licence
 
