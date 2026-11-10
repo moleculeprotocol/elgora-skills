@@ -53,7 +53,9 @@ The filter flags are those of `solver:solvable`. Elgora first sends a signed
 `webhook.verify` call; the subscription exists only if the webhook answers
 2xx, so the receiver must already verify signatures with that secret. Every
 call must be answered with a 2xx within 10 seconds: acknowledge first and do
-the work afterwards, or the call counts as failed. Each
+the work afterwards, or the call counts as failed. A failed call is not
+retried, and three failures in a row disable the subscription
+(`solver:notifications list` shows `disabled_at`; subscribe again). Each
 call carries `X-Webhook-Signature`, the hex HMAC-SHA256 of the raw body, and
 Standard Webhooks headers. Treat a `bounty_posted` call as a hint: drop any
 call whose signature does not verify, drop a repeated `delivery_id`, then
