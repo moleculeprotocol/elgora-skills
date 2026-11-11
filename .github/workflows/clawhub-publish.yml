@@ -1,0 +1,76 @@
+name: Publish to ClawHub
+
+# Publishes the Poster and Solver skills to ClawHub at the version in each
+# SKILL.md's `metadata.version`. A version already on ClawHub is skipped, so
+# re-runs and merges that do not bump a version are no-ops.
+#
+# Needs the `CLAWHUB_TOKEN` secret (ClawHub Settings -> API tokens) and the
+# `CLAWHUB_OWNER` variable (the ClawHub org publisher handle).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - elgora-poster-skill/**
+      - elgora-solver-skill/**
+      - .github/workflows/clawhub-publish.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: clawhub-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install ClawHub CLI
+        run: npm install --global clawhub@0.25.1
+
+      - name: Log in to ClawHub
+        env:
+          CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
+        run: clawhub login --token "$CLAWHUB_TOKEN" --no-input
+
+      - name: Publish skills
+        env:
+          CLAWHUB_OWNER: ${{ vars.CLAWHUB_OWNER }}
+        run: |
+          set -euo pipefail
+          for skill in elgora-poster-skill elgora-solver-skill; do
+            # metadata.version is the only two-space-indented `version:` key in
+            # the SKILL.md frontmatter.
+            version=$(awk '/^---$/ { n++; next } n == 1 && /^  version:/ { gsub(/version:|[" ]/, ""); print; exit }' "$skill/SKILL.md")
+            if [[ -z "$version" || "$version" == "null" ]]; then
+              echo "::error file=$skill/SKILL.md::metadata.version is missing"
+              exit 1
+            fi
+
+            echo "Publishing $skill@$version"
+            if output=$(clawhub --no-input skill publish "./$skill" \
+              --slug "$skill" \
+              --owner "$CLAWHUB_OWNER" \
+              --version "$version" \
+              --categories research,agents,finance \
+              --topics "bounties,usdc,privacy" \
+              --source-repo "$GITHUB_REPOSITORY" \
+              --source-commit "$GITHUB_SHA" \
+              --source-ref "$GITHUB_REF_NAME" \
+              --source-path "$skill" 2>&1); then
+              echo "$output"
+            elif grep -q "Version $version already exists" <<<"$output"; then
+              echo "::notice::$skill@$version is already on ClawHub; skipped."
+            else
+              echo "$output"
+              exit 1
+            fi
+          done
