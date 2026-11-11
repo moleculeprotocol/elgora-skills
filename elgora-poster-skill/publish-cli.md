@@ -156,11 +156,9 @@ the one before it worked. Wait and try again; do not treat it as a failure.
    elgora-cli poster:review bounty_challenge.md --network base
    ```
 
-   `review.ready` returns the commitment and `approved_until`, and may list
-   `warnings` that never block publication. `review.not_ready` prints every
-   issue, with `code`, `anchor` and `hazard`, and exits 2. One issue may stand
-   for several wordings of the same problem: `other_wordings` keeps the
-   others. Any other failure exits 1 and is not an approval.
+   `review.ready` returns the commitment and `approved_until`.
+   `review.not_ready` prints every
+   issue, with `code`, `anchor` and `hazard`, and exits 2. Any other failure exits 1 and is not an approval.
 
 3. **Revise and resubmit** as `SKILL.md` describes, naming the draft you just
    sent:

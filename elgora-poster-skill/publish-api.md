@@ -134,8 +134,7 @@ are fixed.
 - `400 invalid_bounty_challenge_spec`: structural issues, free to fix and
   resubmit.
 - `400 bounty_challenge_not_ready`: `error.issues` lists each problem (`path`,
-  `message`, `code`, `anchor`, `hazard`; an issue that stands for several
-  wordings of one problem lists the others in `other_wordings`).
+  `message`, `code`, `anchor`, `hazard`).
 - `429 publication_review_limit_reached`: your wallet has used its reviews for
   the rolling 24 hours; wait until `error.retry_not_before`.
 - `5xx` (`orchestrator_provider_error`, `invalid_orchestrator_output`): the
