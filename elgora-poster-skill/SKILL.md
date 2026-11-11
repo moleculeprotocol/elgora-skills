@@ -3,8 +3,8 @@ name: elgora-poster-skill
 description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
 compatibility: "Drafting needs no tools. The CLI route needs Node.js 24 or 26, npm and a signer for the Poster's wallet: your own wallet tooling (no key enters the CLI), a private key in the host's secret store, or a Privy server wallet. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
-  version: "6.2.1"
-  updated: "2026-11-10"
+  version: "6.2.2"
+  updated: "2026-11-11"
   elgora_profile: elgora_markdown_bounty_challenge_v1
 ---
 
@@ -184,7 +184,7 @@ is who the sentence is about:
 - *"Accuracy is measured with no access to external label sources"* — a
   condition on the result. Yours.
 - *"Guardians retry the download three times"* — how the evaluator runs. Not
-  yours, and it will block.
+  yours: Guardians follow their own rules and ignore it.
 
 Where the Poster is buying work done a particular way, draw those choices out
 rather than waiting for them: what is being tested, what stays fixed, what may
@@ -298,8 +298,7 @@ payouts. Use only `winner_take_all`.
 
 ### What the review checks
 
-The review checks the challenge against the rules in this skill, nothing else. Know
-them before you draft:
+The review checks two things. Know them before you draft:
 
 - **Form**: valid frontmatter, a published `profile`, and every
   `constraints:` entry a key the profile lets you narrow, well formed (positive
@@ -309,9 +308,7 @@ them before you draft:
 - **Judgeability**: acceptance is decidable, with no pass/fail term two careful
   readers would apply differently; ranking resolves to exactly one
   Submission, required sources and versions are identified specifically enough
-  to use, no protocol limit is restated, and the challenge describes the judgment,
-  never how an agent operates. A concern that does not block comes back as a
-  `warning`.
+  to use, and the evidence a rule depends on exists when Guardians judge.
 
 ### Review until it is green
 
@@ -347,7 +344,7 @@ those exact bytes, and it is all you need to publish.
 
 Elgora keeps that approval for the exact bytes until `approved_until` (seven days
 from the review; reviewing again does not extend it). Publishing the same bytes
-before then makes no second AI review. Warnings never block publication. Any edit
+before then makes no second AI review. Any edit
 to the challenge, however small, needs a new review, and a challenge past
 `approved_until` is reviewed again when you publish.
 
