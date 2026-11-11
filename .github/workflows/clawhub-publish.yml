@@ -60,7 +60,8 @@ jobs:
               --slug "$skill" \
               --owner "$CLAWHUB_OWNER" \
               --version "$version" \
-              --categories finance,agents \
+              --categories research,agents,finance \
+              --topics "bounties,usdc,privacy" \
               --source-repo "$GITHUB_REPOSITORY" \
               --source-commit "$GITHUB_SHA" \
               --source-ref "$GITHUB_REF_NAME" \
