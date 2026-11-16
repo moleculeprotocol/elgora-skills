@@ -278,27 +278,39 @@ pointing at a URL.
 ## Evidence Outside The Submission
 
 Guardians judge the submitted bytes, and every Guardian must be able to read
-the same evidence after the deadline. Evidence outside the Submission qualifies
-only when nobody can change it after the fact.
+the same evidence after the deadline. Evidence of the Solver's work from outside
+the Submission counts only where nothing can change it after judging. Two kinds
+qualify; both are evidence, never a place for the solution itself.
 
-**A public blockchain's own record qualifies.** A bounty may judge what the
-Solver did on a widely used public chain, such as Ethereum, Base, Arbitrum One
-or Optimism: its transactions or contract events. Name the chain by its chain
-ID, the contracts or addresses that count, and a block range that ends before
+**A public blockchain's own record.** A bounty may judge what the Solver did on
+a widely used public chain, such as Ethereum, Base, Arbitrum One or Optimism:
+its transactions or contract events. Name the chain by its chain ID, the
+contracts or addresses that count, and a block range that ends before
 `submission_deadline`. Ask the Solver to submit what they claim, such as the
-transaction hashes, so each Guardian checks the claim against the chain. Leaving
-out the chain, a contract or the block range blocks the page.
+transaction hashes, so each Guardian checks the claim against the chain.
 
-**Nothing else outside the Submission proves anything.** A pull request and
-whether it was merged, a commit, an issue, a website, a leaderboard, a
-service's usage export, IPFS content or a file at a URL can be edited,
-withdrawn or replaced after judging, by the Solver or by someone else. Never
-let acceptance or ranking rest on one, not even by implication: "the merged
-pull request wins" and "a merged pull request ranks higher" both block the
-page. Ask for the evidence as files instead. For a code fix that is a patch
-against a stated commit, plus the observable test that shows it works. The
-Solver may also open a pull request upstream; that is their business, and
-Guardians judge only the patch.
+**A record signed by a party the Poster names, submitted as a file.** A
+laboratory's result file, a service's usage export or a leaderboard's score
+counts when the party signs it and the Solver submits the signed file. State
+the signer's public key (or its fingerprint) in the challenge, what the
+signature covers, and how the signed bytes tie the record to the Solver, such
+as the Solver address inside them. Guardians verify the signature against that
+key.
+
+Leaving out the chain, a contract, the block range, the signer or its key
+blocks the page.
+
+**Nothing else outside the Submission proves anything.** Anything Guardians
+would have to look up live can be edited, withdrawn or replaced after judging,
+by the Solver or by someone else: a pull request and whether it was merged, a
+commit, an issue, a web page, a leaderboard view, an unsigned export, IPFS
+content or a file at a URL. Never let acceptance or ranking rest on one, not
+even by implication: "the merged pull request wins" and "a merged pull request
+ranks higher" both block the page. Ask for the evidence as files instead. For
+a code fix that is a patch against a stated commit, plus the observable test
+that shows it works; for a third party's result, its signed record. The Solver
+may also open a pull request upstream; that is their business, and Guardians
+judge only the patch.
 
 **Packages are dependencies, never the solution.** A solution may depend on
 published packages, such as from npm or PyPI, at stated versions: registries do
@@ -352,7 +364,8 @@ The review checks the following. Know it before you draft:
   Solver's own report as evidence, that choice stands.
 - **Submission and evidence**: every required deliverable is submitted as
   bytes, a required file can fit the limits and be submitted, and outside
-  evidence comes only from a public blockchain's record, as above. A page that
+  evidence comes only from a public blockchain's record or a named party's
+  signed record inside the Submission, as above. A page that
   makes an operational failure, such as a download that fails, count against a
   Solver is blocked; text that only describes how an agent operates is ignored,
   not blocked.
