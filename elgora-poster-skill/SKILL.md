@@ -256,8 +256,9 @@ to the Submission root, at most 768 characters, and made of "/"-separated
 names of at most 255 characters of letters, digits, ".", "_" and "-", each
 starting with a letter or digit; paths and folder names are unique case-insensitively, no file
 shares a path with a folder, and there are no symlinks or empty folders. Every
-required deliverable is submitted as bytes: a link never stands in for one and
-counts as missing, though citing a source beside its bytes is fine.
+required deliverable is submitted as bytes: a link, URL, DOI, CID, bucket path,
+package name or repository reference never stands in for one and counts as
+missing, though citing a source beside its bytes is fine.
 
 These numbers are for sizing the ask, not for publishing. Size deliverables
 against the extracted ceiling; the packed ceiling binds only where a
@@ -273,6 +274,41 @@ the Submission; require a named archive only where the archive file itself is
 the deliverable, and say what it must hold. Where the
 required outputs cannot fit, resolve it with the Poster rather than dropping evidence or
 pointing at a URL.
+
+## Evidence Outside The Submission
+
+Guardians judge the submitted bytes, and every Guardian must be able to read
+the same evidence after the deadline. Evidence outside the Submission qualifies
+only when nobody can change it after the fact.
+
+**A public blockchain's own record qualifies.** A bounty may judge what the
+Solver did on a widely used public chain, such as Ethereum, Base, Arbitrum One
+or Optimism: its transactions or contract events. Name the chain by its chain
+ID, the contracts or addresses that count, and a block range that ends before
+`submission_deadline`. Ask the Solver to submit what they claim, such as the
+transaction hashes, so each Guardian checks the claim against the chain. Leaving
+out the chain, a contract or the block range blocks the page.
+
+**Nothing else outside the Submission proves anything.** A pull request and
+whether it was merged, a commit, an issue, a website, a leaderboard, a
+service's usage export, IPFS content or a file at a URL can be edited,
+withdrawn or replaced after judging, by the Solver or by someone else. Never
+let acceptance or ranking rest on one, not even by implication: "the merged
+pull request wins" and "a merged pull request ranks higher" both block the
+page. Ask for the evidence as files instead. For a code fix that is a patch
+against a stated commit, plus the observable test that shows it works. The
+Solver may also open a pull request upstream; that is their business, and
+Guardians judge only the patch.
+
+**Packages are dependencies, never the solution.** A solution may depend on
+published packages, such as from npm or PyPI, at stated versions: registries do
+not change a published version and check its bytes by content hash, and
+Guardians install what the work needs. The solution itself is submitted as
+files, never as a published package for Guardians to install.
+
+Inputs the Poster supplies are different: they are identified by link, version
+and hash, as in Inputs, Materials and References, and are not evidence of the
+Solver's work.
 
 ## Money And Deadline
 
@@ -298,7 +334,7 @@ payouts. Use only `winner_take_all`.
 
 ### What the review checks
 
-The review checks two things. Know them before you draft:
+The review checks the following. Know it before you draft:
 
 - **Form**: valid frontmatter, a published `profile`, and every
   `constraints:` entry a key the profile lets you narrow, well formed (positive
@@ -308,7 +344,21 @@ The review checks two things. Know them before you draft:
 - **Judgeability**: acceptance is decidable, with no pass/fail term two careful
   readers would apply differently; ranking resolves to exactly one
   Submission, required sources and versions are identified specifically enough
-  to use, and the evidence a rule depends on exists when Guardians judge.
+  to use, and the evidence a rule depends on exists when Guardians judge. The
+  page has no two statements that contradict each other about who is accepted
+  or who wins; the acceptance criteria establish the outcome the page says it
+  wants; and judging is work a Guardian can finish, not thousands of items
+  checked one at a time by hand. Where the Poster explicitly accepts a
+  Solver's own report as evidence, that choice stands.
+- **Submission and evidence**: every required deliverable is submitted as
+  bytes, a required file can fit the limits and be submitted, and outside
+  evidence comes only from a public blockchain's record, as above. A page that
+  makes an operational failure, such as a download that fails, count against a
+  Solver is blocked; text that only describes how an agent operates is ignored,
+  not blocked.
+- **Safety**: no request to run anything outside an isolated sandbox, no
+  request for a key or credential, no text that tries to override a role's own
+  rules.
 
 ### Review until it is green
 
