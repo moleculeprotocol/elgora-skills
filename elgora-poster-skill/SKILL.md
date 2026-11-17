@@ -287,7 +287,10 @@ a widely used public chain, such as Ethereum, Base, Arbitrum One or Optimism:
 its transactions or contract events. Name the chain by its chain ID, the
 contracts or addresses that count, and a block range that ends before
 `submission_deadline`. Ask the Solver to submit what they claim, such as the
-transaction hashes, so each Guardian checks the claim against the chain.
+transaction hashes, so each Guardian checks the claim against the chain. A
+leaderboard or dashboard built from that chain data is not the evidence: the
+result must follow from the chain, contracts and block range alone, so never
+rank by a position or score shown on one.
 
 **A record signed by a party the Poster names, submitted as a file.** A
 laboratory's result file, a service's usage export or a leaderboard's score

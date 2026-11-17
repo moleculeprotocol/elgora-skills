@@ -185,6 +185,7 @@ when the challenge names it:
 - **A public blockchain's record**: transactions or contract events on the
   chain, contracts and block range the challenge names. Submit what you claim,
   such as the transaction hashes; each Guardian checks it against the chain.
+  A leaderboard built from that chain data is not evidence; the chain is.
 - **A record signed by the party the challenge names**, such as a laboratory's
   result file, a service's usage export or a leaderboard's score: submit the
   signed file itself. Guardians verify it against the key the challenge states.
