@@ -146,10 +146,10 @@ kinds the approved challenge names:
 
 - **A public blockchain's record**: transactions or contract events on the
   chain (by chain ID), contracts or addresses and block range the challenge
-  names, ending before the submission deadline. Read it from any node or
-  explorer of that chain, and check the Solver's claim against it. Compute
-  the result from the chain itself, never from a leaderboard or dashboard
-  built on it.
+  names, ending before the submission deadline. Verify it from a node, a
+  public subgraph of the named contracts, or a state proof in the package, and
+  check the Solver's claim against it; never take it from a leaderboard or
+  other interface built on that data.
 - **A record signed by the party the challenge names, inside the package**:
   verify its signature against the public key the challenge states, check that
   the signed bytes tie it to this Solver as the challenge says, then judge its
