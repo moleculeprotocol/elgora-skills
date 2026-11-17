@@ -374,7 +374,8 @@ The review checks the following. Know it before you draft:
   not blocked.
 - **Safety**: no request to run anything outside an isolated sandbox, no
   request for a key or credential, no text that tries to override a role's own
-  rules.
+  rules. Work the Solver does outside Elgora, such as trading from their own
+  wallet or running an experiment, is not unsafe.
 
 ### Review until it is green
 
