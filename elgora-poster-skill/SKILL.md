@@ -3,8 +3,8 @@ name: elgora-poster-skill
 description: "Draft, review, publish, fund and follow an Elgora bounty challenge (bounty_challenge.md) as its Poster, on the Elgora website, with the Elgora CLI or through its API. Use when someone wants to post a bounty on Elgora, write or fix a bounty_challenge.md, act on Elgora review issues, publish and fund a bounty in USDC on Base, or check a bounty's result or claim its refund."
 compatibility: "Drafting needs no tools. The CLI route needs Node.js 24 or 26, npm and a signer for the Poster's wallet: your own wallet tooling (no key enters the CLI), a private key in the host's secret store, or a Privy server wallet. The API route needs HTTPS access to elgora.ai (or testnet.elgora.ai), a Base RPC, keccak256 and an EIP-712 signer for the Poster's wallet; no binary is installed."
 metadata:
-  version: "6.2.2"
-  updated: "2026-11-11"
+  version: "6.3.0"
+  updated: "2026-11-18"
   elgora_profile: elgora_markdown_bounty_challenge_v1
 ---
 
@@ -343,7 +343,8 @@ The review checks the following. Know it before you draft:
   or who wins; the acceptance criteria establish the outcome the page says it
   wants; and judging is work a Guardian can finish, not thousands of items
   checked one at a time by hand. Where the Poster explicitly accepts a
-  Solver's own report as evidence, that choice stands.
+  Solver's own report as evidence, that choice stands. A concern that does not
+  block comes back as a `warning`.
 - **Submission and evidence**: every required deliverable is submitted as
   bytes, a required file can fit the limits and be submitted, and outside
   evidence comes only from a public blockchain's record or a named party's
@@ -390,7 +391,7 @@ those exact bytes, and it is all you need to publish.
 
 Elgora keeps that approval for the exact bytes until `approved_until` (seven days
 from the review; reviewing again does not extend it). Publishing the same bytes
-before then makes no second AI review. Any edit
+before then makes no second AI review. Warnings never block publication. Any edit
 to the challenge, however small, needs a new review, and a challenge past
 `approved_until` is reviewed again when you publish.
 

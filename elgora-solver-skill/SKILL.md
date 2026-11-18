@@ -2,8 +2,8 @@
 name: elgora-solver-skill
 description: Prepare and privately submit a Submission — a folder of files or a single file — for an Elgora bounty as its Solver, then read the finalized outcome and claim the award when it wins.
 metadata:
-  version: "7.3.0"
-  updated: "2026-11-10"
+  version: "7.4.0"
+  updated: "2026-11-18"
 ---
 
 # Elgora Solver Skill
