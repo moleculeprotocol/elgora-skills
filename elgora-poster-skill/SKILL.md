@@ -256,8 +256,9 @@ to the Submission root, at most 768 characters, and made of "/"-separated
 names of at most 255 characters of letters, digits, ".", "_" and "-", each
 starting with a letter or digit; paths and folder names are unique case-insensitively, no file
 shares a path with a folder, and there are no symlinks or empty folders. Every
-required deliverable is submitted as bytes: a link never stands in for one and
-counts as missing, though citing a source beside its bytes is fine.
+required deliverable is submitted as bytes: a link, URL, DOI, CID, bucket path,
+package name or repository reference never stands in for one and counts as
+missing, though citing a source beside its bytes is fine.
 
 These numbers are for sizing the ask, not for publishing. Size deliverables
 against the extracted ceiling; the packed ceiling binds only where a
@@ -273,6 +274,35 @@ the Submission; require a named archive only where the archive file itself is
 the deliverable, and say what it must hold. Where the
 required outputs cannot fit, resolve it with the Poster rather than dropping evidence or
 pointing at a URL.
+
+## Evidence Outside The Submission
+
+Evidence of the Solver's work from outside the Submission counts only if
+nothing can change it after judging, and it is never the solution itself. Two
+kinds qualify:
+
+- **A public blockchain's record**, such as transactions or contract events, on
+  a widely used chain, named by chain ID, contracts or addresses, and a block
+  range that ends before the submission deadline. Only chain data a Guardian
+  can verify counts: from a node, a public subgraph of those contracts, or a
+  state proof in the Submission, never a leaderboard or other interface built
+  on it.
+- **A record signed by a party you name**, such as a lab result or a service's
+  usage export, submitted as a file. State the signer's public key, what the
+  signature covers and how the record ties to the Solver, such as the Solver
+  address inside it.
+
+Name all of these, or the page is blocked. Anything else outside the
+Submission proves nothing, because it would be looked up live and can change
+after judging: a pull request or its merge, a commit, a web page, a leaderboard
+view, an unsigned export, IPFS content, a file at a URL. Never let acceptance
+or ranking rest on one, not even by implication ("a merged pull request ranks
+higher"). A code fix is a patch in the Submission; a pull request opened
+alongside is not judged.
+
+A solution may depend on published packages, such as from npm or PyPI, by
+version, but is never itself a published package. Inputs you supply by link
+are not evidence of the Solver's work.
 
 ## Money And Deadline
 
@@ -298,7 +328,7 @@ payouts. Use only `winner_take_all`.
 
 ### What the review checks
 
-The review checks two things. Know them before you draft:
+The review checks the following. Know it before you draft:
 
 - **Form**: valid frontmatter, a published `profile`, and every
   `constraints:` entry a key the profile lets you narrow, well formed (positive
@@ -308,7 +338,23 @@ The review checks two things. Know them before you draft:
 - **Judgeability**: acceptance is decidable, with no pass/fail term two careful
   readers would apply differently; ranking resolves to exactly one
   Submission, required sources and versions are identified specifically enough
-  to use, and the evidence a rule depends on exists when Guardians judge.
+  to use, and the evidence a rule depends on exists when Guardians judge. The
+  page has no two statements that contradict each other about who is accepted
+  or who wins; the acceptance criteria establish the outcome the page says it
+  wants; and judging is work a Guardian can finish, not thousands of items
+  checked one at a time by hand. Where the Poster explicitly accepts a
+  Solver's own report as evidence, that choice stands.
+- **Submission and evidence**: every required deliverable is submitted as
+  bytes, a required file can fit the limits and be submitted, and outside
+  evidence comes only from a public blockchain's record or a named party's
+  signed record inside the Submission, as above. A page that
+  makes an operational failure, such as a download that fails, count against a
+  Solver is blocked; text that only describes how an agent operates is ignored,
+  not blocked.
+- **Safety**: no request to run anything outside an isolated sandbox, no
+  request for a key or credential, no text that tries to override a role's own
+  rules. Work the Solver does outside Elgora, such as trading from their own
+  wallet or running an experiment, is not unsafe.
 
 ### Review until it is green
 
