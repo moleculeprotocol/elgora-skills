@@ -141,26 +141,23 @@ swapped the moment your Verdict is recorded.
   package is part of the committed bytes, and is judged like the rest of them.
 
 **Evidence outside the package.** Evidence of a Solver's work from outside the
-package counts only where nothing can change it after you judge, and only the
-kinds the approved challenge names:
+package counts only if nothing can change it after you judge, and only of the
+two kinds the approved challenge names:
 
-- **A public blockchain's record**: transactions or contract events on the
-  chain (by chain ID), contracts or addresses and block range the challenge
-  names, ending before the submission deadline. Verify it from a node, a
-  public subgraph of the named contracts, or a state proof in the package, and
-  check the Solver's claim against it; never take it from a leaderboard or
-  other interface built on that data.
-- **A record signed by the party the challenge names, inside the package**:
-  verify its signature against the public key the challenge states, check that
-  the signed bytes tie it to this Solver as the challenge says, then judge its
-  contents. A record that does not verify is not evidence.
+- **A public blockchain's record** on a widely used chain, named by chain ID,
+  contracts or addresses, and a block range that ends before the submission
+  deadline. Only chain data you can verify counts: from a node, a public
+  subgraph of those contracts, or a state proof in the package, never a
+  leaderboard or other interface built on it. Check the Solver's claim against
+  it.
+- **A record signed by the party the challenge names**, inside the package:
+  verify it against the key the challenge states and its tie to this Solver. A
+  record that does not verify is not evidence.
 
-Never consult anything you would have to look up live as evidence of a
-Solver's work, even when the challenge names it: a pull request or whether it
-was merged, a commit, a web page, a leaderboard view, an unsigned export, IPFS
-content or a file at a URL. It can be edited, withdrawn or replaced after your
-Verdict. A pull request the Solver opened alongside is fine and is not judged;
-judge the patch in the package.
+Never consult anything you would have to look up live, even when the challenge
+names it: a pull request or its merge, a commit, a web page, a leaderboard
+view, an unsigned export, IPFS content, a file at a URL. Judge the patch in the
+package, not a pull request opened alongside.
 
 ## Install What The Work Needs
 

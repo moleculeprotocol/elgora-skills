@@ -277,53 +277,32 @@ pointing at a URL.
 
 ## Evidence Outside The Submission
 
-Guardians judge the submitted bytes, and every Guardian must be able to read
-the same evidence after the deadline. Evidence of the Solver's work from outside
-the Submission counts only where nothing can change it after judging. Two kinds
-qualify; both are evidence, never a place for the solution itself.
+Evidence of the Solver's work from outside the Submission counts only if
+nothing can change it after judging, and it is never the solution itself. Two
+kinds qualify:
 
-**A public blockchain's own record.** A bounty may judge what the Solver did on
-a widely used public chain, such as Ethereum, Base, Arbitrum One or Optimism:
-its transactions or contract events. Name the chain by its chain ID, the
-contracts or addresses that count, and a block range that ends before
-`submission_deadline`. Ask the Solver to submit what they claim, such as the
-transaction hashes, so each Guardian checks the claim against the chain. Only
-chain data a Guardian can verify counts: from a node, a public subgraph of the
-named contracts, or a state proof submitted in the Submission. A leaderboard or
-other interface built on that data is not evidence.
+- **A public blockchain's record**, such as transactions or contract events, on
+  a widely used chain, named by chain ID, contracts or addresses, and a block
+  range that ends before the submission deadline. Only chain data a Guardian
+  can verify counts: from a node, a public subgraph of those contracts, or a
+  state proof in the Submission, never a leaderboard or other interface built
+  on it.
+- **A record signed by a party you name**, such as a lab result or a service's
+  usage export, submitted as a file. State the signer's public key, what the
+  signature covers and how the record ties to the Solver, such as the Solver
+  address inside it.
 
-**A record signed by a party the Poster names, submitted as a file.** A
-laboratory's result file, a service's usage export or a leaderboard's score
-counts when the party signs it and the Solver submits the signed file. State
-the signer's public key (or its fingerprint) in the challenge, what the
-signature covers, and how the signed bytes tie the record to the Solver, such
-as the Solver address inside them. Guardians verify the signature against that
-key.
+Name all of these, or the page is blocked. Anything else outside the
+Submission proves nothing, because it would be looked up live and can change
+after judging: a pull request or its merge, a commit, a web page, a leaderboard
+view, an unsigned export, IPFS content, a file at a URL. Never let acceptance
+or ranking rest on one, not even by implication ("a merged pull request ranks
+higher"). A code fix is a patch in the Submission; a pull request opened
+alongside is not judged.
 
-Leaving out the chain, a contract, the block range, the signer or its key
-blocks the page.
-
-**Nothing else outside the Submission proves anything.** Anything Guardians
-would have to look up live can be edited, withdrawn or replaced after judging,
-by the Solver or by someone else: a pull request and whether it was merged, a
-commit, an issue, a web page, a leaderboard view, an unsigned export, IPFS
-content or a file at a URL. Never let acceptance or ranking rest on one, not
-even by implication: "the merged pull request wins" and "a merged pull request
-ranks higher" both block the page. Ask for the evidence as files instead. For
-a code fix that is a patch against a stated commit, plus the observable test
-that shows it works; for a third party's result, its signed record. The Solver
-may also open a pull request upstream; that is their business, and Guardians
-judge only the patch.
-
-**Packages are dependencies, never the solution.** A solution may depend on
-published packages, such as from npm or PyPI, at stated versions: registries do
-not change a published version and check its bytes by content hash, and
-Guardians install what the work needs. The solution itself is submitted as
-files, never as a published package for Guardians to install.
-
-Inputs the Poster supplies are different: they are identified by link, version
-and hash, as in Inputs, Materials and References, and are not evidence of the
-Solver's work.
+A solution may depend on published packages, such as from npm or PyPI, by
+version, but is never itself a published package. Inputs you supply by link
+are not evidence of the Solver's work.
 
 ## Money And Deadline
 

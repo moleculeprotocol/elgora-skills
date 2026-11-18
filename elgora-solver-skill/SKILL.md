@@ -181,24 +181,22 @@ Submission's bytes are fixed on chain while a link's target can change after the
 Verdict.
 
 **Evidence outside the Submission.** Evidence of your work from outside the
-Submission counts only where nothing can change it after judging, and only
-when the challenge names it:
+Submission counts only if nothing can change it after judging, and only of the
+two kinds the challenge names:
 
-- **A public blockchain's record**: transactions or contract events on the
-  chain, contracts and block range the challenge names. Submit what you claim,
-  such as the transaction hashes; each Guardian checks it against the chain.
-  A state proof you submit counts too; a leaderboard or other interface built
-  on the chain data does not.
-- **A record signed by the party the challenge names**, such as a laboratory's
-  result file, a service's usage export or a leaderboard's score: submit the
-  signed file itself. Guardians verify it against the key the challenge states.
+- **A public blockchain's record** on a widely used chain, named by chain ID,
+  contracts or addresses, and a block range that ends before the submission
+  deadline. Only chain data a Guardian can verify counts: from a node, a public
+  subgraph of those contracts, or a state proof in the Submission, never a
+  leaderboard or other interface built on it. Submit what you claim, such as
+  the transaction hashes.
+- **A record signed by the party the challenge names**: submit the signed file
+  itself.
 
-Nothing else counts, because Guardians would have to look it up live and it can
-change after the Verdict: a pull request and whether it was merged, a commit, a
-web page, a leaderboard view, an unsigned export, IPFS content, a file at a
-URL. For a code fix, submit the patch and whatever the challenge asks to show
-it works. You may also open a pull request upstream; Guardians judge only the
-patch.
+Anything else proves nothing, because it would be looked up live: a pull
+request or its merge, a commit, a web page, a leaderboard view, an unsigned
+export, IPFS content, a file at a URL. For a code fix, submit the patch; a pull
+request you open alongside is not judged.
 
 When the bounty's `constraints:` frontmatter narrows one of these — a lower
 extracted budget, a lower file count, a required set of paths, an allowed
