@@ -245,6 +245,15 @@ directory; unpack it with `tar -xzf`. The website offers the same file.
 If the winner cannot be opened yet, the error says why in its `next_action`;
 follow it.
 
+Once you have checked the winning work, the Poster may rate it publicly with
+the same funding wallet: 1 to 5 stars and an optional comment of up to 280
+characters. Rate only when the Poster asks, in their words. There is one per
+bounty and it cannot be edited; it changes no outcome.
+
+```sh
+elgora-cli poster:feedback <bounty_id> --rating 4 --comment "Saved us a week." --network base
+```
+
 For a refund, inspect the claim command before using it:
 
 ```sh
