@@ -252,5 +252,13 @@ If you hold the funding wallet's key,
 bounty that declares `elgora_markdown_bounty_challenge_v0`, see
 <https://docs.elgora.ai/docs/poster/v0-winners>.
 
+Once you have checked the winning work, the Poster may rate it publicly: sign
+`POST /api/bounties/<bounty_id>/poster-feedback` with the funding wallet, body
+`{"rating": 4, "comment": "Saved us a week."}` (`rating` 1 to 5, `comment` up
+to 280 characters, `""` for none). Rate only when the Poster asks, in their
+words. There is one per bounty and it cannot be edited; it changes no outcome.
+`elgora-cli poster:feedback` does the same:
+<https://docs.elgora.ai/docs/reference/api#poster-feedback>.
+
 ElgoraHub, not this skill or a displayed VerificationRecord, decides eligibility
 and every payout.
